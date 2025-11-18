@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+<script layout:fragment="script" th:inline="javascript">
+  'use strict';
+
+  function newWindow(id) {
+    let url = "/qna/qnaNewWindow/"+id;
+    let windowName = "";
+    let windowWidth = 400;
+    let windowHeight = 700;
+
+    let x = window.screenX + (window.outerWidth - windowWidth) / 2;
+    let y = window.screenY + (window.outerHeight - windowHeight) / 2;
+    let option = `width=${windowWidth}, height=${windowHeight}, left=${x}, top=${y}`;
+
+    let newWin = window.open(url, windowName, option);
+
+    $("#qnaList").load(location.href+' #qnaList');
+    let timer = setInterval(() => {
+      if(newWin.closed) {
+        clearInterval(timer);
+        location.reload();
+      }
+    },500);
+  }
+
+  function progressChange(id) {
+    let ans = confirm(id+"번 문의의 현황을 변경하시겠습니까?");
+    if(ans) {
+      $.ajax({
+        url : "/qna/qnaProgressChange",
+        type: "post",
+        data: {
+          "id" : id,
+          "setProgress" : $("#progress"+id).val()
+        },
+        success : (res) => {
+          if(res == 1) {
+            alert("문의현황이 변경되었습니다.");
+            location.reload();
+          }
+          else if(res == -1) {
+            alert("잘못된 접근입니다.");
+            location.href = "/";
+          }
+          else alert("문의현황 변경에 실패했습니다.");
+        },
+        error : () => alert("전송오류")
+      });
+    }
+  }
+
+  function progressViewChange() {
+    location.href = "/qna/qnaAnswer?progress="+$("#progress").val();
+  }
+</script>
+<div layout:fragment="content">
+  <div class="row">
+    <div class="col d-flex">
+      <select id="progress" th:onchange="|progressViewChange()|" class="form-control" style="width:120px; flex:0 0 auto;">
+        <option value="" th:selected="${pageDTO.progress==''}">전체보기</option>
+        <option value="RESOLVING" th:selected="${pageDTO.progress=='RESOLVING'}">처리중</option>
+        <option value="RESOLVED" th:selected="${pageDTO.progress=='RESOLVED'}">처리완료</option>
+        <option value="UNRESOLVABLE" th:selected="${pageDTO.progress=='UNRESOLVABLE'}">처리불가</option>
+        <th:block th:if="${pageDTO.progress=='RESOLVED' || pageDTO.progress=='UNRESOLVABLE'}">
+          <option value="DELETE">삭제</option>
+        </th:block>
+      </select>
+    </div>
+    <div class="col">
+      <a href="/" class="btn btn-warning">돌아가기</a>
+    </div>
+  </div>
+  <p></p>
+  <div id="qnaList">
+    <th:block th:if="${#lists.isEmpty(pageDTO.qnaList)}">
+      <h3>문의가 없습니다.</h3>
+    </th:block>
+    <th:block th:if="${!#lists.isEmpty(pageDTO.qnaList)}">
+      <table class="table table-bordered">
+        <tr class="table-secondary">
+          <th>문의번호</th>
+          <th>문의제목</th>
+          <th>문의상태</th>
+          <th>문의현황</th>
+          <th>문의날짜</th>
+          <th>갱신날짜</th>
+          <th>새창으로열기</th>
+          <th>문의현황변경</th>
+        </tr>
+        <th:block th:each="dto:${pageDTO.qnaList}">
+          <tr>
+            <td>[[${dto.id}]]</td>
+            <td>[[${dto.title}]]</td>
+            <td th:text="${dto.openSW.name()=='NO'?'읽지않음':'읽음'}"></td>
+            <td th:text="${dto.progress.name()=='RESOLVING'?'처리중':dto.progress.name()=='RESOLVED'?'처리완료':'처리불가'}"></td>
+            <td th:text="${#strings.substring(#strings.replace(dto.startDate,'T',' '),0,19)}"></td>
+            <td th:text="${#strings.substring(#strings.replace(dto.lastDate,'T',' '),0,19)}"></td>
+            <td><input type="button" value="열기" th:onclick="|newWindow(${dto.id})|" class="btn btn-info" /></td>
+            <td>
+              <select th:id="progress+${dto.id}" th:onchange="|progressChange(${dto.id})|">
+                <option value="RESOLVING" th:selected="${dto.progress.name()=='RESOLVING'}">처리중</option>
+                <option value="RESOLVED" th:selected="${dto.progress.name()=='RESOLVED'}">처리완료</option>
+                <option value="UNRESOLVABLE" th:selected="${dto.progress.name()=='UNRESOLVABLE'}">처리불가</option>
+              </select>
+            </td>
+          </tr>
+        </th:block>
+      </table>
+    </th:block>
+  </div>
+</div>
+</html>
