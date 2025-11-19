@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+  <title>Interlock Setting</title>
+  <link rel="icon" href="/images/favi.png" type="image/png">
+
+  <script th:inline="javascript">
+    function saveInterlock() {
+      const token = $("meta[name='_csrf']").attr("content");
+      const header = $("meta[name='_csrf_header']").attr("content");
+
+      const deviceCode = document.getElementById('deviceCode').value;
+      const sensorKey = document.getElementById('sensorKey').value;
+      const alarm = document.getElementById('alarm').value;
+      const warning = document.getElementById('warning').value;
+      const status = document.getElementById('status').value;
+
+      $.ajax({
+        url: "/sensor/threshold/save",
+        type: "post",
+        headers: (function() {
+          var h = {};
+          h[header] = token;
+          return h;
+        })(),
+        data: {
+          deviceCode: deviceCode,
+          sensorKey: sensorKey,
+          alarm: alarm,
+          warning: warning,
+          status: status
+        },
+        success: function(res) {
+          alert("저장 완료");
+        },
+        error: function() {
+          alert("저장 실패");
+        }
+      });
+    }
+  </script>
+</head>
+<body>
+<div style="max-width:700px; margin:20px auto; padding:20px; border:1px solid #ddd; border-radius:8px;">
+  <h2 th:text="${sensorName}"></h2>
+  <input type="hidden" id="deviceCode" th:value="${deviceCode}" />
+  <input type="hidden" id="sensorKey" th:value="${sensorKey}" />
+
+  <div style="margin-bottom:20px;">
+    <label style="display:block; font-weight:bold;">Alarm</label>
+    <input type="number" id="alarm" th:value="${threshold.present? threshold.get().alarm : 0}" style="width:100px; padding:5px;" />
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <label style="display:block; font-weight:bold;">warning</label>
+    <input type="number" id="warning" th:value="${threshold.present? threshold.get().warning : 0}" style="width:100px; padding:5px;" />
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <label style="display:block; font-weight:bold;">ON/OFF</label>
+    <select id="status" style="width:100px; padding:5px;">
+      <option value="1" th:selected="${threshold.present? threshold.get().status == 1 : false}">ON</option>
+      <option value="0" th:selected="${threshold.present? threshold.get().status == 0 : false}">OFF</option>
+    </select>
+  </div>
+
+  <button type="button" onclick="saveInterlock()"
+          style="padding:8px 15px; background:#007bff; color:white; border:none; border-radius:4px;">
+    저장
+  </button>
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+</div>
+</body>
+</html>

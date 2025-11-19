@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+                xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+                layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    let message = [[${message}]];
+    if(message != null) alert(message);
+  </script>
+</th:block>
+
+<div layout:fragment="content">
+  <h2>정회원 방</h2>
+  <div>
+    현재 회원 등급 : [[${#authentication.authorities}]]
+  </div>
+  <div>
+    현재 로그인 이름(아이디) : [[${#authentication.name}]]
+  </div>
+</div>
+
+</html>
