@@ -19,9 +19,9 @@ public class QnADTO {
   private Long id;
   private Long parentId;
   @NotEmpty(message = "보내는 사람의 아이디는 필수입니다.")
-  private String fromMid;
+  private String fromEmail;
   @NotEmpty(message = "받는 사람의 아이디는 필수입니다.")
-  private String dearMid;
+  private String dearEmail;
   @NotEmpty(message = "문의 제목을 입력해주세요.")
   @Length(min = 2, max = 20, message = "문의 제목은 2~20글자 사이로 입력해주세요.")
   private String title;
@@ -36,8 +36,8 @@ public class QnADTO {
     return QnADTO.builder()
             .id(qna.getId())
             .parentId(qna.getParentId())
-            .fromMid(qna.getFromMid().getMid())
-            .dearMid(qna.getDearMid().getMid())
+            .fromEmail(qna.getFromEmail().getEmail())
+            .dearEmail(qna.getDearEmail().getEmail())
             .title(qna.getTitle())
             .content(qna.getContent())
             .openSW(qna.getOpenSW())

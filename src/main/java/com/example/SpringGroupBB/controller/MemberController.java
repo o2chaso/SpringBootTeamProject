@@ -32,7 +32,7 @@ public class MemberController {
 
   @GetMapping("/memberLoginOk")
   public String memberLoginOkGet(HttpSession session, Authentication authentication) {
-    session.setAttribute("sMid", authentication.getName());
+    session.setAttribute("sEmail", authentication.getName());
     return "redirect:/";
   }
   @GetMapping("/login/error")

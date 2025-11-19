@@ -30,11 +30,11 @@ public class QnA {
   @ColumnDefault("0")
   private Long parentId;
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-  @JoinColumn(name = "from_mid", referencedColumnName = "mid", nullable = false)
-  private Member fromMid;
+  @JoinColumn(name = "from_email", referencedColumnName = "email", nullable = false)
+  private Member fromEmail;
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-  @JoinColumn(name = "dear_mid", referencedColumnName = "mid", nullable = false)
-  private Member dearMid;
+  @JoinColumn(name = "dear_email", referencedColumnName = "email", nullable = false)
+  private Member dearEmail;
   @Column(length = 20, nullable = false)
   private String title;
   @Lob
@@ -53,11 +53,11 @@ public class QnA {
   @CreatedDate
   private LocalDateTime lastDate;
 
-  public static QnA dtoToEntity(Member fromMid, Member dearMid, QnADTO dto) {
+  public static QnA dtoToEntity(Member fromEmail, Member dearEmail, QnADTO dto) {
     return QnA.builder()
             .parentId(dto.getParentId())
-            .fromMid(fromMid)
-            .dearMid(dearMid)
+            .fromEmail(fromEmail)
+            .dearEmail(dearEmail)
             .title(dto.getTitle())
             .content(dto.getContent())
             .openSW(OpenSW.NO)

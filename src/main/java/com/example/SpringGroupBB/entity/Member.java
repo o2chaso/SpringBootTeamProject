@@ -22,7 +22,7 @@ public class Member {
   @Column(name = "member_id")
   private Long id;
   @Column(unique = true, nullable = false, length = 50)
-  private String mid;
+  private String email;
   @NotNull
   @Column(nullable = false)
   private String password;
@@ -33,7 +33,7 @@ public class Member {
 
   public static Member dtoToEntity(PasswordEncoder passwordEncoder, MemberDTO dto) {
     return Member.builder()
-            .mid(dto.getMid())
+            .email(dto.getEmail())
             .password(passwordEncoder.encode(dto.getPassword()))
             .name(dto.getName())
             .role(Role.USER)

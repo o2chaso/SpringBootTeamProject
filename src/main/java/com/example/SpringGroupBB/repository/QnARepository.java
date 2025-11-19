@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface QnARepository extends JpaRepository<QnA, Long> {
-  Page<QnA> findByFromMidAndProgressNot(Member fromMid, Progress progress, PageRequest pageable);
+  Page<QnA> findByFromEmailAndProgressNot(Member fromEmail, Progress progress, PageRequest pageable);
 
   List<QnA> findByParentId(Long id);
 
@@ -20,5 +20,5 @@ public interface QnARepository extends JpaRepository<QnA, Long> {
 
   Page<QnA> findAllByProgressNot(Progress progress, PageRequest pageable);
 
-  Page<QnA> findByFromMidAndProgress(Member fromMid, Progress progress, PageRequest pageable);
+  Page<QnA> findByFromEmailAndProgress(Member fromEmail, Progress progress, PageRequest pageable);
 }

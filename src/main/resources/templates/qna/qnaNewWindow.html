@@ -24,8 +24,11 @@
               data: {"id" : [[${id}]]},
               beforeSend : (xhr) => xhr.setRequestHeader(header, token),
               success : (res) => {
+                // qnaId와 res(마지막 채팅의 id)가 다르면 새로고침.
                 if(res != qnaId) {
+                  // qnaId 갱신.
                   qnaId = res;
+                  // 부분 리로드.
                   $("#msgReload").load(location.href+' #msgReload');
                 }
               },
@@ -61,7 +64,9 @@
           beforeSend : (xhr) => xhr.setRequestHeader(header, token),
           success : (res) => {
             if(res == 1) {
+              // 메시지 보낸 후, 메시지창 리로드.
               $("#msgReload").load(location.href+' #msgReload');
+              // textarea 비우기.
               $("#content").val("");
             }
             else if(res == -1) {
@@ -79,6 +84,7 @@
         height: 100vh;
         display: flex;
         flex-direction: column;
+        background: #87CEDD;
       }
       .msg {
         flex: 1;
@@ -97,7 +103,7 @@
         <th:block th:each="dto:${qnaList}">
           <div class="d-flex mb-4">
             <div class="block p-2 border border-dark"
-                 th:classappend="${dto.fromMid.mid==session.sMid?'from ms-auto text-end':'dear me-auto text-start'}">
+                 th:classappend="${dto.fromEmail.email==session.sEmail?'from ms-auto text-end':'dear me-auto text-start'}">
               <div th:text="${dto.content}" class="text-start" style="white-space: pre-line;"></div>
             </div>
           </div>

@@ -21,17 +21,17 @@ public class MemberService implements UserDetailsService {
   private final MemberRepository memberRepository;
 
   @Override
-  public UserDetails loadUserByUsername(String mid) throws UsernameNotFoundException {
-    Member member = memberRepository.findByMid(mid).orElse(null);
+  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    Member member = memberRepository.findByEmail(email).orElse(null);
     return User.builder()
-            .username(member.getMid())
+            .username(member.getEmail())
             .password(member.getPassword())
             .roles(member.getRole().toString())
             .build();
   }
 
-  public MemberDTO selectMemberMid(String mid) {
-    return MemberDTO.entityToDTO(memberRepository.findByMid(mid));
+  public MemberDTO selectMemberEmail(String email) {
+    return MemberDTO.entityToDTO(memberRepository.findByEmail(email));
   }
 
   public void insertMember(MemberDTO dto) {

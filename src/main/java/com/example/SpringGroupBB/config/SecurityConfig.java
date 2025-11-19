@@ -42,7 +42,7 @@ public class SecurityConfig {
             .loginPage("/member/memberLogin") // 커스텀 로그인 페이지
             .defaultSuccessUrl("/member/memberLoginOk", true)  // 로그인 성공 시 이동
             .failureUrl("/member/login/error")  // 실패 시 이동
-            .usernameParameter("mid") // 로그인 form의 name="email"
+            .usernameParameter("email") // 로그인 form의 name="email"
             .permitAll());
 
     // 페이지 접근 권한설정

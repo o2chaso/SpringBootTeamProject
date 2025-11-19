@@ -98,7 +98,7 @@
             <td th:text="${dto.progress.name()=='RESOLVING'?'처리중':dto.progress.name()=='RESOLVED'?'처리완료':'처리불가'}"></td>
             <td th:text="${#strings.substring(#strings.replace(dto.startDate,'T',' '),0,19)}"></td>
             <td th:text="${#strings.substring(#strings.replace(dto.lastDate,'T',' '),0,19)}"></td>
-            <td><input type="button" value="열기" th:onclick="|newWindow(${dto.id})|" class="btn btn-info" /></td>
+            <td><input type="button" value="열기" th:onclick="|newWindow(${dto.id})|" class="btn btn-info btn-sm" /></td>
             <td>
               <select th:id="progress+${dto.id}" th:onchange="|progressChange(${dto.id})|">
                 <option value="RESOLVING" th:selected="${dto.progress.name()=='RESOLVING'}">처리중</option>

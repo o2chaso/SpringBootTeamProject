@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,7 +20,9 @@ public class Pagination {
   private final QnARepository qnaRepository;
   private final MemberRepository memberRepository;
 
-  public PageDTO pagination(Authentication authentication, PageDTO dto) {	// 각각의 변수로 받으면 초기값처리를 spring이 자동할수 있으나, 객체로 받으면 개별 문자/객체 자료에는 null이 들어오기에 따로 초기화 작업처리해야함.
+  public PageDTO pagination(PageDTO dto) {	// 각각의 변수로 받으면 초기값처리를 spring이 자동할수 있으나, 객체로 받으면 개별 문자/객체 자료에는 null이 들어오기에 따로 초기화 작업처리해야함.
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
     int pag = dto.getPag();
     int pageSize = dto.getPageSize() == 0 ? 10 : dto.getPageSize();
     String part = dto.getPart() == null ? "" : dto.getPart();
@@ -43,14 +46,14 @@ public class Pagination {
       else progress = null;
 
       Page<QnA> page;
-      Member fromMid;
+      Member fromEmail;
       if(progress != null) {
-        fromMid = memberRepository.findByMid(authentication.getName()).orElse(null);
-        page = qnaRepository.findByFromMidAndProgress(fromMid, progress, pageable);
+        fromEmail = memberRepository.findByEmail(authentication.getName()).orElse(null);
+        page = qnaRepository.findByFromEmailAndProgress(fromEmail, progress, pageable);
       }
       else {
-        fromMid = memberRepository.findByMid(authentication.getName()).orElse(null);
-        page = qnaRepository.findByFromMidAndProgressNot(fromMid, Progress.ANSWER, pageable);
+        fromEmail = memberRepository.findByEmail(authentication.getName()).orElse(null);
+        page = qnaRepository.findByFromEmailAndProgressNot(fromEmail, Progress.ANSWER, pageable);
       }
 
       dto.setQnaList(page.getContent());

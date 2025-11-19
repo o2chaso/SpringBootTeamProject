@@ -27,9 +27,9 @@ public class QnAService {
 
   @Transactional
   public void insertQnA(QnADTO dto) {
-    Member fromMid = memberRepository.findByMid(dto.getFromMid()).orElse(null);
-    Member dearMid = memberRepository.findByMid(dto.getDearMid()).orElse(null);
-    QnA qna = qnaRepository.save(QnA.dtoToEntity(fromMid, dearMid, dto));
+    Member fromEmail = memberRepository.findByEmail(dto.getFromEmail()).orElse(null);
+    Member dearEmail = memberRepository.findByEmail(dto.getDearEmail()).orElse(null);
+    QnA qna = qnaRepository.save(QnA.dtoToEntity(fromEmail, dearEmail, dto));
     qna.setParentId(qna.getId());
     qnaRepository.save(qna);
   }
@@ -47,12 +47,12 @@ public class QnAService {
     QnA parentQnA = qnaRepository.findById(id).orElse(null);
     if(parentQnA.getProgress()!=Progress.RESOLVING) throw new Exception();
 
-    Member dearMid = memberRepository.findByMid(parentQnA.getFromMid().getMid()).orElse(null);
-    Member fromMid = memberRepository.findByMid(session.getAttribute("sMid").toString()).orElse(null);
+    Member dearEmail = memberRepository.findByEmail(parentQnA.getFromEmail().getEmail()).orElse(null);
+    Member fromEmail = memberRepository.findByEmail(session.getAttribute("sEmail").toString()).orElse(null);
     qnaRepository.save(QnA.builder()
                  .parentId(id)
-                 .fromMid(fromMid)
-                 .dearMid(dearMid)
+                 .fromEmail(fromEmail)
+                 .dearEmail(dearEmail)
                  .title(parentQnA.getTitle())
                  .content(content)
                  .progress(Progress.ANSWER)
