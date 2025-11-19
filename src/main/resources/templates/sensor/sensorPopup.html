@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Sensor Popup</title>
+  <link rel="icon" href="/images/favi.png" type="image/png">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <style>
+    .tab-btn {
+        padding: 8px 14px;
+        margin-right: 10px;
+        background-color: #007bff;
+        border: none;
+        color: white;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .tab-btn:hover {
+        background-color: #0056b3;
+    }
+
+    #contentArea {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+<div style="text-align: center;">
+  <h2 style="display: inline-block;">[[${deviceCode}]]</h2>
+</div>
+
+<!-- 탭 버튼 -->
+<div style="text-align: center;">
+  <button class="tab-btn" onclick="loadTab('interlock')">인터락</button>
+  <button class="tab-btn" onclick="loadTab('graph')">그래프</button>
+  <button class="tab-btn" onclick="loadTab('logs')">로그</button>
+</div>
+
+<!-- 내용 표시 영역 -->
+<div id="contentArea">
+  <!-- AJAX로 채워질 영역 -->
+</div>
+
+<script th:inline="javascript">
+  var deviceCode = [[${deviceCode}]];
+  var sensorKey = [[${sensorKey}]];
+
+  function loadTab(tab) {
+    var url = "/sensor/sensorPopup/detail?tab="
+              + tab
+              + "&deviceCode="
+              + deviceCode
+              + "&sensorKey="
+              + sensorKey;
+
+    $("#contentArea").load(url);
+  }
+  loadTab("interlock");
+</script>
+
+</body>
+</html>
