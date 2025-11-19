@@ -92,20 +92,32 @@ public class QnAController {
   }
 
   @GetMapping("/qnaNewWindow/{id}")
-  public String qnaNewWindowGet(Authentication authentication, Model model,
+  public String qnaNewWindowGet(Authentication authentication, Model model, RedirectAttributes rttr,
                                 @PathVariable Long id) {
     List<QnA> qnaList = qnaService.selectQnAParentId(id);
 
+    // 보내는 사람 혹은 받는 사람에 자신이 포함되지 않을 경우(주소를 통해 다른 채팅에 접근할 경우) home으로 이동시킨다.
+    if(qnaList.getFirst().getFromMid().equals(authentication.getName()) ||
+            qnaList.getFirst().getDearMid().equals(authentication.getName())) {
+      rttr.addFlashAttribute("message", "잘못된 접근입니다.");
+      return "redirect:/";
+    }
+
+    // 기독체크(getLast가 1개일 경우 null에러를 뱉기 때문에 나눴다).
+    // 보낸 채팅이 여러개일 경우.
     if(qnaList.size() > 1) {
       if(!qnaList.getLast().getFromMid().getMid().equals(authentication.getName())) qnaService.updateOpenSWOK(qnaList.getFirst());
       else qnaService.updateOpenSWNO(qnaList.getFirst());
     }
+    // 보낸 채팅이 한 개일 경우.
     else if(qnaList.size() == 1) {
       if(!qnaList.getFirst().getFromMid().getMid().equals(authentication.getName()))  qnaService.updateOpenSWOK(qnaList.getFirst());
       else qnaService.updateOpenSWNO(qnaList.getFirst());
     }
+    
     model.addAttribute("qnaList", qnaList);
     model.addAttribute("id", id);
+    // 조치가 끝난 채팅일 경우 더이상 채팅을 보내지 못하도록, 자동 새로고침을 정지시키기 위해 문의현황을 보낸다.
     model.addAttribute("progress", qnaService.selectQnAId(id).getProgress());
     return "qna/qnaNewWindow";
   }
