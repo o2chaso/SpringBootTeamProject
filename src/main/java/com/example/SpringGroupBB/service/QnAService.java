@@ -3,7 +3,7 @@ package com.example.SpringGroupBB.service;
 import com.example.SpringGroupBB.constant.OpenSW;
 import com.example.SpringGroupBB.constant.Progress;
 import com.example.SpringGroupBB.dto.QnADTO;
-import com.example.SpringGroupBB.entity.MemberEntity;
+import com.example.SpringGroupBB.entity.Member;
 import com.example.SpringGroupBB.entity.QnA;
 import com.example.SpringGroupBB.repository.MemberRepository;
 import com.example.SpringGroupBB.repository.QnARepository;
@@ -11,8 +11,6 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,8 +27,8 @@ public class QnAService {
 
   @Transactional
   public void insertQnA(QnADTO dto) {
-    MemberEntity fromEmail = memberRepository.findByEmail(dto.getFromEmail()).orElse(null);
-    MemberEntity dearEmail = memberRepository.findByEmail(dto.getDearEmail()).orElse(null);
+    Member fromEmail = memberRepository.findByEmail(dto.getFromEmail()).orElse(null);
+    Member dearEmail = memberRepository.findByEmail(dto.getDearEmail()).orElse(null);
     QnA qna = qnaRepository.save(QnA.dtoToEntity(fromEmail, dearEmail, dto));
     qna.setParentId(qna.getId());
     qnaRepository.save(qna);
@@ -46,14 +44,11 @@ public class QnAService {
 
   @Transactional
   public void insertQnAAnswer(Long id, String content) throws Exception {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
     QnA parentQnA = qnaRepository.findById(id).orElse(null);
-    System.out.println("=================================" + parentQnA.getProgress());
     if(parentQnA.getProgress()!=Progress.RESOLVING) throw new Exception();
 
-    MemberEntity dearEmail = memberRepository.findByEmail(parentQnA.getFromEmail().getEmail()).orElse(null);
-    MemberEntity fromEmail = memberRepository.findByEmail(authentication.getName()).orElse(null);
+    Member dearEmail = memberRepository.findByEmail(parentQnA.getFromEmail().getEmail()).orElse(null);
+    Member fromEmail = memberRepository.findByEmail(session.getAttribute("sEmail").toString()).orElse(null);
     qnaRepository.save(QnA.builder()
                  .parentId(id)
                  .fromEmail(fromEmail)
@@ -87,6 +82,6 @@ public class QnAService {
   }
 
   public void deleteQnA(Long id) {
-    qnaRepository.deleteById(id);
+    qnaRepository.deleteByParentId(id);
   }
 }

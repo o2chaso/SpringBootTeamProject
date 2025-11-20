@@ -31,10 +31,10 @@ public class QnA {
   private Long parentId;
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
   @JoinColumn(name = "from_email", referencedColumnName = "email", nullable = false)
-  private MemberEntity fromEmail;
+  private Member fromEmail;
   @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
   @JoinColumn(name = "dear_email", referencedColumnName = "email", nullable = false)
-  private MemberEntity dearEmail;
+  private Member dearEmail;
   @Column(length = 20, nullable = false)
   private String title;
   @Lob
@@ -53,7 +53,7 @@ public class QnA {
   @CreatedDate
   private LocalDateTime lastDate;
 
-  public static QnA dtoToEntity(MemberEntity fromEmail, MemberEntity dearEmail, QnADTO dto) {
+  public static QnA dtoToEntity(Member fromEmail, Member dearEmail, QnADTO dto) {
     return QnA.builder()
             .parentId(dto.getParentId())
             .fromEmail(fromEmail)

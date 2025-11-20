@@ -47,10 +47,12 @@ public class SecurityConfig {
 
     // 페이지 접근 권한설정
     security.authorizeHttpRequests(request -> request
-            .requestMatchers("/", "/images/**", "/css/**", "/ckeditor/**", "/ckeditorUpload/**").permitAll()
-            .requestMatchers("/board/replyInput", "/board/replyDelete", "/member/memberDelete", "/member/memberPasswordChange").hasAnyAuthority("USER", "ADMIN")
-            .requestMatchers("/member/memberProfileUpdate").hasAnyAuthority("USER", "ADMIN")
-            .requestMatchers("/sensor/**", "/sensor/sensorList/sse", "/board/List", "/board/boardContent").permitAll()
+            .requestMatchers("/", "/images/**", "/css/**", "/ckeditor/**", "/ckeditorUpload/**", "/js/**").permitAll()
+            .requestMatchers("/member/memberEmailCheck", "/member/memberEmailCheckOk", "/member/memberEmailCheckNo").permitAll()
+            .requestMatchers("/member/memberJoin", "/member/memberLogin", "/member/login/error", "/member/memberLoginOk").permitAll()
+            .requestMatchers("/board/**", "/member/memberPasswordChange", "/member/memberProfileUpdate","/member/memberDelete").authenticated()
+            .requestMatchers("/member/memberDelete").hasAnyAuthority("USER", "ADMIN")
+            .requestMatchers("/sensor/**", "/sensor/sensorList/sse").permitAll()
             .requestMatchers("/member/memberJoin", "/member/memberLogin", "/member/login/error").permitAll()
             .requestMatchers("/member/memberMain").authenticated()
             .anyRequest().authenticated());

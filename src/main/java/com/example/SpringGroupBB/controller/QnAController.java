@@ -5,6 +5,7 @@ import com.example.SpringGroupBB.constant.Progress;
 import com.example.SpringGroupBB.dto.PageDTO;
 import com.example.SpringGroupBB.dto.QnADTO;
 import com.example.SpringGroupBB.entity.QnA;
+import com.example.SpringGroupBB.repository.MemberRepository;
 import com.example.SpringGroupBB.service.MemberService;
 import com.example.SpringGroupBB.service.QnAService;
 import jakarta.validation.Valid;
@@ -25,7 +26,9 @@ public class QnAController {
   private final QnAService qnaService;
   private final MemberService memberService;
   private final Pagination pagination;
+  private final MemberRepository memberRepository;
 
+  // 문의목록.
   @GetMapping("/qnaList")
   public String qnaListGet(Model model, PageDTO pageDTO) {
     pageDTO.setSection("qna");
@@ -36,28 +39,34 @@ public class QnAController {
     return "qna/qnaList";
   }
 
+  // 문의작성 폼.
   @GetMapping("/qnaInput")
   public String qnaInputGet(Authentication authentication, Model model) {
-    model.addAttribute("dto", memberService.selectMemberEmail(authentication.getName()));
-    System.out.println("=================================================" + memberService.selectMemberEmail(authentication.getName()));
+    model.addAttribute("dto", memberRepository.findByEmail(authentication.getName()));
     model.addAttribute("userCsrf", true);
     return "qna/qnaInput";
   }
+  // 문의작성 폼 유효성검사 실시간 피드백.
   @ResponseBody
   @PostMapping("qnaValid")
   public String[] qnaValide(@Valid QnADTO dto, BindingResult bindingResult) {
+    // QnADTO 형식에 맞지 않으면.
     if(bindingResult.hasErrors()) {
+      // 검출된 오류(QnADTO 형식에 맞지 않는)의 전체 개수만큼의 크기를 가진 String배열 생성.
       String[] error = new String[bindingResult.getAllErrors().size()];
+      // 검출된 오류의 개수만큼 for문을 돌린다.
       for(int i=0; i<bindingResult.getAllErrors().size(); i++) {
+        // 생성한 배열에 오류메시지를 담는다.
         error[i] = bindingResult.getAllErrors().get(i).getDefaultMessage();
       }
       return error;
     }
+    // 에러 없으면 공백 배열을 리턴.
     else return new String[] {""};
   }
+  // 문의 DB저장.
   @PostMapping("/qnaInput")
   public String qnaInputPost(RedirectAttributes rttr, QnADTO dto) {
-    System.out.println(dto);
     if(dto.getFromEmail().isEmpty() || dto.getDearEmail().isEmpty() || dto.getTitle().length()>20 || dto.getTitle().isEmpty() || dto.getContent().isEmpty()) {
       rttr.addFlashAttribute("message", "잘못된 접근입니다.");
       return "redirect:/";
@@ -84,12 +93,9 @@ public class QnAController {
   @ResponseBody
   @PostMapping("/qnaAnswer")
   public int qnaAnswerPost(Long id, String content) {
-
     try {
       qnaService.insertQnAAnswer(id, content);
     } catch (Exception e) {
-      System.out.println("===============================" + id);
-      System.out.println("===============================" + content);
       return 0;
     }
     return 1;
@@ -128,7 +134,6 @@ public class QnAController {
     model.addAttribute("id", id);
     // 조치가 끝난 채팅일 경우 더이상 채팅을 보내지 못하도록, 자동 새로고침을 정지시키기 위해 문의현황을 보낸다.
     model.addAttribute("progress", qnaService.selectQnAId(id).getProgress());
-    model.addAttribute("fromEmail",authentication.getName());
     return "qna/qnaNewWindow";
   }
   @ResponseBody
@@ -165,5 +170,15 @@ public class QnAController {
       return 0;
     }
     return 1;
+  }
+
+  @GetMapping("/qnaDelete")
+  public String qnaDeleteGet(Model model, PageDTO pageDTO) {
+    pageDTO.setSection("qnaDelete");
+    pageDTO = pagination.pagination(pageDTO);
+
+    model.addAttribute("pageDTO", pageDTO);
+    model.addAttribute("userCsrf", true);
+    return "qna/qnaDelete";
   }
 }

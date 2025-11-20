@@ -27,7 +27,7 @@ spring:
   jpa:
     open-in-view: true
     hibernate:
-      ddl-auto: update  # create, update, none, create-drop, validate...
+      ddl-auto: create  # create, update, none, create-drop, validate...
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
     show-sql: false # SQL Log Display Setting
@@ -48,6 +48,21 @@ spring:
       enabled: true
       max-file-size: 10MB
       max-request-size: 50MB
+
+  # email
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: cccbbbsss1126@gmail.com
+    password: sehfqrgytwufqtoe
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
 
 # Log Information Setting
 logging:
