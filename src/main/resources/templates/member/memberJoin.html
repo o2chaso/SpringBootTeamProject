@@ -11,7 +11,6 @@
     let message = [[${message}]];
     if(message != null) alert(message);
 
-    let emailSw = 0;
     let regEmail =/^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/;
     let timeLimit = 180;
     let interval;
@@ -28,7 +27,7 @@
       let extraAddress = form.extraAddress.value + " ";
 
       let address = postcode + "/" + roadAddress + "/" + detailAddress + "/" + extraAddress;
-
+      let emailSw = $("#emailSw").val();
       form.tel.value = tel;
       form.address.value = address;
 
@@ -75,7 +74,7 @@
     }
 
     function timer() {
-      clearInterval(interval); // ← 기존 타이머 제거
+      clearInterval(interval);
       timeLimit = 180;
 
       interval = setInterval(() => {
@@ -88,7 +87,10 @@
           $.ajax({
             url 		: '/member/memberEmailCheckNo',
             type 		: 'post',
-            success : () => alert("인증시간이 만료되었습니다."),
+            success : () => {
+              $("#emailSw").val(0);
+              alert("인증시간이 만료되었습니다.")
+            },
             error 	: () => alert("전송오류")
           });
           clearInterval(interval);
@@ -112,8 +114,9 @@
           if(res == 'OK') {
             clearInterval(interval);
             $("#demoSpin").hide();
+            $("#emailBtn").prop("disabled", true);
             alert("인증번호를 확인되었습니다");
-            emailSw = 1;
+            $("#emailSw").val(1);
           }
           else alert("인증번호 오류 인증번호를 확인해주세요.");
         },
@@ -161,7 +164,9 @@
         <div class="col-sm-6">
           <div class="input-group">
             <input type="email" id="email" th:field="*{email}" class="form-control" placeholder="이메일을 입력해주세요">
-            <button type="button" onclick="emailCertification()" class="btn btn-dark btn-sm text-white">이메일 인증</button>
+            <button type="button" id="emailBtn" onclick="emailCertification()"
+                    class="btn btn-dark btn-sm text-white"
+                    th:attr="disabled=${emailSw == 1}">이메일 인증</button>
           </div>
         </div>
         <div class="col-sm-4">
@@ -199,9 +204,9 @@
             <option value="019">019</option>
           </select>
           <span class="pt-1 ms-1 me-1">-</span>
-          <input type="text" th:field="*{tel2}" class="form-control ms-1 me-1"/>
+          <input type="tel" th:field="*{tel2}" class="form-control ms-1 me-1"/>
           <span class="pt-1 ms-1 me-1">-</span>
-          <input type="text" th:field="*{tel3}" class="form-control ms-1 me-1"/>
+          <input type="tel" th:field="*{tel3}" class="form-control ms-1 me-1"/>
         </div>
         <div class="col-sm-4">
           <div th:if="${#fields.hasErrors('tel')}" th:errors="*{tel}" class="fieldError ms-3" style="color:red; font-size:13px; text-align:left">Incorrect data</div>
@@ -221,7 +226,6 @@
           </div>
         </div>
       </div>
-
       <div class="row" >
         <label class="col-form-label col-2">생일</label>
         <div class="col-3">
@@ -234,6 +238,7 @@
       </div>
       <input type="hidden" th:field="*{tel}" />
       <input type="hidden" th:field="*{address}" />
+      <input type="hidden" id="emailSw" name="emailSw" th:value="${emailSw}" />
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
     </form>
   </div>

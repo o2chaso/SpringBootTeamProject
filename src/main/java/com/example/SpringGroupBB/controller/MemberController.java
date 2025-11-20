@@ -106,9 +106,11 @@ public class MemberController {
   public String memberJoinPost(RedirectAttributes rttr,
                                 Model model,
                                 @Validated(CreateGroup.class) MemberDTO dto,
-                                BindingResult bindingResult) {
-    System.out.println("dto : " + dto);
+                                BindingResult bindingResult,
+                                @RequestParam(name ="emailSw", defaultValue = "0", required = false) int emailSw) {
+
     if(bindingResult.hasErrors()) {
+      if(emailSw == 1) model.addAttribute("emailSw", 1);
       model.addAttribute("userCsrf", true);
       return "member/memberJoin";
     }
