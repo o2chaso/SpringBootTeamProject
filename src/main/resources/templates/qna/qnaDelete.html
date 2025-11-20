@@ -53,7 +53,7 @@
   }
 
   function progressViewChange() {
-    location.href = "/qna/qnaAnswer?progress="+$("#progress").val();
+    location.href = "/qna/qnaDelete?progress="+$("#progress").val();
   }
 </script>
 <div layout:fragment="content">
@@ -61,16 +61,15 @@
     <div class="col d-flex">
       <select id="progress" th:onchange="|progressViewChange()|" class="form-control" style="width:120px; flex:0 0 auto;">
         <option value="" th:selected="${pageDTO.progress==''}">전체보기</option>
-        <option value="RESOLVING" th:selected="${pageDTO.progress=='RESOLVING'}">처리중</option>
         <option value="RESOLVED" th:selected="${pageDTO.progress=='RESOLVED'}">처리완료</option>
         <option value="UNRESOLVABLE" th:selected="${pageDTO.progress=='UNRESOLVABLE'}">처리불가</option>
       </select>
     </div>
     <div class="col">
-      <a href="/" class="btn btn-warning">돌아가기</a>
     </div>
     <div class="col">
-      <input type="button" value="삭제하기" onclick="location.href='/qna/qnaDelete'" class="btn btn-danger" />
+      <a href="/" class="btn btn-warning">돌아가기</a>
+      <input type="button" value="전체보기" onclick="location.href='/qna/qnaAnswer'" class="btn btn-success" />
     </div>
   </div>
   <p></p>
@@ -95,7 +94,7 @@
             <td>[[${dto.id}]]</td>
             <td>[[${dto.title}]]</td>
             <td th:text="${dto.openSW.name()=='NO'?'읽지않음':'읽음'}"></td>
-            <td th:text="${dto.progress.name()=='RESOLVING'?'처리중':dto.progress.name()=='RESOLVED'?'처리완료':'처리불가'}"></td>
+            <td th:text="${dto.progress.name()=='RESOLVED'?'처리완료':'처리불가'}"></td>
             <td th:text="${#strings.substring(#strings.replace(dto.startDate,'T',' '),0,19)}"></td>
             <td th:text="${#strings.substring(#strings.replace(dto.lastDate,'T',' '),0,19)}"></td>
             <td><input type="button" value="열기" th:onclick="|newWindow(${dto.id})|" class="btn btn-info btn-sm" /></td>
@@ -104,6 +103,7 @@
                 <option value="RESOLVING" th:selected="${dto.progress.name()=='RESOLVING'}">처리중</option>
                 <option value="RESOLVED" th:selected="${dto.progress.name()=='RESOLVED'}">처리완료</option>
                 <option value="UNRESOLVABLE" th:selected="${dto.progress.name()=='UNRESOLVABLE'}">처리불가</option>
+                <option value="DELETE">삭제</option>
               </select>
             </td>
           </tr>

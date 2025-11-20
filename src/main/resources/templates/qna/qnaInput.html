@@ -7,26 +7,36 @@
 
     // input조건 실시간 피드백.
     $(() => {
+      // 문의작성폼에 들어왔을 때 바로 피드백.
       qnaValidate()
+      // 문의제목, 문의내용 입력할 때 피드백.
       $("#title, #content").on("input", () => qnaValidate());
     });
 
+    // 실제 피드백 메소드.
     function qnaValidate() {
       $.ajax({
         url : "/qna/qnaValid",
         type: "post",
         data: {
+          // QnADTO에 있어야하는 것들을 data로 보낸다.
+          // 보내는 사람의 이메일.
           "fromEmail" : $("#fromEmail").val(),
+          // 받는 사람의 이메일.
           "dearEmail" : $("#dearEmail").val(),
+          // 제목.
           "title" : $("#title").val(),
+          // 내용.
           "content" : $("#content").val()
         },
         success : (res) => {
+          // 오류 출력 폼 초기화.
           $("#titleValid1").hide();
           $("#contentValid1").hide();
           $("#titleValid2").empty();
           $("#contentValid2").empty();
 
+          // 리턴값(String배열)의 첫 번째 값이 공백이 아닐 때(오류가 존재할 때).
           if(res[0] != "") {
             for(let i=0; i<res.length; i++) {
               if(res[i].includes("제목")) {

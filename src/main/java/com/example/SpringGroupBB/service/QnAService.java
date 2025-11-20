@@ -82,6 +82,6 @@ public class QnAService {
   }
 
   public void deleteQnA(Long id) {
-    qnaRepository.deleteById(id);
+    qnaRepository.deleteByParentId(id);
   }
 }
