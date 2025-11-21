@@ -55,6 +55,7 @@ public class SecurityConfig {
             .requestMatchers("/sensor/**", "/sensor/sensorList/sse").permitAll()
             .requestMatchers("/member/memberJoin", "/member/memberLogin", "/member/login/error").permitAll()
             .requestMatchers("/member/memberMain").authenticated()
+            .requestMatchers("/weather/**").permitAll()
             .anyRequest().authenticated());
 
     // 기본 로그아웃 처리

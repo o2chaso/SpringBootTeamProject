@@ -5,6 +5,7 @@ import com.example.SpringGroupBB.entity.SensorEntity;
 import com.example.SpringGroupBB.entity.ThresholdEntity;
 import com.example.SpringGroupBB.service.SensorService;
 import com.example.SpringGroupBB.service.ThresholdService;
+import com.example.SpringGroupBB.service.WeatherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,10 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Controller
@@ -25,6 +26,9 @@ public class SensorController {
 
   private final SensorService sensorService;
   private final ThresholdService thresholdService;
+  // 날씨API 시작
+  private final WeatherService weatherService;
+  // 날씨API 끝
 
 
   @GetMapping("/sensorList")
@@ -198,5 +202,39 @@ public class SensorController {
     return emitter;
   }
 
+  // 날씨API 시작
+  @ResponseBody
+  @PostMapping("/weatherReport")
+  public String weatherReportPost() {
+    String weatherReport = "";
+    // 기온 raw값
+    String rawRes = weatherReportGet("T1H");
+    // 기온 결과값
+    weatherReport += weatherService.getWeatherResult(rawRes)+"/";
+    // 구름(1맑음, 2구름많음, 4흐림) raw값
+    rawRes = weatherReportGet("SKY");
+    // 구름 결과값
+    weatherReport += weatherService.getWeatherResult(rawRes)+"/";
+    // 강수형태(0없음, 1비, 2눈, 3눈, 4소나기) raw값
+    rawRes = weatherReportGet("PTY");
+    // 강수형태 결과값
+    weatherReport += weatherService.getWeatherResult(rawRes);
 
+    System.out.println("weatherReport: "+weatherReport);
+
+    return weatherReport;
+  }
+  @GetMapping("/weatherReport")
+  public String weatherReportGet(String vars) {
+    // HHm으로 분의 앞부분만 가져오는 게 불가능해서 mm을 전부 써준다
+    //String toDay = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
+    String toDay = LocalDateTime.now().minusMinutes(30).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+    // 10분 간격 발표
+    String tmfc = toDay.substring(0,11)+"0";
+    // 발표시간 기준 6시간 까지 1시간 간격으로 제공
+    String tmef = toDay.substring(0,10);
+
+    return weatherService.getWeatherReport(tmfc, tmef, vars);
+  }
+  // 날씨API 끝
 }
