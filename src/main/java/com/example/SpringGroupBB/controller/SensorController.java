@@ -12,13 +12,21 @@ import com.example.SpringGroupBB.repository.SensorRepository;
 import com.example.SpringGroupBB.service.EventLogService;
 import com.example.SpringGroupBB.service.SensorService;
 import com.example.SpringGroupBB.service.ThresholdService;
+import com.example.SpringGroupBB.service.WeatherService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -33,6 +41,9 @@ public class SensorController {
   private final ThresholdService thresholdService;
   private final SensorRepository sensorRepository;
   private final EventLogRepository eventLogRepository;
+  // 날씨API 시작
+  private final WeatherService weatherService;
+  // 날씨API 끝
 
 
   @GetMapping("/sensorList")
@@ -268,6 +279,75 @@ public class SensorController {
     }).start();
     return emitter;
   }
+
+  // 날씨API 시작
+  @ResponseBody
+  @PostMapping("/weatherReport")
+  public String weatherReportPost(HttpServletRequest request, HttpServletResponse response) {
+    String weatherReport = "";
+    String cTimeValue = "";
+    String cWeatherValue = "";
+    Cookie[] cookies = request.getCookies();
+    if(cookies != null) {
+      for(int i=0; i<cookies.length; i++) {
+        if(cookies[i].getName().equals("cTime")) cTimeValue = cookies[i].getValue();
+        else if(cookies[i].getName().equals("cWeather")) cWeatherValue = cookies[i].getValue();
+      }
+    }
+    // HHm으로 분의 앞부분만 가져오는 게 불가능해서 mm을 전부 써준다
+    String toDay = LocalDateTime.now().minusMinutes(30).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+    // 10분 간격 발표
+    String tmfc = toDay.substring(0,11)+"0";
+
+    if(!cTimeValue.equals(tmfc)) {
+      // 기온 raw값
+      String rawRes = weatherReportGet("T1H");
+      // 기온 결과값
+      weatherReport += weatherService.getWeatherResult(rawRes) + "/";
+      // 구름(1맑음, 2구름많음, 4흐림) raw값
+      rawRes = weatherReportGet("SKY");
+      // 구름 결과값
+      weatherReport += weatherService.getWeatherResult(rawRes) + "/";
+      // 강수형태(0없음, 1비, 2눈, 3눈, 4소나기) raw값
+      rawRes = weatherReportGet("PTY");
+      // 강수형태 결과값
+      weatherReport += weatherService.getWeatherResult(rawRes) + "/";
+      // 미세먼지/초미세먼지 값
+      weatherReport += weatherService.getYellowTemperance();
+
+      Cookie weatherCookie = new Cookie("cWeather", weatherReport);
+      weatherCookie.setPath("/");
+      weatherCookie.setMaxAge(600 * 10);
+      response.addCookie(weatherCookie);
+
+      System.out.println("weatherReport: " + weatherReport);
+      return weatherReport;
+    }
+    else {
+      System.out.println("weatherReport: " + cWeatherValue);
+      return cWeatherValue;
+    }
+  }
+
+  @GetMapping("/weatherReport")
+  public String weatherReportGet(String vars) {
+    HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
+
+    // HHm으로 분의 앞부분만 가져오는 게 불가능해서 mm을 전부 써준다
+    String toDay = LocalDateTime.now().minusMinutes(30).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+    // 10분 간격 발표
+    String tmfc = toDay.substring(0,11)+"0";
+    // 발표시간 기준 6시간 까지 1시간 간격으로 제공
+    String tmef = toDay.substring(0,10);
+
+    Cookie timeCookie = new Cookie("cTime", tmfc);
+    timeCookie.setPath("/");
+    timeCookie.setMaxAge(600*10);
+    response.addCookie(timeCookie);
+
+    return weatherService.getWeatherReport(tmfc, tmef, vars);
+  }
+  // 날씨API 끝
 
 
 }

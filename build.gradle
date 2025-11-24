@@ -45,6 +45,10 @@ dependencies {
     implementation("org.springframework:spring-context-support")
     implementation("org.springframework.boot:spring-boot-starter-mail")
 
+    // 날씨API 시작
+    implementation("com.google.code.gson:gson:2.10.1")
+    // 날씨API 끝
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.mysql:mysql-connector-j'

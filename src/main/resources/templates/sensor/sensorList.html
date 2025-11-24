@@ -4,6 +4,7 @@
       layout:decorate="~{layouts/basicLayout}">
 
 <th:block layout:fragment="script">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script th:inline="javascript">
     let currentDevice = "ENV_V2_1"; // 기본 선택
 
@@ -74,6 +75,99 @@
       const device = currentDevice;
       window.open("/sensor/sensorPopup?deviceCode=" + device + "&sensorKey=" + sensorKey, "_blank", "width=900,height=700");
     }
+
+
+
+    // 날씨AP 시작
+    $(() => {
+      // sensorList에 접속했을 때 자동실행
+      weatherReport();
+
+      // 기상청 초단기예보가 10분 간격 갱신이기 때문에 10분 간격으로 자동 갱신
+      setInterval(() => weatherReport(), 6000*100);
+    });
+
+    // 초단기예보 가져와서 뿌려주는 메소드
+    function weatherReport() {
+      $.ajax({
+        url : "/sensor/weatherReport",
+        type: "post",
+        success : (res) => {
+          let weatherRes = res.split("/");
+          $("#T1H").html("<font size=6><b>"+weatherRes[0]+"℃</b></font>");
+          if(weatherRes[2] == 0) {
+            if(weatherRes[1] == 1) $("#SKY").html('<img src="/weather/SKY_0.png" width="80px" />'+' &nbsp;&nbsp;맑음');
+            else if(weatherRes[1] == 2) $("#SKY").html('<img src="/weather/PTY_2.png" width="80px" />'+' &nbsp;&nbsp;흐림');
+            else if(weatherRes[1] == 4) $("#SKY").html('<img src="/weather/PTY_2.png" width="80px" />'+' &nbsp;&nbsp;구름많음');
+          }
+          if(weatherRes[2] == 1 || weatherRes[2] == 4) $("#SKY").html('<img src="/weather/SKY_1or4.png" width="80px" />'+' &nbsp;&nbsp;비');
+          if(weatherRes[2] == 2 || weatherRes[2] == 3) $("#SKY").html('<img src="/weather/SKY_2or3.png" width="80px" />'+' &nbsp;&nbsp;눈');
+
+          // 미세먼지 출력
+          if(weatherRes[3] <= 30) $("#pm10").html("<b>미세먼지</b><br/><font color='green'>좋음</font>");
+          else if(weatherRes[3] <= 80) $("#pm10").html("<b>미세먼지</b><br/><font color='blue'>보통</font>");
+          else if(weatherRes[3] <= 150) $("#pm10").html("<b>미세먼지</b><br/><font color='purple'>나쁨</font>");
+          else $("#pm10").html("<b>미세먼지</b><br/><font color='red'>매우나쁨</font>");
+          // 초미세먼지 출력
+          if(weatherRes[4] <= 15) $("#pm25").html("<b>초미세먼지</b><br/><font color='green'>좋음</font>");
+          else if(weatherRes[4] <= 35) $("#pm25").html("<b>초미세먼지</b><br/><font color='blue'>보통</font>");
+          else if(weatherRes[4] <= 75) $("#pm25").html("<b>초미세먼지</b><br/><font color='purple'>나쁨</font>");
+          else $("#pm25").html("<b>초미세먼지</b><br/><font color='red'>매우나쁨</font>");
+
+          aceGraph(weatherRes[3], 1);
+          aceGraph(weatherRes[4], 2);
+        },
+        error : () => alert("전송오류")
+      });
+    }
+
+    function aceGraph(pm, flag) {
+      let ctx = $("#pmChart"+flag);
+      let color = flag==1 ? "#4dc9f6" : "#44c282";
+
+      let centerTextPlugin = {
+        id: "centerText",
+        beforeDraw(chart) {
+          const {ctx, chartArea:{width, height}} = chart;
+          ctx.save();
+          ctx.font = 'bold 20px sans-serif';
+          ctx.fillStyle = color;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(pm, width/2, height/2);
+          ctx.restore();
+        }
+      };
+
+      return new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          datasets: [{
+            data: [pm, 100-pm],
+            backgroundColor: [color, '#eaeaea'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: false,
+          maintainAspectRatio: false,
+          cutout: '75%',
+          rotation: 0,
+          plugins: {
+            legend: {display: false},
+            tooltip: {enabled: false}
+          }
+        },
+        plugins: [centerTextPlugin]
+      });
+    }
+
+    // 윈도우 크기가 일정 이하일 때 날시 윈도우 비표시
+    $(window).on("resize", () => {
+      if($(window).width() < 770) $("#weatherReport").hide();
+      else $("#weatherReport").show();
+    });
+    // 날씨API 끝
   </script>
 </th:block>
 
@@ -94,25 +188,56 @@
   </div>
 
   <!-- 센서 대시보드 -->
-  <div class="sensor-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 25px;">
-    <div class="card" id="value1" onclick="openSensorPopup('value1')" style="cursor: pointer;">
+  <div class="row">
+    <div class="col">
+      <!-- 센서 대시보드 -->
+      <div class="sensor-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 25px;">
+        <div class="card" id="value1" onclick="openSensorPopup('value1')" style="cursor: pointer;"></div>
+        <div class="card" id="value2" onclick="openSensorPopup('value2')" style="cursor: pointer;"></div>
+        <div class="card" id="value3" onclick="openSensorPopup('value3')" style="cursor: pointer;"></div>
+        <div class="card" id="value4" onclick="openSensorPopup('value4')" style="cursor: pointer;"></div>
+        <div class="card" id="value5" onclick="openSensorPopup('value5')" style="cursor: pointer;"></div>
+        <div class="card" id="value6" onclick="openSensorPopup('value6')" style="cursor: pointer;"></div>
+        <div class="card" id="value7" onclick="openSensorPopup('value7')" style="cursor: pointer;"></div>
+        <div class="card" id="value8" onclick="openSensorPopup('value8')" style="cursor: pointer;"></div>
+        <div class="card" id="value9" onclick="openSensorPopup('value9')" style="cursor: pointer;"></div>
+        <div class="card" id="value10" onclick="openSensorPopup('value10')" style="cursor: pointer;"></div>
+        <div class="card" id="value11" onclick="openSensorPopup('value11')" style="cursor: pointer;"></div>
+        <div class="card" id="value12" onclick="openSensorPopup('value12')" style="cursor: pointer;"></div>
+        <div class="card" id="value13" onclick="openSensorPopup('value13')" style="cursor: pointer;"></div>
+        <div class="card" id="value14" onclick="openSensorPopup('value14')"></div>
+        <div class="card" id="value15" onclick="openSensorPopup('value15')"></div>
+        <div class="card" id="value16" onclick="openSensorPopup('value16')"></div>
+      </div>
     </div>
-    <div class="card" id="value2" onclick="openSensorPopup('value2')" style="cursor: pointer;"></div>
-    <div class="card" id="value3" onclick="openSensorPopup('value3')" style="cursor: pointer;"></div>
-    <div class="card" id="value4" onclick="openSensorPopup('value4')" style="cursor: pointer;"></div>
-    <div class="card" id="value5" onclick="openSensorPopup('value5')" style="cursor: pointer;"></div>
-    <div class="card" id="value6" onclick="openSensorPopup('value6')" style="cursor: pointer;"></div>
-    <div class="card" id="value7" onclick="openSensorPopup('value7')" style="cursor: pointer;"></div>
-    <div class="card" id="value8" onclick="openSensorPopup('value8')" style="cursor: pointer;"></div>
-    <div class="card" id="value9" onclick="openSensorPopup('value9')" style="cursor: pointer;"></div>
-    <div class="card" id="value10" onclick="openSensorPopup('value10')" style="cursor: pointer;"></div>
-    <div class="card" id="value11" onclick="openSensorPopup('value11')" style="cursor: pointer;"></div>
-    <div class="card" id="value12" onclick="openSensorPopup('value12')" style="cursor: pointer;"></div>
-    <div class="card" id="value13" onclick="openSensorPopup('value13')" style="cursor: pointer;"></div>
-    <div class="card" id="value14" onclick="openSensorPopup('value14')"></div>
-    <div class="card" id="value15" onclick="openSensorPopup('value15')"></div>
-    <div class="card" id="value16" onclick="openSensorPopup('value16')"></div>
-
+    <!--날씨API 시작-->
+    <div id="weatherReport" class="col border">
+      <div class="row mb-4">
+        <div class="col">날씨</div>
+        <div class="col">청주</div>
+      </div>
+      <div class="row mb-4">
+        <div id="SKY" class="col ms-4"></div>
+        <div id="T1H" class="col mt-3"></div>
+      </div>
+      <div class="row ms-3 mb-4">
+        <div class="col-auto">
+          <canvas id="pmChart1" width="80px" height="80px"></canvas>
+        </div>
+        <div class="d-flex col-auto align-items-center">
+          <p id="pm10" class="text-start align-middle"></p>
+        </div>
+      </div>
+      <div class="row ms-3">
+        <div class="col-auto">
+          <canvas id="pmChart2" width="80px" height="80px"></canvas>
+        </div>
+        <div class="d-flex col-auto align-items-center">
+          <p id="pm25" class="text-start align-middle"></p>
+        </div>
+      </div>
+    </div>
+    <!--날씨API 끝-->
   </div>
 </div>>
 
