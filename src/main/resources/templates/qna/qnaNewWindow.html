@@ -103,7 +103,7 @@
         <th:block th:each="dto:${qnaList}">
           <div class="d-flex mb-4">
             <div class="block p-2 border border-dark"
-                 th:classappend="${dto.fromEmail.email==fromEmail?'from ms-auto text-end':'dear me-auto text-start'}">
+                 th:classappend="${dto.fromEmail.email==session.sEmail?'from ms-auto text-end':'dear me-auto text-start'}">
               <div th:text="${dto.content}" class="text-start" style="white-space: pre-line;"></div>
             </div>
           </div>

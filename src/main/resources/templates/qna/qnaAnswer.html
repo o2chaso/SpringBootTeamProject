@@ -64,13 +64,13 @@
         <option value="RESOLVING" th:selected="${pageDTO.progress=='RESOLVING'}">처리중</option>
         <option value="RESOLVED" th:selected="${pageDTO.progress=='RESOLVED'}">처리완료</option>
         <option value="UNRESOLVABLE" th:selected="${pageDTO.progress=='UNRESOLVABLE'}">처리불가</option>
-        <th:block th:if="${pageDTO.progress=='RESOLVED' || pageDTO.progress=='UNRESOLVABLE'}">
-          <option value="DELETE">삭제</option>
-        </th:block>
       </select>
     </div>
     <div class="col">
       <a href="/" class="btn btn-warning">돌아가기</a>
+    </div>
+    <div class="col">
+      <input type="button" value="삭제하기" onclick="location.href='/qna/qnaDelete'" class="btn btn-danger" />
     </div>
   </div>
   <p></p>

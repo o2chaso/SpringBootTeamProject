@@ -33,6 +33,8 @@ public class SensorDTO {
   private Double value12;
   private Double value13;
 
+  private ThresholdDTO threshold;
+
 
   private LocalDateTime measureDatetime;
 
@@ -58,4 +60,5 @@ public class SensorDTO {
             .measureDatetime(entity.getMeasureDatetime())
             .build();
   }
+
 }

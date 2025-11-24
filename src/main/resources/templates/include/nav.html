@@ -29,7 +29,9 @@
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">1:1문의</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" th:href="@{/qna/qnaList}">문의하기</a></li>
-            <li><a class="dropdown-item" th:href="@{/qna/qnaAnswer}">답변하기</a></li>
+            <th:block sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+              <li><a class="dropdown-item" th:href="@{/qna/qnaAnswer}">답변하기</a></li>
+            </th:block>
           </ul>
         </li>
         <li class="nav-item dropdown" sec:authorize="isAuthenticated()">

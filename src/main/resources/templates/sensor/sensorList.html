@@ -51,7 +51,7 @@
       let bgColor = "#28a745";
 
       if(threshold && typeof threshold.alarm === "number" && typeof threshold.warning === "number") {
-        if(value >= threshold.alarm) bgColor = "#dc3545";
+        if(value >= threshold.alarm || value < -50) bgColor = "#dc3545";
         else if(value >= threshold.warning) bgColor = "#ffc107";
       }
 

@@ -14,4 +14,5 @@ public interface SensorRepository extends JpaRepository<SensorEntity, Long> {
 
   @Query("SELECT DISTINCT s.deviceCode FROM SensorEntity s")
   List<String> findAllDeviceCodes();
+  List<SensorEntity> findTop20ByDeviceCodeAndMeasureDatetimeLessThanOrderByMeasureDatetimeDesc(String deviceCode, LocalDateTime now);
 }

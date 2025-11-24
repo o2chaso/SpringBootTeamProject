@@ -1,6 +1,9 @@
 package com.example.SpringGroupBB.service;
 
+import com.example.SpringGroupBB.dto.SensorDTO;
+import com.example.SpringGroupBB.dto.ThresholdDTO;
 import com.example.SpringGroupBB.entity.SensorEntity;
+import com.example.SpringGroupBB.entity.ThresholdEntity;
 import com.example.SpringGroupBB.repository.SensorRepository;
 import com.example.SpringGroupBB.repository.ThresholdRepository;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,5 +45,28 @@ public class SensorService {
     return list;
   }
 
+  // 최근 데이터 20건 가져오기
+  public List<SensorDTO> getPastSensorData(String deviceCode, String sensorKey, String nowTime) {
+    LocalDateTime now = LocalDateTime.parse(nowTime);
+
+    List<SensorEntity> list = sensorRepository
+            .findTop20ByDeviceCodeAndMeasureDatetimeLessThanOrderByMeasureDatetimeDesc(deviceCode, now);
+    Collections.reverse(list);
+
+    List<SensorDTO> result = new ArrayList<>();
+
+    for(SensorEntity entity : list) {
+      SensorDTO dto = SensorDTO.EntityToDTO(entity);
+      ThresholdDTO th = null;
+
+      Optional<ThresholdEntity> optional = thresholdRepository.findByDeviceCodeAndSensorKey(deviceCode, sensorKey);
+      if(optional.isPresent()) {
+        th = ThresholdDTO.entityToDto(optional.get());
+      }
+      dto.setThreshold(th); // 그래프용으로 임계값 포함
+      result.add(dto);
+    }
+    return result;
+  }
 
 }
