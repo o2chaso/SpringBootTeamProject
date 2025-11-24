@@ -47,7 +47,7 @@ public class SecurityConfig {
 
     // 페이지 접근 권한설정
     security.authorizeHttpRequests(request -> request
-            .requestMatchers("/", "/images/**", "/css/**", "/ckeditor/**", "/ckeditorUpload/**", "/js/**").permitAll()
+            .requestMatchers("/", "/images/**", "/weather/**", "/css/**", "/ckeditor/**", "/ckeditorUpload/**", "/js/**").permitAll()
             .requestMatchers("/member/memberEmailCheck", "/member/memberEmailCheckOk", "/member/memberEmailCheckNo").permitAll()
             .requestMatchers("/member/memberJoin", "/member/memberLogin", "/member/login/error", "/member/memberLoginOk").permitAll()
             .requestMatchers("/board/**", "/member/memberPasswordChange", "/member/memberProfileUpdate","/member/memberDelete").authenticated()
