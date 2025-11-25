@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Sensor Popup</title>
+  <link rel="icon" href="/images/favi.png" type="image/png">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    .tab-btn {
+        padding: 8px 14px;
+        margin-right: 10px;
+        background-color: #007bff;
+        border: none;
+        color: white;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .tab-btn:hover {
+        background-color: #0056b3;
+    }
+
+    #contentArea {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+<div style="text-align: center;">
+  <h2 style="display: inline-block;">[[${deviceCode}]]</h2>
+</div>
+
+<!-- 탭 버튼 -->
+<div style="text-align: center;">
+  <button class="tab-btn" onclick="loadTab('interlock')">인터락</button>
+  <button class="tab-btn" onclick="loadTab('graph')">그래프</button>
+  <button class="tab-btn" onclick="loadTab('logs')">로그</button>
+</div>
+
+<!-- 내용 표시 영역 -->
+<div id="contentArea">
+  <!-- AJAX로 채워질 영역 -->
+</div>
+
+<script th:inline="javascript">
+  var deviceCode = [[${deviceCode}]];
+  var sensorKey = [[${sensorKey}]];
+
+  function loadTab(tab) {
+    var url = "/sensor/sensorPopup/detail?tab="
+              + tab
+              + "&deviceCode="
+              + deviceCode
+              + "&sensorKey="
+              + sensorKey;
+
+    $("#contentArea").load(url, function(){
+      if(tab == "graph") {
+        initChart();
+      }
+    });
+  }
+  loadTab("interlock");
+
+  function initChart() {
+
+    // 객체 생성
+    var data = {
+      labels: [],                 // 시간 축(x)
+      datasets: [
+        {
+          label: "Sensor Value",  // 센서 값 라벨
+          data: [],               // 실시간 센서 값이 들어갈 배열
+          borderColor: "green",   // Line Color
+          tension: 0.1,           // Line 부드럽게 표현
+          fill: {
+                target: 'origin',
+                above: 'green',   // 기준선 0 위로 색 채우기(양수)
+                below: 'red'      // 기준선 0 음수 색 채우기(음수)
+          }
+        }
+      ]
+    };
+
+    // config 객체 생성
+    const config = {
+      type: 'line',
+      data: data,
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Chart.js Line Chart - Cubic interpolation mode'
+          },
+        },
+        interaction: {
+          intersect: false,
+        },
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true
+            }
+          },
+          y: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Value'
+            },
+            suggestedMin: -10,
+            suggestedMax: 200
+          }
+        }
+      },
+    };
+
+    var ctx = document.getElementById('chart').getContext('2d');
+    var myChart = new Chart(ctx, config);
+
+    // Thymeleaf에서 넘어온 값
+    var deviceCodeValue = [[${deviceCode}]];
+    var sensorKeyValue = [[${sensorKey}]];
+
+    console.log("deviceCodeValue: " + deviceCodeValue + ", sensorKeyValue: " + sensorKeyValue);
+
+    // SSE 연결
+    var eventSource = new EventSource("/sensor/sensorList/sse");
+
+    eventSource.onmessage = function(event) {
+
+      var jsonData = JSON.parse(event.data);
+      var sensorList = jsonData.sensor;
+
+      // 현재 선택된 센서 찾기
+      var target = null;
+      for(var i = 0; i < sensorList.length; i++) {
+        if(sensorList[i].deviceCode === deviceCodeValue) {
+          target = sensorList[i];
+          break;
+        }
+      }
+      if(target == null) return;
+
+      // SensorKey에 해당하는 값만 가져오기
+      var value = target[sensorKeyValue];
+      if(value == null) return;
+
+      // 시간 라벨 생성
+      var date = new Date();
+      var time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+      // 그래프 데이터 추가
+      data.labels.push(time);
+      data.datasets[0].data.push(value);
+
+      // 그래프 데이터 너무 많아지면 앞에서 삭제(50개 유지)
+      if(data.labels.length > 50) {
+        data.labels.shift();
+        data.datasets[0].data.shift();
+      }
+      // 업데이트
+      if(myChart == null) return; // 차트가 준비 안되었으면 무시
+      myChart.update();
+    }
+  }
+</script>
+
+</body>
+</html>
