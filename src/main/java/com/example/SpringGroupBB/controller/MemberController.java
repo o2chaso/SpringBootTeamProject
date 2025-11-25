@@ -1,19 +1,24 @@
 package com.example.SpringGroupBB.controller;
 
 import com.example.SpringGroupBB.constant.UserDel;
+import com.example.SpringGroupBB.custom.CustomOAuth2User;
 import com.example.SpringGroupBB.dto.MemberDTO;
 import com.example.SpringGroupBB.entity.Member;
 import com.example.SpringGroupBB.repository.MemberRepository;
 import com.example.SpringGroupBB.service.MemberService;
 import com.example.SpringGroupBB.validation.CreateGroup;
 import com.example.SpringGroupBB.validation.UpdateGroup;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,12 +42,6 @@ public class MemberController {
   @GetMapping("/memberLogin")
   public String memberLoginGet() { return "member/memberLogin"; }
 
-  @GetMapping("/login/error")
-  public String loginErrorGet(RedirectAttributes rttr) {
-    rttr.addFlashAttribute("message", "아이디와 비밀번호를 확인해주세요");
-    return "redirect:/member/memberLogin";
-  }
-
   @GetMapping("/memberLogout")
   public String memberLogoutGet(Authentication authentication,
                                 HttpServletRequest request,
@@ -50,11 +49,18 @@ public class MemberController {
                                 RedirectAttributes rttr,
                                 Model model,
                                 HttpSession session) {
+
     String name = session.getAttribute("sName").toString();
-    if(authentication != null) {
-      session.invalidate();
-      new SecurityContextLogoutHandler().logout(request, response, authentication);
-    }
+
+    session.invalidate();
+    new SecurityContextLogoutHandler().logout(request, response, authentication);
+
+    //카카오 쿠키 삭제
+    Cookie cookie = new Cookie("oauth2_auth_request", null);
+    cookie.setMaxAge(0);
+    cookie.setPath("/");
+    response.addCookie(cookie);
+
     String message = (String) model.asMap().get("message");
     if (message != null) {
       return "member/memberLogin";
@@ -64,14 +70,26 @@ public class MemberController {
     return "redirect:/member/memberLogin";
   }
 
-  @GetMapping("/memberMain")
-  public String memberMain() { return "member/memberMain"; }
+  @GetMapping("/login/error")
+  public String loginErrorGet(RedirectAttributes rttr ,HttpSession session) {
+    Object errorMsg = session.getAttribute("sErrorMsg");
+    String message;
+
+    if(errorMsg != null) {
+      message = errorMsg.toString();
+      session.removeAttribute("sErrorMsg");
+    }
+    else {
+      message = "아이디와 비밀번호를 확인해주세요";
+    }
+    rttr.addFlashAttribute("message", message);
+    return "redirect:/member/memberLogin";
+  }
 
   @GetMapping("/memberLoginOk")
   public String memberLoginOKGet(RedirectAttributes rttr,
                                   Authentication authentication,
-                                  HttpSession session
-                                  ) {
+                                  HttpSession session) {
     String email = authentication.getName();
     Optional<Member> opMember = memberRepository.findByEmail(email);
 
@@ -79,15 +97,37 @@ public class MemberController {
     if(strLevel.equals("ADMIN")) strLevel = "관리자";
     else if(strLevel.equals("USER")) strLevel = "정회원";
 
+    if (authentication instanceof OAuth2AuthenticationToken) {
+      session.setAttribute("loginMethod", "kakao");
+    }
+    else if (authentication instanceof UsernamePasswordAuthenticationToken) {
+      session.setAttribute("loginMethod", "db");
+    }
     session.setAttribute("sName", opMember.get().getName());
     session.setAttribute("sEmail", email);
     session.setAttribute("strLevel", strLevel);
 
-    rttr.addFlashAttribute("message", opMember.get().getName() + "님 로그인 되셨습니다.");
+    boolean sAdmin = authentication.getAuthorities()
+            .stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    session.setAttribute("sAdmin", sAdmin);
 
+    rttr.addFlashAttribute("message", opMember.get().getName() + "님 로그인 되셨습니다.");
     return "redirect:/member/memberMain";
   }
 
+  @GetMapping("/kakaoLogout")
+  public String kakaoLogoutGet() {
+    String clintId = "a108bb7f193bda9633e8a027477d1939";
+    String logoutRedirectUri = "http://localhost:9099/member/memberLogout";
+
+    String kakaoLogoutUrl = "https://kauth.kakao.com/oauth/logout?client_id="+clintId+
+            "&logout_redirect_uri="+logoutRedirectUri;
+
+    return "redirect:" + kakaoLogoutUrl;
+  }
+
+  @GetMapping("/memberMain")
+  public String memberMain() { return "member/memberMain"; }
 
   /* Join*/
   @GetMapping("/memberJoin")
@@ -132,7 +172,6 @@ public class MemberController {
   @PostMapping("/memberEmailCheckOk")
   public String memberEmailCheckOkPost(String checkKey, HttpSession session) {
     return memberService.memberEmailCheckOk(checkKey, session);
-
   }
 
   // 이메일 인증 시간 초과
@@ -148,7 +187,6 @@ public class MemberController {
     model.addAttribute("userCsrf", true);
     return "member/memberPasswordChange";
   }
-
 
   @PostMapping("/memberPasswordChange")
   public String memberPasswordChangePost(RedirectAttributes rttr,
@@ -209,6 +247,48 @@ public class MemberController {
       return "OK";
     } else {
       return "NO";
+    }
+  }
+
+  @GetMapping("/kakaoJoin")
+  public String kakaoJoinGet(Model model, HttpSession session, MemberDTO memberDTO) throws JsonProcessingException {
+    String email = session.getAttribute("sKakaoEmail").toString();
+    String nickName = session.getAttribute("sKakaoNickname").toString();
+
+    memberDTO.setEmail(email);
+    memberDTO.setName(nickName);
+
+    model.addAttribute("MemberDTO", memberDTO);
+
+    return "member/kakaoJoin";
+  }
+
+  @PostMapping("/kakaoJoin")
+  public String kakaoJoinPost(RedirectAttributes rttr,
+                                Model model,
+                                @Validated(CreateGroup.class) MemberDTO memberDTO,
+                                BindingResult bindingResult,
+                                HttpSession session) {
+    if(bindingResult.hasErrors()) {
+      return "member/kakaoJoin";
+    }
+    try {
+      memberService.insertMember(memberDTO);
+      CustomOAuth2User customUser = new CustomOAuth2User(
+              null,
+              memberDTO.getEmail(),
+              memberDTO.getName()
+      );
+
+      session.removeAttribute("sKakaoEmail");
+      session.removeAttribute("sKakaoNickname");
+
+      rttr.addFlashAttribute("message", "회원 가입되셨습니다. 다시 로그인해주세요");
+      return "redirect:/member/memberLogin";
+
+    } catch (IllegalStateException e) {
+      rttr.addFlashAttribute("message", "회원가입 실패입니다. "+e.getMessage());
+      return "redirect:/member/kakaoJoin";
     }
   }
 }

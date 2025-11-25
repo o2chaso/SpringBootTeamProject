@@ -85,7 +85,10 @@
     </tr>
     <th:block th:each="board, st : ${pageVO.boardList}">
       <tr>
-        <td>[[${pageVO.curScrStartNo - st.index}]]</td>
+        <td>
+          <span th:if="${board.noticeSw == 'OK'}">📌</span>
+          <span th:unless="${board.noticeSw == 'OK'}" th:text="${pageVO.curScrStartNo - st.index}"></span>
+        </td>
         <td class="text-start">
           <a th:href="@{boardContent(id=${board.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">[[${board.title}]]</a>
           <th:block th:if="${board.hourDiff <= 24}"><img src="/images/new.gif"></th:block>

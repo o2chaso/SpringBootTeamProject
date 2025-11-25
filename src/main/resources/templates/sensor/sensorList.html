@@ -173,7 +173,7 @@
 
 <div layout:fragment="content">
   <div class="text-start">
-    <a th:href="@{/sensor/sensorData}" class="btn btn-primary" style="margin-left: 20px; ont-size: 18px; padding: 8px;">상세 데이터</a>
+    <a th:href="@{/sensor/sensorInterlock}" class="btn btn-primary" style="margin-left: 20px; ont-size: 18px; padding: 8px;">Interlock</a>
   </div>
 
   <!-- 상단 선택 박스 -->
@@ -187,7 +187,6 @@
     </select>
   </div>
 
-  <!-- 센서 대시보드 -->
   <div class="row">
     <div class="col">
       <!-- 센서 대시보드 -->
@@ -211,13 +210,14 @@
       </div>
     </div>
     <!--날씨API 시작-->
-    <div id="weatherReport" class="col border">
+    <div id="weatherReport" class="col border" style="max-width: 360px">
+      <div class="row text-center"><h4>[[${toDay}]]</h4></div>
       <div class="row mb-4">
         <div class="col">날씨</div>
         <div class="col">청주</div>
       </div>
       <div class="row mb-4">
-        <div id="SKY" class="col ms-4"></div>
+        <div id="SKY" class="col ms-4 d-flex align-items-center gap-2"></div>
         <div id="T1H" class="col mt-3"></div>
       </div>
       <div class="row ms-3 mb-4">
@@ -239,6 +239,6 @@
     </div>
     <!--날씨API 끝-->
   </div>
-</div>>
+</div>
 
 </html>

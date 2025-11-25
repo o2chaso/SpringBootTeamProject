@@ -25,6 +25,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -68,6 +69,7 @@ public class SensorController {
   @GetMapping("/sensorList")
   public String sensorListGet(Model model) {
     model.addAttribute("userCsrf", true);
+    model.addAttribute("toDay", LocalDate.now().toString());
     return "sensor/sensorList";
   }
   // 팝업창
@@ -325,4 +327,32 @@ public class SensorController {
     return weatherService.getWeatherReport(tmfc, tmef, vars);
   }
   // 날씨API 끝
+  // 일일 리포트 시작
+  @GetMapping("/dailyReport")
+  public String dailyReportGet(Model model,
+                               @RequestParam(name = "deviceCode", defaultValue = "ENV_V2_1", required = false)String deviceCode,
+                               @RequestParam(name = "measureDatetime", defaultValue = "", required = false)String measureDatetime,
+                               @RequestParam(name = "flag", defaultValue = "0", required = false)int flag) {
+    // 입력 받은 날짜 없으면 오늘.
+    measureDatetime = measureDatetime.equals("")? LocalDate.now().toString():measureDatetime;
+    // sensor의 min, avg, max값 검색.
+    List<SensorDTO> sensorList = sensorService.selectSensorValueAndDate(measureDatetime, deviceCode, flag);
+
+    // DB에 지정값이 없기 때문에 배열로 만들어서 html로 보내준다.
+    String[] value = {"실내온도","상대습도","이산화탄소","유기화합물VOC","미세먼지","초미세먼지","온도_1","온도_2","온도_3","온도(비접촉)"};
+    // DB검색결과.
+    model.addAttribute("sensorList", sensorList);
+    // 날짜.
+    model.addAttribute("measureDatetime", measureDatetime);
+    if(flag == 1) model.addAttribute("measureDatetimePast", LocalDate.parse(measureDatetime).minusDays(7).toString());
+    else if(flag == 2) model.addAttribute("measureDatetimePast", LocalDate.parse(measureDatetime).minusMonths(1).toString());
+    // 센서의 역할.
+    model.addAttribute("value", value);
+    // 찾아온 지역(1층, 2층...).
+    model.addAttribute("deviceCode", deviceCode);
+    // 일일, 주간, 월간.
+    model.addAttribute("flag", flag);
+    return "sensor/dailyReport";
+  }
+  // 일일 리포트 끝
 }

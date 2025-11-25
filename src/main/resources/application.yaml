@@ -42,6 +42,24 @@ spring:
       name: admin@green.com
       password: 1234
 
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: a108bb7f193bda9633e8a027477d1939
+            #client-secret: 3a2f4f691c8794f9a843fc26e8da5357
+            scope: account_email, profile_nickname
+            redirect-uri: "http://localhost:9099/login/oauth2/code/kakao"
+            authorization-grant-type: authorization_code
+            client-name: Kakao
+            user-name-attribute: id
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
   # File Upload Setting
   servlet:
     multipart:

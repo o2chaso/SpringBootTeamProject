@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    'use strict';
+
+    // 보고 있는 리포트 변경(일일, 주간, 월간 or 층).
+    function reportChange(flag) {
+      // 층을 바꿀 때(deviceCode).
+      if(flag == 3) {
+        // flag(리포트 종류)는 그대로여야하기 때문에 thymeleaf에 flag를 포함시킨다.
+        let baseURL = /*[[@{/sensor/dailyReport(measureDatetime=${measureDatetime},flag=${flag})}]]*/"";
+        location.href = baseURL+"&deviceCode="+$("#deviceCode").val();
+      }
+      else if(flag == 4) {
+        let baseURL = /*[[@{/sensor/dailyReport(deviceCode=${deviceCode},flag=${flag})}]]*/"";
+        location.href = baseURL+"&measureDatetime="+$("#measureDatetime").val();
+      }
+      else {
+        let baseURL = /*[[@{/sensor/dailyReport(deviceCode=${deviceCode},measureDatetime=${measureDatetime})}]]*/"";
+        location.href = baseURL+"&flag="+flag;
+      }
+    }
+  </script>
+</th:block>
+
+<div layout:fragment="content">
+  <h2 th:text="${(flag==0?'일일':flag==1?'주간':'월간')+'리포트'}"></h2>
+  <div class="row">
+    <div class="col text-start">
+      <input type="button" value="일일 리포트" th:onclick="|reportChange(0)|" class="btn btn-success btn-sm" th:style="${flag==0?'display: none':''}" />
+      <input type="button" value="주간 리포트" th:onclick="|reportChange(1)|" class="btn btn-primary btn-sm" th:style="${flag==1?'display: none':''}" />
+      <input type="button" value="월간 리포트" th:onclick="|reportChange(2)|" class="btn btn-secondary btn-sm" th:style="${flag==2?'display: none':''}" />
+    </div>
+    <div class="col d-flex justify-content-end">
+      <select id="deviceCode" onchange="reportChange(3)" class="form-select" style="width:120px; flex:0 0 auto;">
+        <option value="ENV_V2_1" th:selected="${deviceCode=='ENV_V2_1'}">1층</option>
+        <option value="ENV_V2_2" th:selected="${deviceCode=='ENV_V2_2'}">2층</option>
+        <option value="ENV_V2_3" th:selected="${deviceCode=='ENV_V2_3'}">자재실</option>
+        <option value="ENV_V2_4" th:selected="${deviceCode=='ENV_V2_4'}">연구실</option>
+      </select>
+    </div>
+  </div>
+  <p></p>
+  <div class="row">
+    <div class="col input-group d-flex justify-content-strat">
+      <input type="date" max="9999-12-31" id="measureDatetime" th:value="${measureDatetime}" />
+      <input type="button" value="데이터 출력" th:onclick="|reportChange(4)|" class="btn btn-info btn-sm ms-1" />
+    </div>
+  </div>
+  <p><br/></p>
+  <h4 th:text="'센서 측정 기록('+${flag==0?measureDatetime:measureDatetimePast+'~'+measureDatetime}+')'"></h4>
+  <p></p>
+  <th:block th:if="${#lists.isEmpty(sensorList)}">
+    <h1>결과가 존재하지 않습니다.</h1>
+  </th:block>
+  <th:block th:if="${!#lists.isEmpty(sensorList)}">
+    <table class="table table-hover">
+      <tr class="table-secondary">
+        <th>번호</th>
+        <th>센서</th>
+        <th>최솟값</th>
+        <th>평균값</th>
+        <th>최댓값</th>
+        <th>이벤트</th>
+      </tr>
+      <th:block th:each="dto, st:${sensorList}">
+        <tr>
+          <td>[[${st.count}]]</td>
+          <td>[[${value[st.index]}]]</td>
+          <td>[[${dto.minData}]]</td>
+          <td>[[${dto.avgData}]]</td>
+          <td>[[${dto.maxData}]]</td>
+          <td>[[${dto.eventData}]]</td>
+        </tr>
+      </th:block>
+    </table>
+  </th:block>
+</div>>
+
+</html>

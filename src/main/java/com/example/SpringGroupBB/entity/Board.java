@@ -50,6 +50,9 @@ public class Board {
   @ColumnDefault("'OK'")
   private String openSw;
 
+  @ColumnDefault("'OK'")
+  private String noticeSw; // 공지사항 여부
+
   @ColumnDefault("0")
   private int readNum;
 
@@ -87,6 +90,7 @@ public class Board {
             .content(dto.getContent())
             .hostIp(dto.getHostIp())
             .openSw(dto.getOpenSw())
+            .noticeSw(dto.getNoticeSw())
             .readNum(dto.getReadNum())
             .wDate(dto.getWDate())
             .good(dto.getGood())

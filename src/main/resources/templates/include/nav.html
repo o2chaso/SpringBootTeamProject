@@ -52,7 +52,7 @@
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" th:href="@{/sensor/sensorList}">대시보드</a></li>
             <li><a class="dropdown-item" th:href="@{/sensor/sensorData}">센서 데이터 상세</a></li>
-            <li><a class="dropdown-item" th:href="@{#}">일일 리포트</a></li>
+            <li><a class="dropdown-item" th:href="@{/sensor/dailyReport}">일일 리포트</a></li>
             <th:block sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" th:href="@{#}">상품등록</a></li>

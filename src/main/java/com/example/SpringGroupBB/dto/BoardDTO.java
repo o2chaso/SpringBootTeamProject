@@ -37,6 +37,8 @@ public class BoardDTO {
 
   private String openSw;
 
+  private String noticeSw;
+
   private int readNum;
 
   private LocalDateTime wDate;
@@ -55,6 +57,7 @@ public class BoardDTO {
             .content(opBoard.get().getContent())
             .hostIp(opBoard.get().getHostIp())
             .openSw(opBoard.get().getOpenSw())
+            .noticeSw(opBoard.get().getNoticeSw())
             .readNum(opBoard.get().getReadNum())
             .wDate(opBoard.get().getWDate())
             .good(opBoard.get().getGood())

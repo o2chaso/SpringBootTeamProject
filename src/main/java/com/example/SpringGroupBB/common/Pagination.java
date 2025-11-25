@@ -5,7 +5,6 @@ import com.example.SpringGroupBB.dto.PageDTO;
 import com.example.SpringGroupBB.entity.Board;
 import com.example.SpringGroupBB.entity.Member;
 import com.example.SpringGroupBB.entity.QnA;
-import com.example.SpringGroupBB.repository.BoardReplyRepository;
 import com.example.SpringGroupBB.repository.BoardRepository;
 import com.example.SpringGroupBB.repository.MemberRepository;
 import com.example.SpringGroupBB.repository.QnARepository;
@@ -37,10 +36,9 @@ public class Pagination {
 
     int totRecCnt = 0, totPage = 0;
 
-    PageRequest pageable = PageRequest.of(pag, pageSize, Sort.by("id").descending());
+    PageRequest pageable = PageRequest.of(pag, pageSize, Sort.by(Sort.Order.desc("noticeSw"), Sort.Order.desc("id")));
     if(dto.getSection().equals("board")) {
       Page<Board> page;
-
       if (dto.getSearch() != null && !dto.getSearch().isEmpty()) {
         if(dto.getSearch().equals("title")) page = boardRepository.findByTitleContaining(dto.getSearchString(), pageable);
         else if(dto.getSearch().equals("name")) page = boardRepository.findByNameContaining(dto.getSearchString(), pageable);
@@ -115,7 +113,7 @@ public class Pagination {
       Page<QnA> page;
       // 문의 현황별로 검색.
       if(progress != null) page = qnaRepository.findByProgress(progress, pageable);
-      // 답변(ANSWER)을 제외한 문의 목록 검색.
+        // 답변(ANSWER)을 제외한 문의 목록 검색.
       else page = qnaRepository.findAllByProgressNot(Progress.ANSWER, pageable);
 
       // Page객체 List객체로 변환.
@@ -156,9 +154,9 @@ public class Pagination {
     }
 
     int startIndexNo = pag * pageSize;
-		int curScrStartNo = totRecCnt - startIndexNo;
-		
-		int blockSize = 3;
+    int curScrStartNo = totRecCnt - startIndexNo;
+
+    int blockSize = 3;
     int curBlock = ((pag + 1) - 1) / blockSize;
     int lastBlock = (totPage - 1) / blockSize;
     dto.setPag(pag+1);
@@ -171,17 +169,17 @@ public class Pagination {
     dto.setCurBlock(curBlock);
     dto.setLastBlock(lastBlock);
 
-		if(dto.getSearch() != null) {
-			if(dto.getSearch().equals("title")) dto.setSearch("글제목");
-			else if(dto.getSearch().equals("name")) dto.setSearch("글쓴이");
-			else if(dto.getSearch().equals("content")) dto.setSearch("글내용");
-		}
-		dto.setSearch(dto.getSearch());
-		dto.setSearchStr(dto.getSearchStr());
-		
-		dto.setPart(part);
-		dto.setBoardFlag(dto.getBoardFlag());
-		
-		return dto;
-	}
+    if(dto.getSearch() != null) {
+      if(dto.getSearch().equals("title")) dto.setSearch("글제목");
+      else if(dto.getSearch().equals("name")) dto.setSearch("글쓴이");
+      else if(dto.getSearch().equals("content")) dto.setSearch("글내용");
+    }
+    dto.setSearch(dto.getSearch());
+    dto.setSearchStr(dto.getSearchStr());
+
+    dto.setPart(part);
+    dto.setBoardFlag(dto.getBoardFlag());
+
+    return dto;
+  }
 }

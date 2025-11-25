@@ -10,21 +10,6 @@
     let message = [[${message}]];
     if(message != null) alert(message);
 
-
-/*
-let token = $("meta[name='_csrf']").attr("content");
-let header = $("meta[name='_csrf_header']").attr("content");
-*/
-
-/*
-$(document).ready(function() {
-  token = $("input[name='_csrf']").val();
-  header = $("input[name='_csrf_header']").attr("content");
-  //console.log("CSRF token:", token);
-  //console.log("CSRF header:", header);
-});
-*/
-
 // 댓글 달기
 function replyCheck() {
   let content = $("#content").val();
@@ -43,7 +28,6 @@ function replyCheck() {
     url : 'boardReplyInput',
     type: 'post',
     data: query,
-    //beforeSend: function(xhr) { xhr.setRequestHeader(header, token); },
     success: (res) => {
       if(res != 0) {
         alert('댓글이 입력되었습니다.');
@@ -63,7 +47,7 @@ function replyDeleteCheck(id) {
     url  : "boardReplyDelete",
     type : "get",
     data : {
-      id : id,
+      id : id
     },
     success:function() {
       location.reload();
@@ -99,7 +83,6 @@ function replyUpdateCheckOk(id) {
     url  : "boardReplyUpdateCheckOk",
     type : "post",
     data : query,
-    //beforeSend: function(xhr) { xhr.setRequestHeader(header, token); },
     success:() => {
       alert("댓글이 수정 되었습니다.");
       location.reload();
@@ -125,7 +108,6 @@ function goodCheck() {
     url  : 'boardGoodCheck',
     type : 'post',
     data : {id : id},
-    //beforeSend: function(xhr) { xhr.setRequestHeader(header, token); },
     success:function(res) {
       if(res != 0) alert("이미 좋아요를 클릭하셨습니다.");
       else location.reload();
@@ -140,7 +122,6 @@ function goodCheckPlus() {
   $.ajax({
     url  : 'boardGoodCheckPlusMinus',
     type : 'post',
-    //beforeSend: function(xhr) { xhr.setRequestHeader(header, token); },
     data : {
       id : id,
       goodCnt : 1
@@ -158,7 +139,6 @@ function goodCheckMinus() {
   $.ajax({
     url  : 'boardGoodCheckPlusMinus',
     type : 'post',
-    //beforeSend: function(xhr) { xhr.setRequestHeader(header, token); },
     data : {
       id : id,
       goodCnt : -1
@@ -167,6 +147,48 @@ function goodCheckMinus() {
       location.reload();
     },
     error : function() { alert("전송오류!!"); }
+  });
+}
+
+// 기타 선택 시 텍스트 영역 보이기
+function etcShow() {
+  $("#complaintTxt").show();
+}
+
+
+// 신고하기
+function complaintCheck() {
+  if(!$("input[type=radio][name=complaint]:checked").is(':checked')) {
+    alert("신고항목을 선택하세요");
+    return false;
+  }
+  if($("input[type=radio]:checked").val() == '기타' && $("#complaintTxt").val() == "") {
+    alert("기타 사유를 입력하세요");
+    return false;
+  }
+
+  let cpContent = $("input[type=radio][name=complaint]:checked").val();
+  if(cpContent == '기타') cpContent += '/' + $("#complaintTxt").val();
+
+  let query = {
+      part   : 'board',
+      partId : [[${board.id}]],
+      cpName  : [[${session.sName}]],
+      cpContent  : cpContent
+  }
+
+  $.ajax({
+    url  :  'boardComplaintInput',
+    type :  'post',
+    data :  query,
+    success: (res) => {
+      if(res != 0) {
+        alert("신고 되었습니다.");
+        location.reload();
+      }
+      else alert("신고 실패!");
+    },
+    error : () => alert("전송오류")
   });
 }
 
@@ -223,7 +245,7 @@ function goodCheckMinus() {
         <!--<th:block sec:authorize="isAuthenticated()">-->
         <!--<th:block th:if="${#authentication != null and board != null board.email != null and #authentication.name eq board.email}">-->
         <th:block th:if="${pageVO.isOwner}">
-          <input type="button" value="수정" th:onclick="|location.href='boardUpdate(id=${board.id},pag=${pag},pageSize=${pageSize},search=${search},searchString=${searchString}'|" class="btn btn-warning"/>
+          <input type="button" value="수정" th:onclick="|location.href='@{/board/boardUpdate(id=${board.id},pag=${pag},pageSize=${pageSize},search=${search},searchString=${searchString})}'|" class="btn btn-warning"/>
           <input type="button" value="삭제" onclick="delCheck()" class="btn btn-danger"/>
         </th:block>
         <!--</th:block>-->
@@ -254,6 +276,7 @@ function goodCheckMinus() {
       <th>댓글내용</th>
       <th>댓글일자</th>
       <th>접속IP</th>
+      <th>답글 </th>
     </tr>
     <th:block th:each="replyVO, st : ${replyVos}">
       <tr>
@@ -271,7 +294,11 @@ function goodCheckMinus() {
         <td class="text-start" th:utext="${replyVO.content}" style="white-space: pre-line;"></td>
         <td th:text="${#strings.substring(replyVO.wDate, 0, 10)}"></td>
         <td th:text="${replyVO.hostIp}"></td>
-      </tr>
+        <td>
+        <a th:href="|replyShowBtn${replyVO.id}|" th:onclick="|replyShow(${replyVO.id})|" class="badge bg-success text-decoration-none replyShowBtnClass">답글</a>
+        <a th:href="|replyCloseBtn${replyVO.id}|" th:onclick="|replyClose(${replyVO.id})|" class="badge bg-warning text-decoration-none replyCloseBtnClass" style="display:none">닫기</a></tr>
+        </td>
+      <tr/>
       <!-- 아래로 댓글 수정 폼 보기 -->
       <tr class="border-light">
         <td colspan="4" class="m-0 p-0">
@@ -319,6 +346,37 @@ function goodCheckMinus() {
     <input type="hidden" name="_csrf_header" th:content="${_csrf.headerName}">
     -->
   </form>
+
+  <!-- 신고하기 모달폼 -->
+  <div class="modal fade" id="myModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">현재 게시글을 신고합니다.</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <b>신고사유 선택</b>
+          <hr class="border border-secondary">
+          <form name="modalForm">
+            <div><input type="radio" name="complaint" id="complaint1" value="광고,홍보,영리목적"/> 광고,홍보,영리목적</div>
+            <div><input type="radio" name="complaint" id="complaint2" value="욕설,비방,차별,혐오"/> 설,비방,차별,혐오</div>
+            <div><input type="radio" name="complaint" id="complaint3" value="불법정보"/> 불법정보</div>
+            <div><input type="radio" name="complaint" id="complaint4" value="음란,청소년유해"/> 음란,청소년유해</div>
+            <div><input type="radio" name="complaint" id="complaint5" value="개인정보노출,유포,거래"/> 개인정보노출,유포,거래</div>
+            <div><input type="radio" name="complaint" id="complaint6" value="도배,스팸"/> 도배,스팸</div>
+            <div><input type="radio" name="complaint" id="complaint7" value="기타" onclick="etcShow()"/> 기타</div>
+            <div id="etc"><textarea rows="2" id="complaintTxt" class="form-control" style="display:none"></textarea></div>
+            <hr class="border border-secondary">
+            <input type="button" value="신고하기" onclick="complaintCheck()" class="btn btn-success form-control" />
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </div>
 

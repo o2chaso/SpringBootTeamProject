@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface BoardRepository extends JpaRepository<Board, Long>, QuerydslPredicateExecutor<Board> {
 
   Page<Board> findByTitleContaining(String searchString, PageRequest pageable);
@@ -38,4 +40,8 @@ public interface BoardRepository extends JpaRepository<Board, Long>, QuerydslPre
   @Modifying
   @Query("update Board b set b.good = b.good + :goodCnt where b.id = :id")
   void setBoardGoodNumPlusMinus(@Param("id") Long id, @Param("goodCnt") int goodCnt);
+
+  @Query("SELECT b FROM Board b ORDER BY CASE WHEN b.noticeSw='OK' THEN 1 ELSE 0 END DESC, b.id DESC")
+  List<Board> findAllWithNoticeFirst();
+
 }

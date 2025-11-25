@@ -60,7 +60,7 @@
         $("#title").focus();
         return false;
       }
-      else if($("#title").val().replace(" ","") > 20) {
+      else if($("#title").val().replace(" ","").length > 20) {
         alert("문의제목이 너무 깁니다.");
         $("#title").focus();
         return false;

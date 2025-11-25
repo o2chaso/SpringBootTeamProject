@@ -38,6 +38,20 @@ public class SensorDTO {
 
   private LocalDateTime measureDatetime;
 
+  // 일일 리포트 시작
+  private double minData;
+  private double avgData;
+  private double maxData;
+  private int eventData;
+
+  public SensorDTO(double minData, double avgData, double maxData, int eventData) {
+    this.minData = minData;
+    this.avgData = avgData;
+    this.maxData = maxData;
+    this.eventData = eventData;
+  }
+  // 일일 리포트 끝
+
   // Entity To DTO
   public static SensorDTO EntityToDTO(SensorEntity entity) {
     return SensorDTO.builder()

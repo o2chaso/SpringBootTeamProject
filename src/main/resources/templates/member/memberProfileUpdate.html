@@ -26,8 +26,17 @@
       form.tel.value = tel;
       form.address.value = address;
 
-      form.submit();
+      let birthday = form.birthday.value;
+      let birthdayMax = form.birthday.max;
 
+      if(birthday != '') {
+        if(birthday > birthdayMax) {
+          alert("오늘 이후 날짜는 선택할 수 없습니다.");
+          $("#birthday").val(birthdayMax);
+          return false;
+        }
+      }
+      form.submit();
     }
   </script>
 </th:block>
@@ -56,7 +65,6 @@
     font-weight: bold;
   }
 </style>
-
 
 <div layout:fragment="content">
   <h2>정보수정</h2>
@@ -105,11 +113,11 @@
           </div>
         </div>
       </div>
-
       <div class="row" >
         <label class="col-form-label col-2">생일</label>
         <div class="col-3">
-          <input type="date" id="birthday" th:field="*{birthday}" class="form-control"/>
+          <input type="date" id="birthday" th:field="*{birthday}" class="form-control"
+                  th:max="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" />
         </div>
       </div>
       <div class="d-flex justify-content-center gap-3 mt-4">

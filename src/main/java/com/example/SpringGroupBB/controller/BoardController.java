@@ -45,11 +45,13 @@ public class BoardController {
 
     model.addAttribute("pageVO", pageVO);
     model.addAttribute("isSearch", searchString != null && !searchString.isEmpty());
+    model.addAttribute("boardList", boardService.getBoardListWithNoticeFirst());
     return "board/boardList";
   }
 
   @GetMapping("/boardInput")
-  public String boardInputGet() {
+  public String boardInputGet(HttpSession session, Authentication authentication) {
+
     return "board/boardInput";
   }
 
@@ -58,6 +60,8 @@ public class BoardController {
                                Authentication authentication,
                                RedirectAttributes rttr,
                                Member member) {
+    if(dto.getNoticeSw()==null)dto.setNoticeSw("NO");
+
     dto.setHostIp(request.getRemoteAddr());
     String email = authentication.getName();
     member = memberRepository.findByEmail(email).get();
@@ -172,10 +176,7 @@ public class BoardController {
       // 댓글이 없으면, 1.이미지 삭제처리
       Board board = boardRepository.findById(id).orElseThrow();
       String realPath = request.getServletContext().getRealPath("/ckeditorUpload/");
-      if(!boardService.setBoardImageDelete(board.getContent(), realPath)) {
-        rttr.addFlashAttribute("message", "게시글에 댓글이 존재합니다. \n\n댓글을 먼저 삭제해 주세요.");
-        return "redirect:/board/boardContent?id=" + id + "&pag=" + pag;
-      }
+      boardService.setBoardImageDelete(board.getContent(), realPath);
 
       // 2. db에서 게시글 삭제처리
       boardRepository.deleteById(id);
@@ -209,6 +210,83 @@ public class BoardController {
     //System.out.println("===============>>> id : " + id + " , goodCnt : " + goodCnt);
     boardRepository.setBoardGoodNumPlusMinus(id, goodCnt);
   }
+
+  @GetMapping("/boardUpdate")
+  public String boardUpdateGet(@RequestParam("id") Long id,
+                               @RequestParam(value = "pag", defaultValue = "1") int pag,
+                               @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+                               Model model,
+                               Authentication authentication) {
+
+    Board board = boardService.getBoardContent(id);
+    if(board == null) {
+      throw new IllegalStateException("게시글을 찾을 수 없습니다.");
+    }
+
+    if(!authentication.getName().equals(board.getMember().getEmail())) {
+      throw new IllegalStateException("본인만 수정할 수 있습니다.");
+    }
+
+    BoardDTO dto = BoardDTO.entityToDto(Optional.of(board));
+
+    if(dto.getContent() != null && dto.getContent().contains("src=\"/")) {
+      boardService.imgBackup(dto.getContent());
+    }
+
+    model.addAttribute("dto", dto);
+    model.addAttribute("pag",pag);
+    model.addAttribute("pageSize", pageSize);
+
+    return "board/boardUpdate";
+  }
+
+  @PostMapping("/boardUpdate")
+  public String boardUpdatePost(@ModelAttribute BoardDTO dto,
+                                @RequestParam(value = "pag", defaultValue = "1") int pag,
+                                @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+                                Authentication authentication,
+                                RedirectAttributes rttr,
+                                HttpServletRequest request) {
+
+    // 1. 기존 게시글 Entity 조회
+    Board board = boardService.getBoardContent(dto.getId());
+    if(board == null) {
+      throw new IllegalStateException("게시글을 찾을 수 없습니다.");
+    }
+
+    // 2. 본인 인증
+    if(!authentication.getName().equals(board.getMember().getEmail())) {
+      throw new IllegalStateException("본인만 수정할 수 있습니다.");
+    }
+
+    // 3. 수정 가능한 필드만 변경
+    board.setTitle(dto.getTitle());
+    board.setContent(dto.getContent());
+    board.setOpenSw(dto.getOpenSw());
+    board.setNoticeSw(dto.getNoticeSw());
+    board.setHostIp(request.getRemoteAddr());
+
+    // 4. DB 저장 (JPA save를 사용하면 update!)
+    Board savedBoard = boardService.setBoardInput(board);
+
+    // 5. 메시지 및 리다이렉트
+    String message = (savedBoard != null) ? "수정이 완료되었습니다." : "수정이 실패했습니다.";
+    rttr.addFlashAttribute("message", message);
+
+    return "redirect:/board/boardList";
+  }
+
+/*
+  // 신고글 처리하기
+  @ResponseBody
+  @PostMapping("/boardComplaintInput")
+  public int boardComplaintInputPost(@ModelAttribute ComplaintDTO dto){
+    int res = 0;
+    res = AdminService.setBoardComplaintInput(dto);
+    if(res != 0) AdminService.setBoardTableComplaintOk(dto.getPartId());
+    return res;
+  }
+ */
 
 
 }
