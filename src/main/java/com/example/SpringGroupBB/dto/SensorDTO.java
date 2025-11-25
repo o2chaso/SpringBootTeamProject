@@ -33,8 +33,8 @@ public class SensorDTO {
   private Double value12;
   private Double value13;
 
+  // 임계값(인터락)
   private ThresholdDTO threshold;
-
 
   private LocalDateTime measureDatetime;
 

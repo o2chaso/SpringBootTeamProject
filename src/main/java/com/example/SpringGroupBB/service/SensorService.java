@@ -9,6 +9,7 @@ import com.example.SpringGroupBB.repository.ThresholdRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,4 +70,33 @@ public class SensorService {
     return result;
   }
 
+  public List<SensorDTO> getSensorHistory(String startDate, String endDate, String deviceCode, String sensorKey) {
+    // 날짜 문자열 -> LocalDateTime 변환
+    LocalDate start = LocalDate.parse(startDate);
+    LocalDate end = LocalDate.parse(endDate);
+
+    // 시작 날짜의 0시 0분 0초
+    LocalDateTime startTime = start.atStartOfDay();
+    // 끝 날짜의 23시 59분 59초
+    LocalDateTime endTime = end.atTime(23, 59, 59);
+
+    // DB 조회
+    List<SensorEntity> list = sensorRepository
+            .findByDeviceCodeAndMeasureDatetimeBetweenOrderByMeasureDatetimeAsc(
+                    deviceCode, startTime, endTime
+            );
+    List<SensorDTO> result = new ArrayList<>();
+    for(SensorEntity entity : list) {
+      SensorDTO dto = SensorDTO.EntityToDTO(entity);
+      ThresholdDTO th = null;
+      // 임계값 조회
+      Optional<ThresholdEntity> optional = thresholdRepository.findByDeviceCodeAndSensorKey(deviceCode, sensorKey);
+      if(optional.isPresent()) {
+        th = ThresholdDTO.entityToDto(optional.get());
+      }
+      dto.setThreshold(th); // 그래프용으로 임계값 포함
+      result.add(dto);
+    }
+    return result;
+  }
 }

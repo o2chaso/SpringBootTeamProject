@@ -120,7 +120,6 @@
           pointRadius: 0          // point 지우기
         },
         {
-          label: "Sensor Alarm",  // 센서 값 라벨
           data: [],               // 실시간 센서 값이 들어갈 배열
           borderColor: "red",     // Line Color
           tension: 0.1,           // Line 부드럽게 표현
@@ -135,17 +134,69 @@
         }
       ]
     };
+    // Alarm 및 Warning 음영 플러그인
+    const bgColorPlugin = {
+      id: "bgColorPlugin",
+      beforeDraw: function(chart, args, options) {
+        const ctx = chart.ctx;
+        const chartArea = chart.chartArea;
+        const yScale = chart.scales.y;
 
-    // config 객체 생성
+        // 기준값
+        const alarmValue = options.alarm;
+        const warningValue = options.warning;
+        if(alarmValue == null && warningValue == null) return;
+        ctx.save();
+
+        // 1) 알람 영역 (alarmValue 이상)
+        if(alarmValue != null) {
+          const alarmY = yScale.getPixelForValue(alarmValue);
+          ctx.fillStyle = "rgba(255, 0, 0, 0.15)";
+          ctx.fillRect(
+            chartArea.left,
+            chartArea.top,
+            chartArea.right - chartArea.left,
+            alarmY - chartArea.top
+          );
+        }
+
+        // 2) 워닝 영역 (warningValue 이상 ~ alarmValue 미만)
+        if(warningValue != null) {
+          const warningY = yScale.getPixelForValue(warningValue);
+          let bottomY = chartArea.bottom;
+          if(alarmValue != null) {
+            bottomY = yScale.getPixelForValue(alarmValue);
+          }
+          ctx.fillStyle = "rgba(255, 165, 0, 0.15)";
+          ctx.fillRect(
+            chartArea.left,
+            warningY,
+            chartArea.right - chartArea.left,
+            bottomY - warningY
+          );
+        }
+        ctx.restore();
+      }
+    };
+    // 객체 생성
     const config = {
       type: 'line',
       data: data,
       options: {
         responsive: true,
         plugins: {
+          bgColorPlugin: {
+            alarm: null,
+            warning: null
+          },
           title: {
             display: true,
-            text: 'Chart.js Line Chart - Cubic interpolation mode'
+            text: [[${sensorName}]],
+            font: {
+              size: 22,
+              weight: 'bold'
+            },
+            color: 'black'
           },
         },
         interaction: {
@@ -153,22 +204,18 @@
         },
         scales: {
           x: {
-            display: true,
-            title: {
-              display: true
-            }
+            display: true
           },
           y: {
             display: true,
-            title: {
-              display: true,
-              text: [[${sensorName}]]
-            },
-            suggestedMin: -10,
-            suggestedMax: 200
+            afterDataLimits: function(scale) {
+              scale.max = scale.max + 5;
+              scale.min = scale.min -5;
+            }
           }
         }
       },
+      plugins: [bgColorPlugin]
     };
 
     // Thymeleaf에서 넘어온 값
@@ -182,7 +229,6 @@
     var eventSource = new EventSource("/sensor/sensorList/sse");
     var thresholdMap = {};  // 임계치 정보를 저장할 Map
     var firstLoaded = false;
-
 
     eventSource.onmessage = function(event) {
       var jsonData = JSON.parse(event.data);
@@ -239,7 +285,7 @@
 
               // 시간 라벨 (DB에 저장된 measureDatetime 기준)
               var dateObj = entity.measureDatetime;
-              var timeLabel = dateObj.substring(11, 19);
+              var timeLabel = dateObj.substring(0, 10) + " " + dateObj.substring(11, 16);
 
               data.labels.push(timeLabel);
               data.datasets[0].data.push(pastValue);      // 센서값
@@ -262,9 +308,23 @@
       var alarmValue = threshold ? threshold.alarm: null;
       var warningValue = threshold ? threshold.warning: null;
 
+      myChart.options.plugins.bgColorPlugin.alarm = alarmValue;
+      myChart.options.plugins.bgColorPlugin.warning = warningValue;
+
       // 시간 라벨 생성
-      var date = new Date();
-      var time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+      var now = new Date();
+
+      // yyyy-mm-dd
+      var year  = now.getFullYear();
+      var month = String(now.getMonth() + 1).padStart(2, "0");
+      var day   = String(now.getDate()).padStart(2, "0");
+
+      // hh:mm
+      var hour = String(now.getHours()).padStart(2, "0");
+      var min  = String(now.getMinutes()).padStart(2, "0");
+
+      // 최종 라벨
+      var time = year + "-" + month + "-" + day + " " + hour + ":" + min;
 
       // 그래프 데이터 추가
       data.labels.push(time);

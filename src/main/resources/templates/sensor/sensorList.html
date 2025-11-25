@@ -40,8 +40,8 @@
       updateBox("value9", "온도_2", target.value9, thresholdMap[currentDevice + "_" + "value9"]);
       updateBox("value10", "온도_3", target.value10, thresholdMap[currentDevice + "_" + "value10"]);
 
-      updateBox("value12", "소음", target.value12, thresholdMap[currentDevice + "_" + "value11"]);
-      updateBox("value11", "온도(비접촉)", target.value11, thresholdMap[currentDevice + "_" + "value12"]);
+      updateBox("value11", "소음", target.value11, thresholdMap[currentDevice + "_" + "value11"]);
+      updateBox("value12", "온도(비접촉)", target.value12, thresholdMap[currentDevice + "_" + "value12"]);
       updateBox("value13", "노이즈", target.value13, thresholdMap[currentDevice + "_" + "value13"]);
     };
 
@@ -173,7 +173,7 @@
 
 <div layout:fragment="content">
   <div class="text-start">
-    <a th:href="@{/sensor/sensorInterlock}" class="btn btn-primary" style="margin-left: 20px; ont-size: 18px; padding: 8px;">Interlock</a>
+    <a th:href="@{/sensor/sensorData}" class="btn btn-primary" style="margin-left: 20px; ont-size: 18px; padding: 8px;">상세 데이터</a>
   </div>
 
   <!-- 상단 선택 박스 -->

@@ -51,7 +51,7 @@
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Web Service</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" th:href="@{/sensor/sensorList}">대시보드</a></li>
-            <li><a class="dropdown-item" th:href="@{#}">센서 데이터 상세</a></li>
+            <li><a class="dropdown-item" th:href="@{/sensor/sensorData}">센서 데이터 상세</a></li>
             <li><a class="dropdown-item" th:href="@{#}">일일 리포트</a></li>
             <th:block sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
               <li><hr class="dropdown-divider"></li>
