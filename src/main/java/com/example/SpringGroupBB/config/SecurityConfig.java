@@ -1,6 +1,10 @@
 package com.example.SpringGroupBB.config;
 
 
+import com.example.SpringGroupBB.filter.CsrfCookieFilter;
+import com.example.SpringGroupBB.handler.CustomFailureHandler;
+import com.example.SpringGroupBB.service.KakaoOAuth2UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -15,7 +19,12 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final KakaoOAuth2UserService kakaoOAuth2UserService;
+    private final CustomFailureHandler CustomFailureHandler;
+
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
@@ -25,33 +34,42 @@ public class SecurityConfig {
     requestHandler.setCsrfRequestAttributeName("_csrf");
 
 
+
     // 사용자가 만든 로그인폼에 대해서만 허용처리
     security
             .csrf(csrf -> csrf
-            .csrfTokenRequestHandler(requestHandler)
-            .ignoringRequestMatchers("/ckeditor/imageUpload", "/member/memberDelete")
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+              .csrfTokenRequestHandler(requestHandler)
+              .ignoringRequestMatchers("/ckeditor/imageUpload", "/member/memberDelete")
+              .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+            .addFilterAfter(new CsrfCookieFilter(), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
             /*
               CookieCsrfTokenRepository: X-XSRF-TOKEN
               CSRF 토큰을 'XSRF-TOKEN' 이름의 쿠키로 클라이언트에 전다.
               클라이언트는 해당 값을 'XSRF-TOKEN' 헤더에 담아 서버로 전송해야 CSRF 검증 통과
               withHttpOnlyFalse() 설정 시 JavaScript에서도 쿠키 접근 가능(e.g., AJAX 요청 시 사용)
              */
-
             .formLogin(form -> form
-            .loginPage("/member/memberLogin") // 커스텀 로그인 페이지
-            .defaultSuccessUrl("/member/memberLoginOk", true)  // 로그인 성공 시 이동
-            .failureUrl("/member/login/error")  // 실패 시 이동
-            .usernameParameter("email") // 로그인 form의 name="email"
-            .permitAll());
+                    .loginPage("/member/memberLogin").permitAll() // 커스텀 로그인 페이지
+                    .defaultSuccessUrl("/member/memberLoginOk", true)  // 로그인 성공 시 이동
+                    .failureHandler(CustomFailureHandler)
+                    .usernameParameter("email") // 로그인 form의 name="email"
+                    .permitAll())
+            .oauth2Login(oauth -> oauth
+                    .userInfoEndpoint(userInfo -> userInfo
+                            .userService(kakaoOAuth2UserService)
+                    )
+                    .defaultSuccessUrl("/member/memberLoginOk", true)
+                    .failureHandler(CustomFailureHandler)
+            );
 
     // 페이지 접근 권한설정
     security.authorizeHttpRequests(request -> request
             .requestMatchers("/", "/images/**", "/css/**", "/ckeditor/**", "/ckeditorUpload/**", "/js/**").permitAll()
             //.requestMatchers("/member/memberProfileUpdate").hasAnyAuthority("USER", "ADMIN")
-            .requestMatchers("/guest/**", "/board/List", "/board/boardContent").permitAll()
-            .requestMatchers("/member/memberEmailCheck", "/member/memberEmailCheckOk", "/member/memberEmailCheckNo").permitAll()
             .requestMatchers("/member/memberJoin", "/member/memberLogin", "/member/login/error", "/member/memberLoginOk").permitAll()
+            .requestMatchers("/guest/**", "/board/List", "/board/boardContent", "/member/kakaoLogin", "/member/kakaoJoin").permitAll()
+            .requestMatchers("/member/kakaoLogout").permitAll()
+            .requestMatchers("/member/memberEmailCheck", "/member/memberEmailCheckOk", "/member/memberEmailCheckNo").permitAll()
             .requestMatchers("/member/memberPasswordChange", "/member/memberProfileUpdate","/member/memberDelete").authenticated()
             .requestMatchers("/board/replyInput", "/board/replyDelete", "/member/memberDelete").hasAnyAuthority("USER", "ADMIN")
             .requestMatchers("/member/memberMain").authenticated()
@@ -76,4 +94,5 @@ public class SecurityConfig {
   public PasswordEncoder encoder() {
     return new BCryptPasswordEncoder();
   }
+
 }

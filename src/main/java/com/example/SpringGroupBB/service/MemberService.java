@@ -31,6 +31,7 @@ public class MemberService implements UserDetailsService {
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     Optional<Member> opMember = Optional.ofNullable(memberRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException(email+"님의 회원 정보가 없습니다. ")));
+
     boolean isActive = opMember.get().getUserDel() == UserDel.NO;
     return User.builder()
             .username(opMember.get().getEmail())
@@ -57,7 +58,6 @@ public class MemberService implements UserDetailsService {
 
     if(opMember.isPresent()) { throw new IllegalStateException("이미 존재하는 회원입니다."); }
   }
-
 
   public String sendMail(String email, HttpSession session) throws MessagingException {
 

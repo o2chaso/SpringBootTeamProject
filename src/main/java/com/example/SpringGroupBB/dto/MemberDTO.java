@@ -51,13 +51,12 @@ public class MemberDTO {
   private String tel;
 
   private String address;
+
   @DateTimeFormat(pattern = "yyyy-MM-dd")
   private LocalDate birthday;
   private LocalDateTime wDate;
   private Role role;
   private UserDel userDel;
-
-
 
   private String tel2;
   private String tel3;

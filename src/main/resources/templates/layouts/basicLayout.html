@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
   <th:block th:insert="~{include/bs5}"></th:block>
-  <link rel="icon" href="/images/favi.png" type="image/png">
+  <!--<link rel="icon" href="/images/favi.png" type="image/png">-->
   <th:block th:if="${userCsrf}">
     <meta name="_csrf" th:content="${_csrf.token}" />
     <meta name="_csrf_header" th:content="${_csrf.headerName}">

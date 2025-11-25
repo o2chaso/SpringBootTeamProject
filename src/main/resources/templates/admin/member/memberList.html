@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <th:block th:insert="~{include/bs5}"></th:block>
+  <script>
+    'use strict';
+  </script>
+</head>
+<body>
+<p><br/></p>
+<div class="container">
+  <h2>회원 리스트</h2>
+  <table class="table table-striped table-hover table-bordered">
+    <tr>
+      <th>번호</th>
+      <th>이름</th>
+      <th>이메일</th>
+      <th>전화번호</th>
+      <th>주소</th>
+      <th>권한</th>
+      <th>상태</th>
+    </tr>
+    <th:block th:each="member, st : ${pageVO.memberList}">
+      <tr>
+        <td>[[${st.count}]]</td>
+        <td>[[${member.name}]]</td>
+        <td>[[${member.email}]]</td>
+        <td>[[${member.tel}]]</td>
+        <td>[[${member.role}]]</td>
+        <td>[[${member.userDel}]]</td>
+      </tr>
+    </th:block>
+
+  </table>
+</div>
+<p><br/></p>
+</body>
+</html>
