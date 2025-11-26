@@ -56,22 +56,26 @@ public class SensorService {
     for(int i=1; i<=10; i++) {
       // 일일 리포트.
       if(flag == 0) sql = "SELECT ROUND(MIN("+value+i+"),2), ROUND(AVG("+value+i+"),2), ROUND(MAX("+value+i+"),2), " +
-              "(SELECT COUNT(*) FROM threshold WHERE update_date_time LIKE CONCAT('"+measureDatetime+"','%') AND device_code = '"+deviceCode+"' AND sensor_key = '"+value+i+"') AS eventData " +
+              "(SELECT COUNT(*) FROM event_log WHERE measure_datetime LIKE CONCAT('"+measureDatetime+"','%') AND device_code = '"+deviceCode+"' AND sensor_key = 'value"+i+"' AND event != 'Normal') AS eventData " +
               "FROM sensor WHERE measure_datetime LIKE CONCAT('"+measureDatetime+"','%') AND device_code = '"+deviceCode+"'";
-      // 주간 리포트.
+        // 주간 리포트.
       else if(flag == 1) {
+        if(i<2) measureDatetime = measureDatetime+" 23:59:59";
+        System.out.println(measureDatetime);
         // 시간까지 전부 표시되기 때문에 subString으로 자른 후, 시간을 자정으로 지정한다.
-        measureDatetime = LocalDateTime.now().minusDays(7).toString().substring(0,10)+" 00:00:00";
+        String measureDatetimePast = LocalDateTime.now().minusDays(7).toString().substring(0,10)+" 00:00:00";
+        System.out.println(measureDatetimePast);
         sql = "SELECT ROUND(MIN("+value+i+"),2), ROUND(AVG("+value+i+"),2), ROUND(MAX("+value+i+"),2), " +
-                "(SELECT COUNT(*) FROM threshold WHERE update_date_time >= '"+measureDatetime+"' AND device_code = '"+deviceCode+"' AND sensor_key = '"+value+i+"') AS eventData " +
-                "FROM sensor WHERE measure_datetime >= '"+measureDatetime+"' AND device_code = '"+deviceCode+"'";
+                "(SELECT COUNT(*) FROM event_log WHERE measure_datetime >= '"+measureDatetimePast+"' AND measure_datetime <= '"+measureDatetime+"' AND device_code = '"+deviceCode+"' AND sensor_key = 'value"+i+"' AND event != 'Normal') AS eventData " +
+                "FROM sensor WHERE measure_datetime >= '"+measureDatetimePast+"' AND measure_datetime <= '"+measureDatetime+"' AND device_code = '"+deviceCode+"'";
       }
       else if(flag == 2) {
         // 시간까지 전부 표시되기 때문에 subString으로 자른 후, 시간을 자정으로 지정한다.
-        measureDatetime = LocalDateTime.now().minusMonths(1).toString().substring(0,10)+" 00:00:00";
+        if(i<2) measureDatetime = measureDatetime+" 23:59:59";
+        String measureDatetimePast = LocalDateTime.now().minusMonths(1).toString().substring(0,10)+" 00:00:00";
         sql = "SELECT ROUND(MIN("+value+i+"),2), ROUND(AVG("+value+i+"),2), ROUND(MAX("+value+i+"),2), " +
-                "(SELECT COUNT(*) FROM threshold WHERE update_date_time >= '"+measureDatetime+"' AND device_code = '"+deviceCode+"' AND sensor_key = '"+value+i+"') AS eventData " +
-                "FROM sensor WHERE measure_datetime >= '"+measureDatetime+"' AND device_code = '"+deviceCode+"'";
+                "(SELECT COUNT(*) FROM event_log WHERE measure_datetime >= '"+measureDatetimePast+"' AND measure_datetime <= '"+measureDatetime+"' AND device_code = '"+deviceCode+"' AND sensor_key = 'value"+i+"' AND event != 'Normal') AS eventData " +
+                "FROM sensor WHERE measure_datetime >= '"+measureDatetimePast+"' AND measure_datetime <= '"+measureDatetime+"' AND device_code = '"+deviceCode+"'";
       }
       // 엔티티 매니저는 검색결과를 오브젝트로 주기 때문에 오브젝트로 받는다.
       Object[] result = (Object[]) entityManager.createNativeQuery(sql).getSingleResult();

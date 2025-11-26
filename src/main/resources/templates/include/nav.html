@@ -50,7 +50,7 @@
         <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Web Service</a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" th:href="@{#}">센서현황</a></li>
+            <li><a class="dropdown-item" th:href="@{/sensor/sensorLayout}">센서현황</a></li>
             <li><a class="dropdown-item" th:href="@{/sensor/sensorList}">대시보드</a></li>
             <li><a class="dropdown-item" th:href="@{#}">센서 데이터 상세</a></li>
             <li><a class="dropdown-item" th:href="@{/sensor/dailyReport}">일일 리포트</a></li>

@@ -78,38 +78,47 @@
 
     // 날씨AP 시작
     $(() => {
-      // sensorList에 접속했을 때 자동실행
+      // 대시보드에 들어왔는데 윈도우 크기가 일정 이하일 때 날씨 윈도우 비표시.
+      if($(window).width() < 770) $("#weatherReport").hide();
+
+      // sensorList에 접속했을 때 자동실행.
       weatherReport();
 
-      // 기상청 초단기예보가 10분 간격 갱신이기 때문에 10분 간격으로 자동 갱신
+      // 기상청 초단기예보가 10분 간격 갱신이기 때문에 10분 간격으로 자동 갱신.
       setInterval(() => weatherReport(), 6000*100);
     });
 
-    // 초단기예보 가져와서 뿌려주는 메소드
+    // 초단기예보 가져와서 뿌려주는 메소드.
     function weatherReport() {
       $.ajax({
         url : "/sensor/weatherReport",
         type: "post",
         success : (res) => {
           let weatherRes = res.split("/");
+          // 온도 출력.
           $("#T1H").html("<font size=6><b>"+weatherRes[0]+"℃</b></font>");
+          // 날씨 출력.
           if(weatherRes[2] == 0) {
             if(weatherRes[1] == 1) $("#SKY").html('<img src="/weather/SKY_0.png" width="80px" />'+'&nbsp;맑음');
             else if(weatherRes[1] == 2) $("#SKY").html('<img src="/weather/PTY_2.png" width="80px" />'+'&nbsp;흐림');
             else if(weatherRes[1] == 4) $("#SKY").html('<img src="/weather/PTY_2.png" width="80px" />'+'&nbsp;구름<br/>&nbsp;많음');
+            else $("#SKY").html("일시적오류");
           }
-          if(weatherRes[2] == 1 || weatherRes[2] == 4) $("#SKY").html('<img src="/weather/SKY_1or4.png" width="80px" />'+'&nbsp;비');
-          if(weatherRes[2] == 2 || weatherRes[2] == 3) $("#SKY").html('<img src="/weather/SKY_2or3.png" width="80px" />'+'&nbsp;눈');
+          else if(weatherRes[2] == 1 || weatherRes[2] == 4 || weatherRes[2] == 6 || weatherRes[2] == 5) $("#SKY").html('<img src="/weather/SKY_1456.png" width="80px" />'+'&nbsp;비');
+          else if(weatherRes[2] == 2 || weatherRes[2] == 3 || weatherRes[2] == 7) $("#SKY").html('<img src="/weather/SKY_237.png" width="80px" />'+'&nbsp;눈');
+          else $("#SKY").html("일시적오류");
 
-          // 미세먼지 출력
+          // 미세먼지 출력.
           if(weatherRes[3] <= 30) $("#pm10").html("<b>미세먼지</b><br/><font color='green'>좋음</font>");
           else if(weatherRes[3] <= 80) $("#pm10").html("<b>미세먼지</b><br/><font color='blue'>보통</font>");
           else if(weatherRes[3] <= 150) $("#pm10").html("<b>미세먼지</b><br/><font color='purple'>나쁨</font>");
+          else if(weatherRes[3] == "-") $("#pm10").html("일시적오류");
           else $("#pm10").html("<b>미세먼지</b><br/><font color='red'>매우나쁨</font>");
-          // 초미세먼지 출력
+          // 초미세먼지 출력.
           if(weatherRes[4] <= 15) $("#pm25").html("<b>초미세먼지</b><br/><font color='green'>좋음</font>");
           else if(weatherRes[4] <= 35) $("#pm25").html("<b>초미세먼지</b><br/><font color='blue'>보통</font>");
           else if(weatherRes[4] <= 75) $("#pm25").html("<b>초미세먼지</b><br/><font color='purple'>나쁨</font>");
+          else if(weatherRes[4] == "-") $("#pm10").html("일시적오류");
           else $("#pm25").html("<b>초미세먼지</b><br/><font color='red'>매우나쁨</font>");
 
           aceGraph(weatherRes[3], 1);
@@ -160,7 +169,7 @@
       });
     }
 
-    // 윈도우 크기가 일정 이하일 때 날시 윈도우 비표시
+    // 윈도우 크기가 일정 이하일 때 날씨 윈도우 비표시
     $(window).on("resize", () => {
       if($(window).width() < 770) $("#weatherReport").hide();
       else $("#weatherReport").show();

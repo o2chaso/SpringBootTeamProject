@@ -239,7 +239,7 @@ public class SensorController {
       rawRes = weatherReportGet("SKY");
       // 구름 결과값
       weatherReport += weatherService.getWeatherResult(rawRes) + "/";
-      // 강수형태(0없음, 1비, 2눈, 3눈, 4소나기) raw값
+      // 강수형태(0없음, 1,4,5,6비, 2,3,7눈) raw값
       rawRes = weatherReportGet("PTY");
       // 강수형태 결과값
       weatherReport += weatherService.getWeatherResult(rawRes) + "/";
@@ -306,4 +306,15 @@ public class SensorController {
     return "sensor/dailyReport";
   }
   // 일일 리포트 끝
+  // 센서현황 시작
+  @GetMapping("/sensorLayout")
+  public String sensorLayoutGet(Model model) {
+    model.addAttribute("toDay", LocalDate.now());
+    return "sensor/sensorLayout";
+  }
+  @GetMapping("/sensorNewWindow")
+  public String sensorNewWindowGet(String sensorID) {
+    return "sensor/sensorNewWindow";
+  }
+  // 센서현황 끝
 }
