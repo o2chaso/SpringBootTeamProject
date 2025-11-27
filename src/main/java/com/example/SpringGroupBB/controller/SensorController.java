@@ -1,17 +1,19 @@
 package com.example.SpringGroupBB.controller;
 
+import com.example.SpringGroupBB.common.EventStateHolder;
 import com.example.SpringGroupBB.dto.SensorDTO;
 import com.example.SpringGroupBB.dto.ThresholdDTO;
 import com.example.SpringGroupBB.entity.SensorEntity;
 import com.example.SpringGroupBB.entity.ThresholdEntity;
+import com.example.SpringGroupBB.service.EventLogService;
 import com.example.SpringGroupBB.service.SensorService;
 import com.example.SpringGroupBB.service.ThresholdService;
 import com.example.SpringGroupBB.service.WeatherService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +38,8 @@ public class SensorController {
 
   private final SensorService sensorService;
   private final ThresholdService thresholdService;
+  private final EventLogService eventLogService;
+  private final EventStateHolder eventStateHolder;
   // 날씨API 시작
   private final WeatherService weatherService;
   // 날씨API 끝
@@ -155,9 +159,7 @@ public class SensorController {
   public SseEmitter sensorListSse(Model model) {
     model.addAttribute("userCsrf", true);
     SseEmitter emitter = new SseEmitter(0L);
-
     final boolean[] alive = {true};
-
     // 연결 완료
     emitter.onCompletion(new Runnable() {
       @Override
@@ -179,22 +181,51 @@ public class SensorController {
         alive[0] = false;
       }
     });
-
     new Thread(() -> {
       try {
         while (alive[0]) {
 
           // 최신 전체 센서
           List<SensorEntity> sensor = sensorService.getSensorList();
-
           // Interlock 가져오기
           List<ThresholdDTO> thresholdList = thresholdService.getThresholds();
-
-
+          // 이벤트 로그 저장
+          for(SensorEntity s : sensor) {
+            String deviceCode = s.getDeviceCode();
+            // value1~13 전부 체크
+            for (int i = 1; i <= 13; i++) {
+              String sensorKey = "value" + i;
+              // 센서 값 꺼내기(null이면 skip)
+              Double value = null;
+              try {
+                value = (Double) SensorEntity.class
+                        .getMethod("getValue" + i) // SensorEntity 클래스에서 getValue + i 이름의 메서드를 찾음
+                        .invoke(s);                // 찾은 메서드를 실제 SensorEntity 객체 s에 대해 실행
+              } catch (Exception e) {
+                continue;                          // i = null 이면 건너뛰고 다시 실행
+              }
+              if (value == null) continue;          // SensorEntity의 value = null 이면 건너뛰고 다시 실행
+              // 센서 키에 맞는 임계치 찾기
+              ThresholdDTO th = thresholdList.stream()
+                      .filter(t -> t.getDeviceCode().equals(deviceCode) && t.getSensorKey().equals(sensorKey))
+                      .findFirst()
+                      .orElse(null);
+              // 현재 상테 계산
+              String currentState = eventLogService.checkSensorState(value, th);
+              // 이전 상태 가져오기
+              String key = deviceCode + "_" + sensorKey;
+              String prevState = eventStateHolder.getLastState(key);
+              // 처음이거나, 상태가 변경된 경우에만 저장
+              if(prevState == null || !prevState.equals(currentState)) {
+                eventLogService.saveEventLog(deviceCode, sensorKey, value, currentState);
+                eventStateHolder.setLastState(key, currentState);
+              }
+            }
+          }
+          // SSE로 보내기
           Map<String, Object> map = new HashMap<>();
           map.put("sensor", sensor);
           map.put("threshold", thresholdList);
-
           try {
             emitter.send(SseEmitter.event().data(map));
             Thread.sleep(2000);
@@ -309,16 +340,21 @@ public class SensorController {
   // 일일 리포트 끝
   // 센서현황 시작
   @GetMapping("/sensorLayout")
-  public String sensorLayoutGet(Model model,
-                                @RequestParam(name = "deviceCode", defaultValue = "ENV_V2_1", required = false)String deviceCode,
-                                @RequestParam(name = "adminBeepSoundSW", defaultValue = "true", required = false)boolean adminBeepSoundSW) {
+  public String sensorLayoutGet(Model model, HttpSession session,
+                                @RequestParam(name = "deviceCode", defaultValue = "ENV_V2_1", required = false)String deviceCode) {
+    // 음소거 버튼 현황.
+    if(session.getAttribute("sAdminBeepSoundSW") == null) session.setAttribute("sAdminBeepSoundSW", true);
     // 장소.
     model.addAttribute("deviceCode", deviceCode);
-    // 비프음 설정.
-    model.addAttribute("adminBeepSoundSW", adminBeepSoundSW);
     // popover el확인용.
     model.addAttribute("toDay", LocalDate.now());
     return "sensor/sensorLayout";
+  }
+  // 음소거(true), 활성화(false) 버튼으로 세션정보 변경.
+  @ResponseBody
+  @PostMapping("/sensorLayout")
+  public void sensorLayoutPost(HttpSession session, boolean adminBeepSoundSW) {
+    session.setAttribute("sAdminBeepSoundSW", adminBeepSoundSW);
   }
   @GetMapping("/sensorNewWindow/{sensorID}/{deviceCode}")
   public String sensorNewWindowGet(@PathVariable String sensorID,

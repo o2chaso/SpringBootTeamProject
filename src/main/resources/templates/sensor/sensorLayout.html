@@ -2,30 +2,27 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
   <title>Title</title>
   <link rel="icon" href="/images/favi.png" type="image/png">
   <th:block th:insert="~{include/bs5}"></th:block>
   <th:block th:insert="~{include/nav}"></th:block>
   <script th:inline="javascript">
     'user strict';
+    // layout 사용하지 않기 때문에 ajax사용시 필요.
+    var token = $("meta[name='_csrf']").attr("content");
+    var header = $("meta[name='_csrf_header']").attr("content");
+
+    // 경고음 발생 스위치.
+    let sAdminBeepSoundSW = [[${session.sAdminBeepSoundSW}]];
+    let beepSoundSW = false;
+
     // 팝오버 초기화.
     $(() => {
       const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
       const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
     });
-
-    /* 마우스 클릭한 브라우저의 좌표 표시.
-    document.onclick = mouseClick;
-    function mouseClick(e) {
-      console.log("마우스클릭 좌표 메소드");
-      let x = e.clientX;
-      let y = e.clientY;
-      console.log("브라우저X: ",x);
-      console.log("브라우저Y: ",y);
-
-      setSensorPosition("sensor4", 0.16818181818181818, 0.18045454545454545);
-    }
-    */
 
     /*
       절대좌표 배열.
@@ -44,7 +41,7 @@
     // SSE 연결(Server-Sent Events / 실시간 서버-클라이언트 통신 기술)
     const eventSource = new EventSource("/sensor/sensorList/sse");
 
-    let currentDevice = "ENV_V2_1"; // 기본 선택
+    let currentDevice = [[${deviceCode}]]; // 기본 선택
 
     // SSE에서 값이 들어오면 실행.
     eventSource.onmessage = function(event) {
@@ -89,14 +86,16 @@
         target.value6,target.value7,target.value8,target.value9,target.value10,
         target.value11,target.value12,target.value13
       ]
+
+      beepSoundSW = false;
       // for문을 사용해 각 센서를 세팅.
       for(let i=0; i<13; i++) {
         setSensor("sensor"+(i+1), value[i], thresholdMap[currentDevice + "_" + "value"+(i+1)], abXY[i]);
       }
+      // 각 센서 세팅이 끝난 후 경고음 만드는 메소드 실행.
+      beepSound();
     };
 
-    // 경고음 발생 스위치.
-    let beepSoundSW = false;
     // 센서 div에 class값 주는(센서 상태로 센서 색 변경) 메소드.
     function setSensor(id, value, threshold, abXY) {
       // 센서의 클래스 초기화.
@@ -104,17 +103,17 @@
       // threshold 테이블에 센서ID(value1, value2...)가 존재하면 if문 안으로.
       if(threshold) {
         if(value >= threshold.alarm) {
-          if()beepSoundSW = true;
+          // 현재 음소거 상태가 아니면 경고음 스위치 true.
+          if(sAdminBeepSoundSW) beepSoundSW = true;
+          else beepSoundSW = false;
           $("#"+id).get(0).classList.add("Alarm");
         }
         else if(value >= threshold.warning) {
-          beepSoundSW = true;
+          if(sAdminBeepSoundSW) beepSoundSW = true;
+          else beepSoundSW = false;
           $("#"+id).get(0).classList.add("Warning");
         }
-        else {
-          if(!beepSoundSW) beepSoundSW = false;
-          $("#"+id).get(0).classList.add("Normal");
-        }
+        else $("#"+id).get(0).classList.add("Normal");
       }
       else $("#"+id).get(0).classList.add("Normal");
       // 센서 이동 메소드 실행.
@@ -134,11 +133,28 @@
       $("#"+id).get(0).style.left = x+"px";
       $("#"+id).get(0).style.top = y+"px";
     }
+    // 마우스 클릭 시 이벤트 발생.
+    document.onclick = mouseClick;
+    function mouseClick(e) {
+      // web audio api 사용할 때 현재 페이지에 주소로 바로 왔을 때, 서버가 새로 동작된 후 새로고침 했을 때 등 한 번도 클릭하지 않은 상태일 때 audioContext활성화.
+      if(audioContext.state === "suspended") audioContext.resume();
+    }
+    /* 마우스 클릭한 브라우저의 좌표 표시.
+      console.log("마우스클릭 좌표 메소드");
+      let x = e.clientX;
+      let y = e.clientY;
+      console.log("브라우저X: ",x);
+      console.log("브라우저Y: ",y);
+
+      setSensorPosition("sensor4", 0.16818181818181818, 0.18045454545454545);
+    */
+    // web audio api 사용.
+    // window.webkitAudioContext은 개발 초기단계에서 사용하던 이름.
+    const audioContext = new window.AudioContext();
+    let oscillator = null;
+    let gainNode = null;
     // 경고음 생성 메소드.
     function beepSound() {
-      // web audio api 사용.
-      // window.webkitAudioContext은 개발 초기단계에서 사용하던 이름.
-      const audioContext = new (window.AudioContext)();
       /*
         브라우저가 AudioContext를 지원하지 않으면 알람을 띄우고 리턴(현재는 지원하지 않는 브라우저가 드물다).
         브라우저 버전을 확인하고 window.webkitAudioContext도 지원하지 않으면 오디오 자동재생이 가능할 것이기 때문에
@@ -149,7 +165,29 @@
         return false;
       }
 
-      const oscillator = audioContext.createOscillator();
+      // 센서 세팅 끝난 후의 SW가 false 혹은 sAdminBeepSoundSW가 false(음소거 상태)라면 소리 끄기.
+      console.log("beepSoundSW: ",beepSoundSW);
+      console.log("sAdminBeepSoundSW: ",sAdminBeepSoundSW);
+      if(!beepSoundSW || !sAdminBeepSoundSW) {
+        if(oscillator) {
+          oscillator.stop();
+          oscillator.disconnect();
+          oscillator = null;
+          gainNode = null;
+        }
+        return false;
+      }
+      // 경고음 울리는 중이면 메소드 종료.
+      if(oscillator) {
+        return false;
+      }
+
+      oscillator = audioContext.createOscillator();
+      gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
       oscillator.start();
     }
 
@@ -173,7 +211,40 @@
 
     // 방 변경.
     function roomChange() {
-      location.href = "/sensor/sensorLayout?deviceCode="+$("#deviceCode").val();
+      if(sAdminBeepSoundSW) location.href = "/sensor/sensorLayout?deviceCode="+$("#deviceCode").val()+"&adminBeepSoundSW="+sessionStorage.getItem("sAdminBeepSoundSW");
+      else location.href = "/sensor/sensorLayout?deviceCode="+$("#deviceCode").val()+"&adminBeepSoundSW="+sessionStorage.getItem("sAdminBeepSoundSW");
+    }
+
+    // 경고음 제어.
+    function adminBeepSoundChange(flag) {
+      if(flag == 0) {
+        $("#adminBeepSoundSW0").hide();
+        $("#adminBeepSoundSW1").show();
+        sessionStorage.setItem("sAdminBeepSoundSW", false);
+        $.ajax({
+          url : "/sensor/sensorLayout",
+          type: "post",
+          data: {"adminBeepSoundSW" : sessionStorage.getItem("sAdminBeepSoundSW")},
+          beforeSend : (xhr) => xhr.setRequestHeader(header, token)
+        });
+
+        sAdminBeepSoundSW = false;
+        beepSound();
+      }
+      else {
+        $("#adminBeepSoundSW1").hide();
+        $("#adminBeepSoundSW0").show();
+        sessionStorage.setItem("sAdminBeepSoundSW", true);
+        $.ajax({
+          url : "/sensor/sensorLayout",
+          type: "post",
+          data: {"adminBeepSoundSW" : sessionStorage.getItem("sAdminBeepSoundSW")},
+          beforeSend : (xhr) => xhr.setRequestHeader(header, token)
+        });
+
+        sAdminBeepSoundSW = true;
+        beepSound();
+      }
     }
   </script>
   <style>
@@ -227,8 +298,8 @@
       <br/>
       <div><b>경고음 조작</b></div>
       <br/>
-      <input type="button" id="adminBeepSoundSW0" value="음소거" onclick="adminBeepSoundChange(0)" class="btn btn-danger btn-sm" th:style="${adminBeepSoundSW?'':'display: none'}"/>
-      <input type="button" id="adminBeepSoundSW1" value="활성화" onclick="adminBeepSoundChange(1)" class="btn btn-success btn-sm" th:style="${adminBeepSoundSW?'display: none':''}" />
+      <input type="button" id="adminBeepSoundSW0" value="음소거" onclick="adminBeepSoundChange(0)" class="btn btn-danger btn-sm" th:style="${session.sAdminBeepSoundSW?'':'display: none'}"/>
+      <input type="button" id="adminBeepSoundSW1" value="활성화" onclick="adminBeepSoundChange(1)" class="btn btn-success btn-sm" th:style="${session.sAdminBeepSoundSW?'display: none':''}" />
     </div>
     <div class="col border ms-2">
       <div style="position: relative; display: inline-block;">

@@ -1,7 +1,10 @@
 package com.example.SpringGroupBB.repository;
 
-import com.example.SpringGroupBB.entity.EventLogEntity;
+import com.example.SpringGroupBB.entity.EventLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface EventLogRepository extends JpaRepository<EventLogEntity, Long> {
+import java.util.List;
+
+public interface EventLogRepository extends JpaRepository<EventLog, Long> {
+  List<EventLog> findTop20ByDeviceCodeAndSensorKeyOrderByMeasureDatetimeDesc(String deviceCode, String sensorKey);
 }
