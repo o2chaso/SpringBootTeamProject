@@ -57,10 +57,10 @@ public class SensorEntity {
   // 온도_3
   @Column(name = "value_10")
   private Double value10;
-  // 온도(비접촉)
+  // 소음
   @Column(name = "value_11")
   private Double value11;
-  // 소음
+  // 온도(비접촉)
   @Column(name = "value_12")
   private Double value12;
   // 조도

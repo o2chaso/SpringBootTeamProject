@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,11 @@ public class SensorDTO {
   private double avgData;
   private double maxData;
   private int eventData;
+
+  private double minRate;
+  private double avgRate;
+  private double maxRate;
+  private int eventRate;
 
   public SensorDTO(double minData, double avgData, double maxData, int eventData) {
     this.minData = minData;

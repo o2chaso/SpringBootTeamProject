@@ -6,9 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDateTime;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class SensorServiceTest {
@@ -17,7 +16,12 @@ class SensorServiceTest {
 
   @Test
   public void sensorDateUpdateTest() {
-    List<SensorEntity> sensorList = sensorRepository.findByContainingMeasureDateTime("2025-02-01%");
+    List<SensorEntity> sensorList = sensorRepository.selectMeasureDatetime("2025-02-07");
     System.out.println("sensorList.size: "+sensorList.size());
+    sensorList.forEach(entity -> {
+      entity.setMeasureDatetime(LocalDateTime.parse("2025-11-14"+entity.getMeasureDatetime().toString().substring(10)));
+      sensorRepository.save(entity);
+    });
+    System.out.println("날짜 업데이트 완료.");
   }
 }

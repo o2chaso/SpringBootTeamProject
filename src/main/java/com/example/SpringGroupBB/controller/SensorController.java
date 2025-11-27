@@ -9,6 +9,7 @@ import com.example.SpringGroupBB.service.EventLogService;
 import com.example.SpringGroupBB.service.SensorService;
 import com.example.SpringGroupBB.service.ThresholdService;
 import com.example.SpringGroupBB.service.WeatherService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,13 +23,11 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Controller
@@ -117,8 +116,8 @@ public class SensorController {
       case "value8": return "온도_1)";
       case "value9": return "온도_2";
       case "value10": return "온도_3";
-      case "value11": return "비접촉 온도";
-      case "value12": return "소음";
+      case "value11": return "소음";
+      case "value12": return "비접촉 온도";
       case "value13": return "노이즈";
       default: return sensorKey;
     }
@@ -320,6 +319,34 @@ public class SensorController {
     measureDatetime = measureDatetime.equals("")?LocalDate.now().toString():measureDatetime;
     // sensor의 min, avg, max값 검색.
     List<SensorDTO> sensorList = sensorService.selectSensorValueAndDate(measureDatetime, deviceCode, flag);
+    List<SensorDTO> restSensorList = new ArrayList<>();
+    String restDay = "";
+    if(flag == 0) {
+      restDay = LocalDate.parse(measureDatetime).minusDays(1).toString();
+      restSensorList = sensorService.selectSensorValueAndDate(restDay, deviceCode, flag);
+    }
+    else if(flag == 1) {
+      restDay = LocalDate.parse(measureDatetime).minusDays(7).toString();
+      restSensorList = sensorService.selectSensorValueAndDate(restDay, deviceCode, flag);
+    }
+    else {
+      restDay =LocalDate.parse(measureDatetime).minusMonths(1).toString();
+      restSensorList = sensorService.selectSensorValueAndDate(restDay, deviceCode, flag);
+    }
+    System.out.println("restSensorList.size: "+restSensorList.size());
+    for(int i=0; i<sensorList.size(); i++) {
+      if(restSensorList.isEmpty()) {
+        sensorList.get(i).setMinRate(0);
+        sensorList.get(i).setAvgRate(0);
+        sensorList.get(i).setMaxRate(0);
+        sensorList.get(i).setEventRate(0);
+        continue;
+      }
+      sensorList.get(i).setMinRate(Double.parseDouble(String.format("%.2f", (sensorList.get(i).getMinData()-restSensorList.get(i).getMinData())/sensorList.size())));
+      sensorList.get(i).setAvgRate(Double.parseDouble(String.format("%.2f", (sensorList.get(i).getAvgData()-restSensorList.get(i).getAvgData())/sensorList.size())));
+      sensorList.get(i).setMaxRate(Double.parseDouble(String.format("%.2f", (sensorList.get(i).getMaxData()-restSensorList.get(i).getMaxData())/sensorList.size())));
+      sensorList.get(i).setEventRate(sensorList.get(i).getEventData()-restSensorList.get(i).getEventData());
+    }
 
     // DB에 지정값이 없기 때문에 배열로 만들어서 html로 보내준다.
     String[] value = {"실내온도","상대습도","이산화탄소","유기화합물VOC","미세먼지","초미세먼지","온도_1","온도_2","온도_3","온도(비접촉)"};
@@ -336,6 +363,40 @@ public class SensorController {
     // 일일, 주간, 월간.
     model.addAttribute("flag", flag);
     return "sensor/dailyReport";
+  }
+
+  // 이전 리포트와 비교.
+  @GetMapping("/reportNewWindow/{flag}/{measureDatetime}/{measureDatetimePast}/{deviceCode}")
+  public String reportNewWindwGet(Model model,
+                                  @PathVariable int flag,
+                                  @PathVariable String measureDatetime,
+                                  @PathVariable String measureDatetimePast,
+                                  @PathVariable String deviceCode){
+    System.out.println("flag: "+flag);
+    System.out.println("measureDatetime: "+measureDatetime);
+    System.out.println("measureDatetimePast: "+measureDatetimePast);
+    System.out.println("deviceCode: "+deviceCode);
+    List<SensorDTO> sensorList = sensorService.selectSensorValueAndDate(measureDatetime, deviceCode, flag);
+    List<SensorDTO> restSensorList = new ArrayList<>();
+    if(measureDatetimePast!=null) restSensorList = sensorService.selectSensorValueAndDate(LocalDate.parse(measureDatetime).minusDays(1).toString(), deviceCode, flag);
+    else restSensorList = sensorService.selectSensorValueAndDate(measureDatetimePast, deviceCode, flag);
+
+
+    String[] value = {"실내온도","상대습도","이산화탄소","유기화합물VOC","미세먼지","초미세먼지","온도_1","온도_2","온도_3","온도(비접촉)"};
+    model.addAttribute("sensorList", sensorList);
+    model.addAttribute("restSensorList", restSensorList);
+    model.addAttribute("value", value);
+    model.addAttribute("measureDatetime", measureDatetime);
+    model.addAttribute("measureDatetimePast", LocalDate.parse(measureDatetime).minusDays(1).toString());
+    if(flag == 1) {
+      model.addAttribute("measureDatetime", LocalDate.parse(measureDatetime).minusDays(7)+"~"+measureDatetime);
+      model.addAttribute("measureDatetimePast", LocalDate.parse(measureDatetimePast).minusDays(7)+"~"+measureDatetimePast);
+    }
+    else if(flag == 2) {
+      model.addAttribute("measureDatetime", LocalDate.parse(measureDatetime).minusMonths(1)+"~"+measureDatetime);
+      model.addAttribute("measureDatetimePast", LocalDate.parse(measureDatetimePast).minusMonths(1)+"~"+measureDatetimePast);
+    }
+    return "sensor/reportNewWindow";
   }
   // 일일 리포트 끝
   // 센서현황 시작

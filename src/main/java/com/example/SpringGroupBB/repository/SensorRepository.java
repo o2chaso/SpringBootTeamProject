@@ -4,6 +4,7 @@ import com.example.SpringGroupBB.entity.SensorEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,4 +19,6 @@ public interface SensorRepository extends JpaRepository<SensorEntity, Long> {
 
   List<SensorEntity> findByDeviceCodeAndMeasureDatetimeBetweenOrderByMeasureDatetimeAsc(String deviceCode, LocalDateTime startTime, LocalDateTime endTime);
 
+  @Query(value = "SELECT * FROM sensor WHERE measure_datetime LIKE CONCAT(:date, '%')", nativeQuery = true)
+  List<SensorEntity> selectMeasureDatetime(String date);
 }
