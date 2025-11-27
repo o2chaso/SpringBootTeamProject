@@ -100,8 +100,8 @@
           // 날씨 출력.
           if(weatherRes[2] == 0) {
             if(weatherRes[1] == 1) $("#SKY").html('<img src="/weather/SKY_0.png" width="80px" />'+'&nbsp;맑음');
-            else if(weatherRes[1] == 2) $("#SKY").html('<img src="/weather/PTY_2.png" width="80px" />'+'&nbsp;흐림');
-            else if(weatherRes[1] == 4) $("#SKY").html('<img src="/weather/PTY_2.png" width="80px" />'+'&nbsp;구름<br/>&nbsp;많음');
+            else if(weatherRes[1] == 3) $("#SKY").html('<img src="/weather/PTY_3.png" width="80px" />'+'&nbsp;구름<br/>&nbsp;많음');
+            else if(weatherRes[1] == 4) $("#SKY").html('<img src="/weather/PTY_4.png" width="80px" />'+'&nbsp;흐림');
             else $("#SKY").html("일시적오류");
           }
           else if(weatherRes[2] == 1 || weatherRes[2] == 4 || weatherRes[2] == 6 || weatherRes[2] == 5) $("#SKY").html('<img src="/weather/SKY_1456.png" width="80px" />'+'&nbsp;비');

@@ -11,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -308,12 +309,18 @@ public class SensorController {
   // 일일 리포트 끝
   // 센서현황 시작
   @GetMapping("/sensorLayout")
-  public String sensorLayoutGet(Model model) {
+  public String sensorLayoutGet(Model model,
+                                @RequestParam(name = "deviceCode", defaultValue = "ENV_V2_1", required = false)String deviceCode) {
+    model.addAttribute("deviceCode", deviceCode);
+    // popover el확인용.
     model.addAttribute("toDay", LocalDate.now());
     return "sensor/sensorLayout";
   }
-  @GetMapping("/sensorNewWindow")
-  public String sensorNewWindowGet(String sensorID) {
+  @GetMapping("/sensorNewWindow/{sensorID}/{deviceCode}")
+  public String sensorNewWindowGet(@PathVariable String sensorID,
+                                   @PathVariable String deviceCode) {
+    System.out.println("sensorID: "+sensorID);
+    System.out.println("deviceCode: "+deviceCode);
     return "sensor/sensorNewWindow";
   }
   // 센서현황 끝

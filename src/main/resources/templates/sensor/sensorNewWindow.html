@@ -4,6 +4,28 @@
   <meta charset="UTF-8">
   <title>Title</title>
   <th:block th:insert="~{include/bs5}"></th:block>
+  <script>
+    function playBeep() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      if (!audioContext) {
+          console.error("AudioContext를 지원하지 않습니다.");
+          return;
+      }
+
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // 볼륨 설정
+      oscillator.type = 'sine'; // 파형 타입 (sine, square, sawtooth, triangle)
+      oscillator.frequency.setValueAtTime(500, audioContext.currentTime); // 주파수 (Hz)
+
+      oscillator.start();
+    }
+    playBeep();
+  </script>
 </head>
 <body>
 <div class="container text-center">
