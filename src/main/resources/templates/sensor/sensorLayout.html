@@ -6,7 +6,7 @@
   <link rel="icon" href="/images/favi.png" type="image/png">
   <th:block th:insert="~{include/bs5}"></th:block>
   <th:block th:insert="~{include/nav}"></th:block>
-  <script>
+  <script th:inline="javascript">
     'user strict';
     // 팝오버 초기화.
     $(() => {
@@ -95,6 +95,8 @@
       }
     };
 
+    // 경고음 발생 스위치.
+    let beepSoundSW = false;
     // 센서 div에 class값 주는(센서 상태로 센서 색 변경) 메소드.
     function setSensor(id, value, threshold, abXY) {
       // 센서의 클래스 초기화.
@@ -102,10 +104,17 @@
       // threshold 테이블에 센서ID(value1, value2...)가 존재하면 if문 안으로.
       if(threshold) {
         if(value >= threshold.alarm) {
+          if()beepSoundSW = true;
           $("#"+id).get(0).classList.add("Alarm");
         }
-        else if(value >= threshold.warning) $("#"+id).get(0).classList.add("Warning");
-        else $("#"+id).get(0).classList.add("Normal");
+        else if(value >= threshold.warning) {
+          beepSoundSW = true;
+          $("#"+id).get(0).classList.add("Warning");
+        }
+        else {
+          if(!beepSoundSW) beepSoundSW = false;
+          $("#"+id).get(0).classList.add("Normal");
+        }
       }
       else $("#"+id).get(0).classList.add("Normal");
       // 센서 이동 메소드 실행.
@@ -139,6 +148,9 @@
         alert("AudioContext을 지원하지 않는 브라우저입니다.\n개발사에 문의해주세요.");
         return false;
       }
+
+      const oscillator = audioContext.createOscillator();
+      oscillator.start();
     }
 
     // 센서 상세정보(새창).
@@ -212,6 +224,11 @@
         <option value="ENV_V2_3" th:selected="${deviceCode=='ENV_V2_3'}">자재실</option>
         <option value="ENV_V2_4" th:selected="${deviceCode=='ENV_V2_4'}">연구실</option>
       </select>
+      <br/>
+      <div><b>경고음 조작</b></div>
+      <br/>
+      <input type="button" id="adminBeepSoundSW0" value="음소거" onclick="adminBeepSoundChange(0)" class="btn btn-danger btn-sm" th:style="${adminBeepSoundSW?'':'display: none'}"/>
+      <input type="button" id="adminBeepSoundSW1" value="활성화" onclick="adminBeepSoundChange(1)" class="btn btn-success btn-sm" th:style="${adminBeepSoundSW?'display: none':''}" />
     </div>
     <div class="col border ms-2">
       <div style="position: relative; display: inline-block;">

@@ -310,8 +310,12 @@ public class SensorController {
   // 센서현황 시작
   @GetMapping("/sensorLayout")
   public String sensorLayoutGet(Model model,
-                                @RequestParam(name = "deviceCode", defaultValue = "ENV_V2_1", required = false)String deviceCode) {
+                                @RequestParam(name = "deviceCode", defaultValue = "ENV_V2_1", required = false)String deviceCode,
+                                @RequestParam(name = "adminBeepSoundSW", defaultValue = "true", required = false)boolean adminBeepSoundSW) {
+    // 장소.
     model.addAttribute("deviceCode", deviceCode);
+    // 비프음 설정.
+    model.addAttribute("adminBeepSoundSW", adminBeepSoundSW);
     // popover el확인용.
     model.addAttribute("toDay", LocalDate.now());
     return "sensor/sensorLayout";
