@@ -4,8 +4,6 @@
 
 <head>
   <th:block th:insert="~{include/bs5}"></th:block>
-  <th:block th:intert="~{layout/adminHeader}"></th:block>
-  <th:block th:intert="~{layout/adminSidebar}"></th:block>
   <link rel="icon" href="/images/favi.png" type="image/png">
   <th:block th:if="${userCsrf}">
     <meta name="_csrf" th:content="${_csrf.token}" />
@@ -48,7 +46,9 @@
   <title></title>
 </head>
 <body>
-<div th:replace="~{layouts/header::header}"></div>
+<div th:replace="~{layouts/adminHeader::header}"></div>
+<div th:replace="~{layouts/adminSidebar::sidebar}"></div>
+
 <!-- 메시지 alert 영역 추가 -->
 <div class="container mt-3">
   <div th:if="${message != null}" class="alert alert-info alert-dismissible fade show" role="alert">
@@ -64,6 +64,6 @@
   </div>
 </div>
 <p><br/></p>
-<div th:replace="~{layouts/footer::footer}"></div>
+<!--<div th:replace="~{layouts/footer::footer}"></div>-->
 </body>
 </html>

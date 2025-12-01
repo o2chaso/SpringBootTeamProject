@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/basicLayout}">
+      layout:decorate="~{layouts/adminLayout}">
 
 <th:block layout:fragment="script">
   <script th:inline="javascript">
@@ -35,9 +35,6 @@
 </th:block>
 
 <style layout:fragment="css" >
-  body {
-    font-family: Arial, sans-serif;
-  }
   .row {
     margin: 0px;
     padding: 10px;

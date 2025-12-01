@@ -1,30 +1,75 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<!-- header 영역에는 nav, image 처리 -->
-<div th:fragment="header">
-  <th:block th:insert="~{include/nav}"></th:block>
-  <div><img src="/images/title.png" style="width: 100%; height: 420px;" alt="mainImage"></div>
-  <!-- layouts/adminSidebar.html -->
-  <div class="sidebar bg-light" style="position: fixed; top: 0; left: 0; height: 100%; width: 250px; padding-top: 60px;">
-    <h4 class="text-center mb-4">관리자 메뉴</h4>
+
+<style>
+  .sidebar {
+      background: #f8f9fa;
+      border-right: 1px solid #ddd;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+  }
+  .sidebar .nav-link {
+      color: #000 !important;           /* 글자색 검정 */
+      padding: 10px 20px;
+      font-weight: 500;
+  }
+  .sidebar .nav-link:hover {
+      background: #e6e6e6;
+      color: #000 !important;
+  }
+  .sidebar .nav .nav {
+      margin-left: 15px;
+      border-left: 2px solid #ccc;
+      padding-left: 10px;
+  }
+  .sidebar .nav .nav .nav-link {
+      font-size: 0.92rem;
+      padding: 8px 20px;
+  }
+  .sidebar .nav-link.active {
+      background: #dcdcdc;
+      font-weight: 700;
+  }
+</style>
+
+<div th:fragment="sidebar">
+  <div class="sidebar"
+       style="position: fixed; top: 0; left: 0; height: 100%; width: 250px; padding-top: 60px;">
+    <h4 class="text-center mb-4" style="color:#000;">관리자 메뉴</h4>
     <ul class="nav flex-column">
       <li class="nav-item">
-        <a class="nav-link active" href="/admin/dashboard">대시보드</a>
+        <a class="nav-link" href="/admin/dashboard">대시보드</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/products">상품 관리</a>
+        <a class="nav-link dropdown-toggle" data-bs-toggle="collapse" href="#userMenu" role="button">
+          회원 관리
+        </a>
+        <div class="collapse" id="userMenu">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/member/memberList">회원 목록</a>
+            </li>
+          </ul>
+        </div>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/users">회원 관리</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/admin/orders">주문 관리</a>
+        <a class="nav-link dropdown-toggle" data-bs-toggle="collapse" href="#productMenu" role="button">
+          센서 관리
+        </a>
+        <div class="collapse" id="productMenu">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/product/productList">센서 목록</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/product/productInput">상품 등록</a>
+            </li>
+          </ul>
+        </div>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="/admin/settings">설정</a>
       </li>
     </ul>
   </div>
-
 </div>
 </html>

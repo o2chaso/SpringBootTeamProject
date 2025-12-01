@@ -127,4 +127,9 @@ public class AdminController {
       return "redirect:admin/product/productUpdate/"+productDTO.getId();
     }
   }
+
+  @GetMapping("/adminDashBoard")
+  public String adminDashBoardGet() {
+    return "admin/adminDashBoard";
+  }
 }
