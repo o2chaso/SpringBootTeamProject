@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    'use strict';
+
+    let message = [[${message}]];
+    if(message != null) alert(message);
+
+    function pageSizeCheck() {
+      let pageSize = document.getElementById("pageSize").value;
+      location.href = "boardList?pageSize="+pageSize;
+    }
+  </script>
+  <style>
+    a {text-decoration: none}
+    a:hover {
+      color: orange;
+      text-decoration: underline;
+    }
+  </style>
+</th:block>
+
+<div layout:fragment="content" style="max-width:1000px; margin:40px auto;">
+  <style>
+    @charset "UTF-8";
+    .search-bg {
+      background: #f2f2f2;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      padding: 18px 20px;
+      width: 100%;
+      margin: 0;
+  </style>
+
+  <h2 class="font-weight-bold text-primary heading mb-1 text-start" style="font-size:2.2">자유게시판</h2>
+  <hr class="secondary">
+  <div class="d-flex justify-content-start">
+    <a th:if="${!isSearch}" th:href="@{boardInput}" class="btn btn-success btn-sm">글쓰기</a>
+    <a th:if="${isSearch}" th:href="@{boardList}" class="btn btn-outline-secondary btn-sm">돌아가기</a>
+  </div>
+
+  <!-- 검색기 시작 -->
+  <div class="text-center" style="margin: 60px 0;">
+    <div class="search-bg" style="display:inline-block; width:100% margin:0;">
+      <form class="d-flex justify-content-center" name="searchForm" method="get" style="margin:0; padding:0;">
+      <select name="search" id="search" class="me-2" style="height:28px; font-size:0.95em; margin-top:4px">
+        <option value="title"   th:selected="${pageVO.searchStr=='글제목'}">글제목</option>
+        <option value="name"    th:selected="${pageVO.searchStr=='글쓴이'}">글쓴이</option>
+        <option value="content" th:selected="${pageVO.searchStr=='글내용'}">글내용</option>
+      </select>
+        <input type="text" name="searchString" id="searchString" th:value="${pageVO.searchString}" placeholder="검색어를 입력해주세요." required style="height:36px; font-size:1em; width:400px" />
+        <input type="submit" value="검색" style="height=36px; font-size:0.98em; width:90px" class="btn btn-dark px-3"/>
+      </form>
+    </div>
+  </div>
+  <!-- 검색기 끝 -->
+
+  <div class="row mt-3 mb-1">
+    <div class="col text-start">
+    </div>
+    <div class="col text-end">
+      <select name="pageSize" id="pageSize" onchange="pageSizeCheck()">
+        <option th:selected="${pageVO.pageSize==5}">5</option>
+        <option th:selected="${pageVO.pageSize==10}">10</option>
+        <option th:selected="${pageVO.pageSize==15}">15</option>
+        <option th:selected="${pageVO.pageSize==20}">20</option>
+        <option th:selected="${pageVO.pageSize==30}">30</option>
+        <option th:selected="${pageVO.pageSize==50}">50</option>
+      </select>
+    </div>
+  </div>
+
+  <table class="table">
+    <tr style="border-bottom: 3px solid #484848;">
+      <th>번호</th>
+      <th>제목</th>
+      <th>이름</th>
+      <th>작성일</th>
+      <th>조회수(♥)</th>
+    </tr>
+    <th:block th:each="board, st : ${pageVO.boardList}">
+      <tr>
+        <td>
+          <span th:if="${board.noticeSw == 'OK'}">📌</span>
+          <span th:unless="${board.noticeSw == 'OK'}" th:text="${pageVO.curScrStartNo - st.index}"></span>
+        </td>
+        <td class="text-start">
+          <a th:href="@{boardContent(id=${board.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">[[${board.title}]]</a>
+          <th:block th:if="${board.hourDiff <= 24}"><img src="/images/new.gif"></th:block>
+          <th:block th:if="${board.replyCnt != 0}">([[${board.replyCnt}]])</th:block>
+        </td>
+        <td>[[${board.name}]]</td>
+        <td>
+          <th:block th:if="${board.hourDiff <= 24}">
+            <!--<span th:text="${vo.dateDiff == 0} ? ${#strings.substring(vo.wDate.toString(), 11, 19)} : ${#strings.substring(vo.wDate.toString(), 0, 19)}"></span>-->
+            <span th:text="${board.dateDiff == 0} ? ${#temporals.format(board.wDate, 'HH:mm:ss')} : ${#temporals.format(board.wDate, 'yyyy-MM-dd HH:mm')}"></span>
+          </th:block>
+          <th:block th:if="${board.hourDiff > 24}"><span th:text="${#strings.substring(board.wDate,0,10)}"></span></th:block>
+        </td>
+        <td>[[${board.readNum}]]([[${board.good}]])</td>
+      </tr>
+    </th:block>
+  </table>
+
+  <!-- 블록페이지 시작 -->
+  <div class="text-center">
+    <ul class="pagination justify-content-center">
+      <th:block th:if="${pageVO.pag > 1}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=0)}">첫페이지</a></li></th:block>
+      <th:block th:if="${pageVO.curBlock > 0}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=${(pageVO.curBlock-1)*pageVO.blockSize+1-1})}">이전블록</a></li></th:block>
+      <th:block th:each="i: ${#numbers.sequence((pageVO.curBlock*pageVO.blockSize)+1,(pageVO.curBlock*pageVO.blockSize)+pageVO.blockSize)}">
+        <th:block th:if="${i <= pageVO.totPage && i == pageVO.pag}"><li class="page-item active"><a class="page-link bg-secondary border-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=${i-1})}" th:text="${i}"></a></li></th:block>
+        <th:block th:if="${i <= pageVO.totPage && i != pageVO.pag}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=${i-1})}" th:text="${i}"></a></li></th:block>
+      </th:block>
+      <th:block th:if="${pageVO.curBlock < pageVO.lastBlock}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=${(pageVO.curBlock+1)*pageVO.blockSize+1-1})}">다음블록</a></li></th:block>
+      <th:block th:if="${pageVO.pag < pageVO.totPage}"><li class="page-item"><a class="page-link text-secondary" th:href="@{boardList(pageSize=${pageVO.pageSize},pag=${pageVO.totPage-1})}">마지막페이지</a></li></th:block>
+    </ul>
+  </div>
+  <!-- 블록페이지 끝 -->
+
+</div>
+
+</html>

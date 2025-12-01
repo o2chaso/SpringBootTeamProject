@@ -1,0 +1,78 @@
+팀 프로젝트 개발 규칙 (전원 적용)
+팀장: 이동준
+팀원: 조병찬, 강호영, 강현모
+
+📌 기능 역할
+조병찬
+- 1:1 채팅
+
+강호영
+- 게시판 / 이미지 업로드
+
+회원가입 / 로그인 / 회훤탈퇴 / 비밀번호 변경 / 개인정보 수정 / 프로필 이미지
+
+동준, 현모
+대시보드(센서별)
+- 업체에 설치된 모든 센서 테이터 수치 디스플레이
+- 현장 주변 환경 실시간 모니터링
+- 각 센서 별 설정된 수치(임계값)에 따라 아이콘과 컬러로 현장 상태 주의 알림
+- 시간 / 주 / 상태 등등 조회 기능
+
+센서 테이터 상세
+- 각 데이터 별 날짜 - 시간 센서 테이터 조회
+- 특정 이벤트 발생 시점의 전 후 데이터 변화를 체크하여 업체에서 알맞은 대처를 할 수 있는 보조 자료 제공
+
+일일 리포트
+- 일일 센서 데이터 종합 정리 자료
+- 각 센서 별 최소, 최대, 평균값 및 이벤트 발생 횟수 체크
+* 중요
+- 일일, 주간, 월간 또는 사용자가 기간 선택하여 리포트 출력(그래프, 표 활용 및 이벤트 발생 이력 조회 및 해당 이벤트 발생 앞 뒤 데이터 변화를 확일 할 수 있어야 함.)
+- 스크롤 없이 한 화면으로 전체적인 리포트 내용 확인 가능한 요약 페이지 생성(요약본 인쇄기능)
+- 기간을 선택하여 조회한 리포트 내용 엑셀로 출력하는 기능
+- 자료를 원하는 실제 직원(공장 노동자 평균연령이 높아 PC에 대해 잘 알지 못함으로 한눈에 볼 수 있도록 편리하게 만들어야함)
+
+- Device_code: 장치 구분자(ENV_V2_1 등)
+- 각 장치 별 설치 장소 임의로 부여(1층, 2층, 자재실)
+- 서비스 중인 업체 한 곳의 3개월 치 센서 데이터 취합하여 제공 예정
+- 리포트 작성에 필요한 이벤트 발생 처리에 관한 테이블 자유로운 아이디어로 작성
+(ex- 임계값 설정하여 초과 시 이벤트 발생으로 간주하여 DB에 이력 저장)
+
+📌 API
+- 넣고 싶은 거 있으면 말해주세요
+
+company(업체 기본정보) - sensor(실제 수집된 데이터 저장) - threshold(관리자 설정 임계값) - event_log(임계값 초과 및 비정상 이벤트 기록(알림 근거))
+
+📌 환경 / 공통
+STS: 4.14.1 / Spring Framework 4.3.14
+Packaging: WAR
+JDK:       21.0.0.7
+MYSQL:     8.1
+JDBC:      5.1
+INTELLIJ:  2025.2.4
+HeidiSQL:  12.10.0.7
+dBeaver:   25.0.5
+WorkBanch: 8.0 CE
+URL:       jdbc:mysql://localhost:3306/springgroupBB
+
+Bootstrap + common layout
+메세지: rttr + "message"
+
+📌 도메인 규칙
+패키지: controller / dto / entity / service / repository / config
+Class: MemberController, MemberDTO, MemberEntity
+
+📌 REST URL 규칙
+/member/memberLogin
+/member/memberList
+/board/boardList
+
+📌 Response 규칙
+"OK", "NO"만 사용
+
+📌 메서드 네이밍
+save / insert / search / update / delete
+-ex: inertMember, searchEventLogList 등
+
+📌 Mapping 규칙
+@GetMapping → public 타입 xxGet()
+@PostMapping → public 타입 xxPost()

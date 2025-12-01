@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <th:block th:insert="~{include/bs5}"></th:block>
+  <script>
+  </script>
+</head>
+<body>
+<div class="container text-center">
+  <h4>센서 상세정보입니다.</h4>
+  <div th:utext="${contents}"></div>
+</div>
+</body>
+</html>
