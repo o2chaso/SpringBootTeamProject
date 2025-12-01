@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+  <th:block th:insert="~{include/bs5}"></th:block>
+  <link rel="icon" href="/images/favi.png" type="image/png">
+  <th:block th:if="${userCsrf}">
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+  </th:block>
+  <style>
+    .fieldError {
+      color: red !important;
+    }
+  </style>
+  <script th:inline="javascript">
+    $(function() {
+      const token = $("meta[name='_csrf']").attr("content");
+      const header = $("meta[name='_csrf_header']").attr("content");
+
+      console.log("CSRF token", token);
+      console.log("CSRF header", header);
+
+      $(document).ajaxSend(function(e, xhr, options) {
+        console.log("Sending AJAX request");
+        console.log("Header:", header);
+        console.log("Token:", token);
+
+        xhr.setRequestHeader(header, token);
+      });
+    });
+  </script>
+  <!-- js파일, css파일을 처리하는 영역 -->
+  <th:block layout:fragment="script">
+  </th:block>
+  <th:block layout:fragment="css"></th:block>
+  <title></title>
+</head>
+<body>
+  <div th:replace="~{layouts/header::header}"></div>
+  <!-- 메시지 alert 영역 추가 -->
+  <div class="container mt-3">
+    <div th:if="${message != null}" class="alert alert-info alert-dismissible fade show" role="alert">
+      <span th:text="${message}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  </div>
+
+  <p><br/></p>
+  <div class="container text-center">
+    <div layout:fragment="content">
+
+    </div>
+  </div>
+  <p><br/></p>
+  <div th:replace="~{layouts/footer::footer}"></div>
+</body>
+</html>

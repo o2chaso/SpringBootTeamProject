@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    let message = [[${message}]];
+    if(message != null) alert(message);
+  </script>
+</th:block>
+<div layout:fragment="content">
+  <h2 class="text-center mb-4">센서</h2>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <th:block th:each="product : ${productList}">
+      <div class="col">
+        <div class="card h-100 shadow-sm border-0 rounded-3">
+          <a th:href="@{/product/productContent/{id}(id=${product.id})}"
+              th:onclick="|window.open(this.href, 'popup', 'width=600,height=500'); return false;|"
+              class="text-decoration-none">
+            <img th:src="@{'/admin/product/' + ${product.sensorImage}}" th:alt="${product.sensorName}"
+                    class="card-img-top img-fluid rounded-top"
+                    style="object-fit: contain; height: 200px; width: 100%; border-bottom: 1px solid #ddd;" />
+            <div class="card-body">
+              <h6 class="card-title text-dark fw-semibold mb-2 text-truncate" style="font-size: 1rem">
+                [[${product.model}]]
+              </h6>
+              <p class="text-muted small mb-0 text-truncate" style="font-size: 0.875rem">
+                [[${product.sensorName}]]
+              </p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </th:block>
+  </div>
+</div>
+</html>

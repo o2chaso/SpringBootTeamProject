@@ -1,0 +1,115 @@
+# server port : 9099
+server:
+  port: 9099
+  tomcat:
+    uri-encoding: UTF-8
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+# Spring Setting
+spring:
+  application:
+    name: SpringGroupBB
+
+  #encoding
+  http:
+    encoding:
+      enabled: true
+      charset: UTF-8
+      force: true
+
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+  thymeleaf:
+    cache: false
+
+  # DataBase Setting(Datasource)
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/springgroupbb
+    username: root
+    password: 1234
+
+  # JPA Setting
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: update  # create, update, none, create-drop, validate...
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    show-sql: false # SQL Log Display Setting
+    properties:
+      hibernate:
+        format_sql: true # SQL Log Display Setting
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  # Security User Password Setting (Security Login Info Setting)
+  security:
+    user:
+      name: vocalyui123@gmail.com
+      password: 1234
+
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: a108bb7f193bda9633e8a027477d1939
+            #client-secret: 3a2f4f691c8794f9a843fc26e8da5357
+            scope: account_email, profile_nickname
+            redirect-uri: "http://localhost:9099/login/oauth2/code/kakao"
+            authorization-grant-type: authorization_code
+            client-name: Kakao
+            user-name-attribute: id
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+
+  # File Upload Setting
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+  # email
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: cccbbbsss1126@gmail.com
+    password: sehfqrgytwufqtoe
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
+
+
+# Log Information Setting
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace # SQL Log Display Setting
+      springframework:
+        security: DEBUG
+        web: DEBUG
+
+app:
+  oauth:
+    kakao:
+      require-email: true

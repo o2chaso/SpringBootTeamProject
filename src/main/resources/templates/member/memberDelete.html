@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    let message = [[${message}]];
+    if(message != null) alert(message);
+
+    function fCheck() {
+
+      let password = form.password.value;
+      let confirmPassword = form.confirmPassword.value;
+      if(password != confirmPassword) {
+        alert("비밀번호가 다릅니다.")
+        return false;
+      }
+
+      let ans = confirm("회원 탈퇴하시겠습니까?");
+      if(!ans) return false;
+
+      $.ajax({
+        url   : 'memberDelete',
+        data  : {password:password},
+        type  : 'post',
+        success : (res) => {
+          if(res == 'OK') {
+            alert("회원 탈퇴되셨습니다.");
+            location.href='/member/memberLogout';
+          }
+          else {
+            alert("비밀번호를 확인해주세요");
+            location.reload();
+          }
+        },
+        error : () => alert("전송오류")
+      });
+    }
+  </script>
+</th:block>
+
+<style layout:fragment="css" >
+  body {
+    font-family: Arial, sans-serif;
+  }
+  .row {
+    margin: 0px;
+    padding: 10px;
+    align-items: center;
+  }
+  .row label {
+    margin: 0px;
+    flex: 0 0 150px;
+    font-size: 14px;
+    font-weight: normal;
+    border-right: 1px solid #ddd;
+  }
+  .essential {
+    color:blue
+  }
+  .join__h2 {
+    font-size: 16px;
+    font-weight: bold;
+  }
+</style>
+
+<div layout:fragment="content">
+  <h2>회원탈퇴</h2>
+  <div class="d-flex justify-content-center">
+    <form name="form" method="post"  class="flex-grow-1">
+      <div class="row mb-2">
+        <label th:for="password" class="col-form-label col-2">비밀번호<span class="essential">*</span></label>
+        <div class="col-sm-6">
+          <input type="password" name="password" id="password" class="form-control" placeholder="비밀번호를 입력해주세요"/>
+        </div>
+      </div>
+      <div class="row mb-2">
+        <label for="confirmPassword" class ="col-form-label col-2">비밀번호 확인<span class="essential">*</span></label>
+        <div class="col-sm-6">
+          <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" placeholder="비밀번호 확인" required />
+        </div>
+      </div>
+      <div class="d-flex justify-content-center gap-3 mt-4">
+          <button type="button" class="btn btn-dark w-40 px-4" onclick="fCheck()">확인</button>
+          <button type="button" class="btn btn-dark w-40 px-4" onclick="location.href='/member/memberMain'">취소</button>
+      </div>
+    </form>
+  </div>
+</div>
+</html>

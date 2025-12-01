@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script src="/js/woo.js"></script>
+
+  <script th:inline="javascript">
+    let message = [[${message}]];
+    if(message != null) alert(message);
+
+    let regEmail =/^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/;
+    let timeLimit = 180;
+    let interval;
+
+    $(document).ready(function() {
+      let emailSw = $("#emailSw").val();
+      if(emailSw == "1") {
+      $("#email").prop("readonly", true);
+      $("#emailBtn").hide();
+      $("#emailResetBtn").show();
+      }
+    });
+
+    function fCheck() {
+      let tel1 = form.tel1.value;
+      let tel2 = form.tel2.value.trim();
+      let tel3 = form.tel3.value.trim();
+      let tel = tel1 + "-" + tel2 + "-" + tel3;
+
+      let postcode = form.postcode.value + " ";
+      let roadAddress = form.roadAddress.value + " ";
+      let detailAddress = form.detailAddress.value + " ";
+      let extraAddress = form.extraAddress.value + " ";
+
+      let address = postcode + "/" + roadAddress + "/" + detailAddress + "/" + extraAddress;
+      let emailSw = $("#emailSw").val();
+      let birthday = form.birthday.value;
+      let birthdayMax = form.birthday.max;
+
+      form.tel.value = tel;
+      form.address.value = address;
+
+      if(emailSw != 1) {
+        alert("이메일 인증을 해주세요");
+        return false;
+      }
+      else if(birthday != '') {
+        if(birthday > birthdayMax) {
+          alert("오늘 이후 날짜는 선택할 수 없습니다.");
+          $("#birthday").val(birthdayMax);
+          return false;
+        }
+      }
+      form.submit();
+    }
+
+    function emailCertification() {
+      let email = form.email.value.trim();
+
+      if(!regEmail.test(email)) {
+        alert("이메일 형식에 맞지 않습니다.");
+        form.email.focus();
+        return false;
+      }
+
+      let spin = "<div class='text-center'><div class='spinner-border text-muted'></div> 메일 발송중 다. 잠시만 기다려주세요 <div class='spinner-border text-muted'></div></div>";
+      $("#demoSpin").show().html(spin);
+      $("#email").prop("readonly", true);
+      $.ajax({
+        url 	: '/member/memberEmailCheck',
+        type 	: 'post',
+        data 	:{email : email},
+        success : (res) => {
+          if(res=='OK') {
+            alert("인증번호가 발송되었습니다");
+            let str = '<label for="checkKey" class="col-form-label col-2">인증번호<span class="essential">*</span></label>';
+            str += '<div class="col-sm-6">';
+            str += '<div class="input-group">';
+            str += '<input type="text" name="checkKey" id="checkKey" class="form-control"/>';
+            str += '<span id="timeLimit" class="input-group-text"';
+            str += 'style="background: rgba(255,255,255,0.07); color:#A8D8FF; border:1px solid rgba(255,255,255,0.2);">';
+            str += '남은시간 : 180초 </span>';
+            str += '<input type="button" value="인증번호확인" onclick="emailCertificationOk()" class="btn btn-primary-custom btn-sm"/>';
+            str += '</div></div>';
+            $("#demoSpin").html(str);
+            $("#emailBtn").hide();
+            $("#emailResetBtn").show();
+
+            timer();
+          }
+          else {
+            alert("인증번호 확인버튼을 다시 눌러주세요!");
+            $("#email").prop("readonly", false);
+          }
+        },
+        error : () => alert("전송오류")
+      });
+    }
+
+    function timer() {
+      clearInterval(interval);
+      timeLimit = 179;
+
+      interval = setInterval(() => {
+        $("#timeLimit").html("남은시간 : "+timeLimit+"초");
+
+        if(timeLimit == 0){
+          $("#demoSpin").html("");
+          timeLimit = 179;
+
+          $.ajax({
+            url 		: '/member/memberEmailCheckNo',
+            type 		: 'post',
+            success : () => {
+              $("#emailSw").val(0);
+              alert("인증시간이 만료되었습니다.")
+            },
+            error 	: () => alert("전송오류")
+          });
+          clearInterval(interval);
+        }
+        timeLimit--;
+      }, 1000);
+    }
+
+    function emailCertificationOk() {
+      let checkKey = $("#checkKey").val();
+      if(checkKey.trim()=="") {
+        alert("메일로 전송받은 인증키를 입력해주세요");
+        form.checkKey.focus();
+        return false;
+      }
+      $.ajax({
+        url 	: '/member/memberEmailCheckOk',
+        type 	: 'post',
+        data 	: {checkKey:checkKey},
+        success : (res) => {
+          if(res == 'OK') {
+            clearInterval(interval);
+            $("#demoSpin").hide();
+            alert("인증번호를 확인되었습니다");
+            $("#emailSw").val(1);
+          }
+          else {
+            alert("인증번호 오류 인증번호를 확인해주세요.");
+            form.checkKey.focus();
+          }
+        },
+        error : () => alert("전송오류")
+      });
+    }
+
+    function emailReset() {
+      clearInterval(interval);
+
+      $("#demoSpin").empty().hide();
+      $("#emailResetBtn").hide();
+      $("#emailBtn").prop("disabled", false);
+      $("#emailBtn").show();
+      $("#email").prop("readonly", false);
+      $("#emailSw").val(0);
+    }
+  </script>
+</th:block>
+
+<style layout:fragment="css">
+  /* Google Fonts */
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Roboto:wght@300;400;500&display=swap');
+
+  /* ===== 전체 배경 ===== */
+  /* ===== 전체 배경 ===== */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Roboto', 'Helvetica', sans-serif;
+    padding: 40px 0;
+}
+
+/* ===== 카드 ===== */
+.join-card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 40px 45px;
+    max-width: 760px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* ===== 제목 ===== */
+h2.join-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #343a40;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* ===== 라벨 ===== */
+label {
+    color: #495057;
+    font-weight: 500;
+}
+
+/* ===== essential 표시 ===== */
+.essential {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* ===== 입력창 ===== */
+.form-control, .form-select {
+    border-radius: .375rem;
+    height: 45px;
+}
+
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+}
+
+/* ===== 버튼 ===== */
+.btn-primary-custom {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+    border-radius: .375rem;
+    padding: 10px 16px;
+    font-weight: 500;
+}
+
+.btn-primary-custom:hover {
+    background-color: #0b5ed7;
+}
+
+.btn-outline-custom {
+    border: 1px solid #0d6efd;
+    border-radius: .375rem;
+    padding: 10px 16px;
+    color: #0d6efd;
+    background: #fff;
+}
+
+.btn-outline-custom:hover {
+    background: rgba(13,110,253,0.08);
+}
+
+/* ===== input-group text ===== */
+.input-group-text {
+    background: #f1f3f5;
+}
+
+/* ===== 오류 텍스트 ===== */
+.fieldError {
+    color: #dc3545!important;
+    font-size: 13px;
+}
+
+</style>
+
+
+
+<div layout:fragment="content" class="d-flex justify-content-center">
+  <div class="join-card">
+    <h2 class="join-title">회원가입</h2>
+    <div class="row">
+      <div class="col text-end"><span class="essential">*</span>필수</div>
+    </div>
+    <div class="d-flex justify-content-center">
+      <form name="form" method="post" th:object="${memberDTO}" class="flex-grow-1">
+        <div class="row mb-2">
+          <label th:for="email" class="col-form-label col-2">이메일<span class="essential">*</span></label>
+          <div class="col-sm-6">
+            <div class="input-group">
+              <input type="email" id="email" th:field="*{email}" class="form-control" placeholder="이메일을 입력해주세요">
+              <button type="button" id="emailBtn" onclick="emailCertification()"
+                      class="btn btn-dark btn-sm text-white"
+                      th:attr="disabled=${emailSw == 1}">이메일 인증</button>
+              <button type="button" id="emailResetBtn" onclick="emailReset()"
+                      class="btn btn-dark btn-sm text-white" style="display:none">다시 입력</button>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="fieldError ms-3" style="color:red; font-size:13px; text-align:left">Incorrect data</div>
+          </div>
+        </div>
+        <div id="demoSpin" class="row mb-2" style="display:none"></div>
+        <div class="row mb-2">
+          <label th:for="password" class="col-form-label col-2">비밀번호<span class="essential">*</span></label>
+          <div class="col-sm-6">
+            <input type="password" id="password" th:field="*{password}" class="form-control" placeholder="비밀번호를 입력해주세요"/>
+          </div>
+          <div class="col-sm-4">
+            <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="fieldError ms-3" style="color:red; font-size:13px; text-align:left">Incorrect data</div>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <label th:for="name" class="col-form-label col-2">이름<span class="essential">*</span></label>
+          <div class="col-sm-6">
+            <input type="text" th:field="*{name}" class="form-control" placeholder="이름을 입력해주세요" />
+          </div>
+          <div class="col-sm-4">
+            <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="fieldError ms-3" style="color:red; font-size:13px; text-align:left">Incorrect data</div>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <label class="col-form-label col-2">전화번호<span class="essential">*</span></label>
+          <div class="col-sm-6 d-flex">
+            <select name="tel1" class="form-select me-1">
+              <option value="010" selected>010</option>
+              <option value="011">011</option>
+              <option value="016">016</option>
+              <option value="017">017</option>
+              <option value="018">018</option>
+              <option value="019">019</option>
+            </select>
+            <span class="pt-1 ms-1 me-1">-</span>
+            <input type="tel" th:field="*{tel2}" class="form-control ms-1 me-1"/>
+            <span class="pt-1 ms-1 me-1">-</span>
+            <input type="tel" th:field="*{tel3}" class="form-control ms-1 me-1"/>
+          </div>
+          <div class="col-sm-4">
+            <div th:if="${#fields.hasErrors('tel')}" th:errors="*{tel}" class="fieldError ms-3" style="color:red; font-size:13px; text-align:left">Incorrect data</div>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <label class="col-form-label col-2 pb-5 pt-5">주소</label>
+          <div class="col-sm-6">
+            <div class="input-group mb-1">
+              <input type="text" name="postcode" id="sample6_postcode" placeholder="우편번호" readOnly class="form-control">
+              <input type="button" onclick="sample6_execDaumPostcode()" value="우편번호 찾기" class="btn btn-secondary btn-sm">
+            </div>
+            <div class="mb-1"><input type="text" name="roadAddress" id="sample6_address" size="50" placeholder="주소" readOnly class="form-control mb-1"></div>
+            <div class="input-group">
+              <input type="text" name="detailAddress" id="sample6_detailAddress" placeholder="상세주소" class="form-control me-2">
+              <input type="text" name="extraAddress" id="sample6_extraAddress" placeholder="참고항목" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="row" >
+          <label class="col-form-label col-2">생일</label>
+          <div class="col-3">
+            <input type="date" id="birthday" th:field="*{birthday}" class="form-control"
+                   th:max="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" />
+          </div>
+        </div>
+        <div class="d-flex justify-content-center gap-3 mt-4">
+          <button type="button" class="btn btn-dark w-40 px-4" onclick="fCheck()">회원가입</button>
+          <button type="button" class="btn btn-dark w-40 px-4" onclick="location.href='/'">취소</button>
+        </div>
+        <input type="hidden" th:field="*{tel}" />
+        <input type="hidden" th:field="*{address}" />
+        <input type="hidden" id="emailSw" name="emailSw" th:value="${emailSw}" />
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      </form>
+    </div>
+  </div>
+</div>
+</html>
