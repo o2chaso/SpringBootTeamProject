@@ -41,6 +41,29 @@
       window.open(url, windowName, option);
     }
 
+    // 날짜 입력시 최대날짜 제한 메소드.
+    $(() => {
+      // 백업용 날짜.
+      let newDate = new Date($("#measureDatetime").val());
+
+      $("#measureDatetime").on("input", () => {
+        // 오늘 날짜.
+        let rawDate = new Date([[${toDay}]]);
+        // 입력 받은 날짜.
+        let date = new Date($("#measureDatetime").val());
+
+        // 없늘 날짜 입력시 백업 데이터로 입력 받은 날짜 살리기.
+        if(date == 'Invalid Date') date = newDate;
+        // 백업 갱신.
+        else newDate = date;
+
+        // 미래 날짜 입력 받으면 오늘 날짜로.
+        if(rawDate < date) $("#measureDatetime").val([[${toDay}]]);
+        // 입력 받은 날짜로.
+        else $("#measureDatetime").val(date.toISOString().slice(0,10));
+      });
+    });
+
     function printPage() {
       window.print();
     }
@@ -87,7 +110,7 @@
   <p></p>
   <div class="row">
     <div class="col input-group d-flex justify-content-strat">
-      <input type="date" max="9999-12-31" id="measureDatetime" th:value="${measureDatetime}" />
+      <input type="date" th:max="${toDay}" id="measureDatetime" th:value="${measureDatetime}" />
       <input type="button" value="조회" th:onclick="|reportChange(4)|" class="btn btn-info btn-sm ms-1" />
     </div>
   </div>

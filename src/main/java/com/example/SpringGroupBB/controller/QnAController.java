@@ -95,9 +95,7 @@ public class QnAController {
   public int qnaAnswerPost(Long id, String content) {
     try {
       qnaService.insertQnAAnswer(id, content);
-    } catch (Exception e) {
-      return 0;
-    }
+    } catch (Exception e) {return 0;}
     return 1;
   }
 
@@ -132,7 +130,7 @@ public class QnAController {
     
     model.addAttribute("qnaList", qnaList);
     model.addAttribute("id", id);
-    // 조치가 끝난 채팅일 경우 더이상 채팅을 보내지 못하도록, 자동 새로고침을 정지시키기 위해 문의현황을 보낸다.
+    // 조치가 끝난 채팅일 경우 더이상 채팅을 보내지 못하도록 하고, 자동 새로고침을 정지시키기 위해 문의현황을 보낸다.
     model.addAttribute("progress", qnaService.selectQnAId(id).getProgress());
     return "qna/qnaNewWindow";
   }

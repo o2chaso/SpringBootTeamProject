@@ -4,9 +4,12 @@ import com.example.SpringGroupBB.entity.ReportSave;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface ReportRepository extends JpaRepository<ReportSave, Long> {
   ReportSave findBySaveReportDateAndSaveReportRestDateAndDeviceCode(LocalDateTime measureDatetime, LocalDateTime restDay, String deviceCode);
 
   ReportSave findBySaveReportDateAndDeviceCodeAndReport(LocalDateTime measureDatetime, String deviceCode, String report);
+
+  List<ReportSave> findAllByOrderBySaveReportDateDesc();
 }

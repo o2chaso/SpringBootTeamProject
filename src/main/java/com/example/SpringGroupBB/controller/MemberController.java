@@ -103,6 +103,7 @@ public class MemberController {
 
     session.setAttribute("sName", member.getName());
     session.setAttribute("strLevel", strLevel);
+    session.setAttribute("sEmail", member.getEmail());
 
     rttr.addFlashAttribute("message", member.getName() + "님 로그인 되셨습니다.");
     return "redirect:/member/memberMain";

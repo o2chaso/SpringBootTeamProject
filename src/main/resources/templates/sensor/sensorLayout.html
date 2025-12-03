@@ -35,7 +35,14 @@
       "0.481,0.180","0.458,0.462","0.640,0.935","0.168,0.180",
       "0.860,0.114","0.766,0.114","0.668,0.114",
       "0.748,0.728","0.748,0.612","0.748,0.493","0.073,0.689",
-      "0.640,0.834","0.249,0.756"
+      "0.640,0.834","0.248,0.756"
+    ];
+    // 센서 이름 배열.
+    const sensorNames = [
+      "실내온도", "상대습도", "이산화탄소", "유기화합물",
+      "미세먼지", "미세먼지", "미세먼지", "소음",
+      "온도1", "온도2", "온도3",
+      "온도(비접촉)", "조도"
     ];
 
     // SSE 연결(Server-Sent Events / 실시간 서버-클라이언트 통신 기술)
@@ -53,11 +60,11 @@
         thresholdMap[t.deviceCode + "_" + t.sensorKey] = t;
       });
 
-      console.log("받은 데이터", data);
+      //console.log("받은 데이터", data);
 
       // 현재 선택된 deviceCode 찾기
       const target = sensors.find(s => s.deviceCode === currentDevice);
-      console.log("target: ",target);
+      //console.log("target: ",target);
       if(!target) return;
 
       // for문 사용을 위한 target.value 배열.
@@ -65,13 +72,6 @@
         target.value1,target.value2,target.value3,target.value4,target.value5,
         target.value6,target.value7,target.value8,target.value9,target.value10,
         target.value11,target.value12,target.value13
-      ]
-
-      let sensorNames = [
-        "실내온도", "상대습도", "이산화탄소", "유기화합물",
-        "미세먼지", "미세먼지", "미세먼지", "소음",
-        "온도1", "온도2", "온도3",
-        "온도(비접촉)", "조도"
       ];
 
       for(let i=0; i<13; i++) {
@@ -121,14 +121,17 @@
       beepSoundSW = false;
       // for문을 사용해 각 센서를 세팅.
       for(let i=0; i<13; i++) {
-        setSensor("sensor"+(i+1), value[i], thresholdMap[currentDevice + "_" + "value"+(i+1)], abXY[i]);
+        setSensor("sensor"+(i+1), value[i], thresholdMap[currentDevice + "_" + "value"+(i+1)], abXY[i], i);
       }
       // 각 센서 세팅이 끝난 후 경고음 만드는 메소드 실행.
       beepSound();
     };
 
+    // 센서 이상 이력 추가용 변수.
+    let str = "";
+    let normalStr = "";
     // 센서 div에 class값 주는(센서 상태로 센서 색 변경) 메소드.
-    function setSensor(id, value, threshold, abXY) {
+    function setSensor(id, value, threshold, abXY, i) {
       // 센서의 클래스 초기화.
       $("#"+id).get(0).className = "";
       // threshold 테이블에 센서ID(value1, value2...)가 존재하면 if문 안으로.
@@ -137,14 +140,48 @@
           // 현재 음소거 상태가 아니면 경고음 스위치 true.
           if(sAdminBeepSoundSW) beepSoundSW = true;
           else beepSoundSW = false;
+
+          // 센서 상태 변경.
           $("#"+id).get(0).classList.add("Alarm");
+
+          let alarmTime = threshold.updateDateTime.toString().toString().substring(11,19);
+          // 센서 이상 이력에 alarm 이력 표시.
+          if(!$("#sensorThreshold"+i).length > 0) {
+            str = '<div id="sensorThreshold'+i+'"></div>';
+            $("#sensorThreshold").append(str);
+          }
+          str = '<font color=red>'+alarmTime+' '+sensorNames[i]+' Alarm</font>';
+          $("#sensorThreshold"+i).html(str);
         }
         else if(value >= threshold.warning) {
           if(sAdminBeepSoundSW) beepSoundSW = true;
           else beepSoundSW = false;
+
           $("#"+id).get(0).classList.add("Warning");
+
+          let alarmTime = threshold.updateDateTime.toString().toString().substring(11,19);
+          if(!$("#sensorThreshold"+i).length > 0) {
+            str = '<div id="sensorThreshold'+i+'"></div>';
+            $("#sensorThreshold").append(str);
+          }
+          str = '<font color=yellow>'+alarmTime+' '+sensorNames[i]+' Warning</font>';
+          $("#sensorThreshold"+i).html(str);
         }
-        else $("#"+id).get(0).classList.add("Normal");
+        else {
+          $("#"+id).get(0).classList.add("Normal");
+
+          // 센서 상태에 따른 폰트 색 변경.
+          if(str.includes("Alarm")) str = '<div><front color=red>'+$("#sensorThreshold"+i).html()+'</font></div>';
+          else str = '<div><front color=yellow>'+$("#sensorThreshold"+i).html()+'</font></div>';
+
+          // 센서 이상 추가 + 지금까지의 이상 이력.
+          str = str+$("#sensorStat").html();
+          console.log("str: ",str);
+          // 없는 값일 때 공백.
+          if(!str.includes('undefined')) $("#sensorStat").html(str);
+          // 센서의 현재 이상 공백.
+          $("#sensorThreshold"+i).html("");
+        }
       }
       else $("#"+id).get(0).classList.add("Normal");
       // 센서 이동 메소드 실행.
@@ -155,7 +192,7 @@
       // 센서의 절대좌표 x, y값.
       let ab = abXY.split(",");
       // 현재 이미지의 정보.
-      let rect = $("#myImg").get(0).getBoundingClientRect();
+      let rect = $("#place").get(0).getBoundingClientRect();
 
       // 절대좌표와 현재 이미지값으로 센서 좌표 산출.
       let x = ab[0] * rect.width;
@@ -164,12 +201,14 @@
       $("#"+id).get(0).style.left = x+"px";
       $("#"+id).get(0).style.top = y+"px";
     }
+
     // 마우스 클릭 시 이벤트 발생.
     document.onclick = mouseClick;
     function mouseClick(e) {
       // web audio api 사용할 때 현재 페이지에 주소로 바로 왔을 때, 서버가 새로 동작된 후 새로고침 했을 때 등 한 번도 클릭하지 않은 상태일 때 audioContext활성화.
       if(audioContext.state === "suspended") audioContext.resume();
     }
+
     /* 마우스 클릭한 브라우저의 좌표 표시.
       console.log("마우스클릭 좌표 메소드");
       let x = e.clientX;
@@ -179,6 +218,7 @@
 
       setSensorPosition("sensor4", 0.16818181818181818, 0.18045454545454545);
     */
+
     // web audio api 사용.
     // window.webkitAudioContext은 개발 초기단계에서 사용하던 이름.
     const audioContext = new window.AudioContext();
@@ -197,8 +237,6 @@
       }
 
       // 센서 세팅 끝난 후의 SW가 false 혹은 sAdminBeepSoundSW가 false(음소거 상태)라면 소리 끄기.
-      console.log("beepSoundSW: ",beepSoundSW);
-      console.log("sAdminBeepSoundSW: ",sAdminBeepSoundSW);
       if(!beepSoundSW || !sAdminBeepSoundSW) {
         if(oscillator) {
           oscillator.stop();
@@ -311,6 +349,10 @@
       opacity: 0.5;
       transform: translate(-50%, -50%);
     }
+
+    /*센서 이상 이력에 외곽선*/
+    #sensorThreshold {text-shadow: -1px 0px black, 0px 1px black, 1px 0px black, 0px -1px black;}
+    #sensorStat {text-shadow: -1px 0px black, 0px 1px black, 1px 0px black, 0px -1px black;}
   </style>
 </head>
 <body>
@@ -331,13 +373,24 @@
       <br/>
       <div><b>경고음 조작</b></div>
       <br/>
-      <input type="button" id="adminBeepSoundSW0" value="음소거" onclick="adminBeepSoundChange(0)" class="btn btn-danger btn-sm" th:style="${session.sAdminBeepSoundSW?'':'display: none'}"/>
-      <input type="button" id="adminBeepSoundSW1" value="활성화" onclick="adminBeepSoundChange(1)" class="btn btn-success btn-sm" th:style="${session.sAdminBeepSoundSW?'display: none':''}" />
+      <div>
+        <input type="button" id="adminBeepSoundSW0" value="음소거" onclick="adminBeepSoundChange(0)" class="btn btn-danger btn-sm" th:style="${session.sAdminBeepSoundSW?'':'display: none'}" />
+        <input type="button" id="adminBeepSoundSW1" value="활성화" onclick="adminBeepSoundChange(1)" class="btn btn-success btn-sm" th:style="${session.sAdminBeepSoundSW?'display: none':''}" />
+      </div>
+      <br/>
+      <div><b>센서 이상 이력</b></div>
+      <div>
+        <div><b>현재 이상 발생 중인 센서</b></div>
+        <div id="sensorThreshold" class="border"></div>
+        <br/>
+        <div><b>이전에 이상 발생한 센서</b></div>
+        <div id="sensorStat" class="border"></div>
+      </div>
     </div>
     <div class="col border ms-2">
       <div style="position: relative; display: inline-block;">
         <th:block th:if="${deviceCode=='ENV_V2_1'}">
-          <img src="/sensor/ENV_V2_1.png" id="myImg" style="max-width:100%; max-height:calc(100vh - 300px)"  alt="image"/>
+          <img src="/sensor/ENV_V2_1.png" id="place" style="max-width:100%; max-height:calc(100vh - 300px)"  alt="image"/>
         </th:block>
 
         <a href="javascript:newWindow('sensor1')" id="sensor1" title="title"

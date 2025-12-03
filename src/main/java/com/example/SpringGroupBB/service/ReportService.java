@@ -16,7 +16,7 @@ public class ReportService {
   private final ReportRepository reportRepository;
 
   public List<ReportSaveDTO> selectAllReportList() {
-    return ReportSaveDTO.entityListToDTOList(reportRepository.findAll());
+    return ReportSaveDTO.entityListToDTOList(reportRepository.findAllByOrderBySaveReportDateDesc());
   }
 
   public ReportSaveDTO selectReportID(Long id) {

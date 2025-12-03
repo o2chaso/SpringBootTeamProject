@@ -365,6 +365,7 @@ public class SensorController {
         model.addAttribute("id", id);
         model.addAttribute("value", value);
         model.addAttribute("device", deviceCode.equals("ENV_V2_1")?"1층":deviceCode.equals("ENV_V2_2")?"2층":deviceCode.equals("ENV_V2_3")?"자재실":"연구실");
+        model.addAttribute("toDay", LocalDate.now());
         return "sensor/dailyReport";
       }
       else if(reportFlag != -1) {
@@ -379,6 +380,7 @@ public class SensorController {
             model.addAttribute("id", id);
             model.addAttribute("value", value);
             model.addAttribute("device", deviceCode.equals("ENV_V2_1")?"1층":deviceCode.equals("ENV_V2_2")?"2층":deviceCode.equals("ENV_V2_3")?"자재실":"연구실");
+            model.addAttribute("toDay", LocalDate.now());
             return "sensor/dailyReport";
           }
         } catch (Exception e) {}
@@ -397,8 +399,6 @@ public class SensorController {
       List<SensorDTO> restSensorList = new ArrayList<>();
       // 수치 비교용 이전날 수치.
       restSensorList = sensorService.selectSensorValueAndDate(restDay, deviceCode, flag);
-      System.out.println("sensorList.size: " + sensorList.size());
-      System.out.println("restSensorList.size: " + restSensorList.size());
       // 수치비교.
       for (int i = 0; i < sensorList.size(); i++) {
         if (restSensorList.isEmpty()) {
@@ -419,7 +419,7 @@ public class SensorController {
         reportService.insertReportSave(sensorList,
                 LocalDateTime.parse(measureDatetime+"T00:00:00"), LocalDateTime.parse(restDay+"T00:00:00"),
                 deviceCode, flag);
-      } catch (Exception e) {}
+      } catch (Exception e) {System.out.println("레포트 저장 실패");}
 
       // DB검색결과.
       model.addAttribute("sensorList", sensorList);
@@ -435,12 +435,23 @@ public class SensorController {
       // 일일, 주간, 월간.
       model.addAttribute("flag", flag);
       model.addAttribute("device", deviceCode.equals("ENV_V2_1")?"1층":deviceCode.equals("ENV_V2_2")?"2층":deviceCode.equals("ENV_V2_3")?"자재실":"연구실");
+      // 날짜검색 제한을 위한 오늘 날짜.
+      model.addAttribute("toDay", LocalDate.now());
       return "sensor/dailyReport";
     }
     else {
-      model.addAttribute("reportSaveList", reportService.selectAllReportList());
-      model.addAttribute("userCsrf", true);
-      return "sensor/reportList";
+      ReportSaveDTO report = reportService.selectReportSaveDateDeviceCodeFlag(measureDatetime, deviceCode, flag);
+      int reportFlag = report.getReport().equals("일일")?0:report.getReport().equals("주간")?1:report.getReport().equals("월간")?2:-1;
+      model.addAttribute("report", report);
+      model.addAttribute("deviceCode", report.getDeviceCode());
+      model.addAttribute("measureDatetime", report.getSaveReportDate().toString().substring(0, 10));
+      model.addAttribute("measureDatetimePast", report.getSaveReportRestDate().toString().substring(0, 10));
+      model.addAttribute("flag", reportFlag);
+      model.addAttribute("id", id);
+      model.addAttribute("value", value);
+      model.addAttribute("device", deviceCode.equals("ENV_V2_1")?"1층":deviceCode.equals("ENV_V2_2")?"2층":deviceCode.equals("ENV_V2_3")?"자재실":"연구실");
+      model.addAttribute("toDay", LocalDate.now());
+      return "sensor/dailyReport";
     }
   }
 
@@ -550,8 +561,7 @@ public class SensorController {
     if(session.getAttribute("sAdminBeepSoundSW") == null) session.setAttribute("sAdminBeepSoundSW", true);
     // 장소.
     model.addAttribute("deviceCode", deviceCode);
-    // popover el확인용.
-    model.addAttribute("toDay", LocalDate.now());
+    model.addAttribute("userCsrf", true);
     return "sensor/sensorLayout";
   }
   // 음소거(true), 활성화(false) 버튼으로 세션정보 변경.

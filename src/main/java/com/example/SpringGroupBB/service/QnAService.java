@@ -44,21 +44,23 @@ public class QnAService {
 
   @Transactional
   public void insertQnAAnswer(Long id, String content) throws Exception {
-    QnA parentQnA = qnaRepository.findById(id).orElse(null);
-    if(parentQnA.getProgress()!=Progress.RESOLVING) throw new Exception();
+    try {
+      QnA parentQnA = qnaRepository.findById(id).orElse(null);
+      if(parentQnA.getProgress()!=Progress.RESOLVING) throw new Exception();
 
-    Member dearEmail = memberRepository.findByEmail(parentQnA.getFromEmail().getEmail()).orElse(null);
-    Member fromEmail = memberRepository.findByEmail(session.getAttribute("sEmail").toString()).orElse(null);
-    qnaRepository.save(QnA.builder()
-                 .parentId(id)
-                 .fromEmail(fromEmail)
-                 .dearEmail(dearEmail)
-                 .title(parentQnA.getTitle())
-                 .content(content)
-                 .progress(Progress.ANSWER)
-                 .build());
-    parentQnA.setLastDate(LocalDateTime.now());
-    qnaRepository.save(parentQnA);
+      Member dearEmail = memberRepository.findByEmail(parentQnA.getFromEmail().getEmail()).orElse(null);
+      Member fromEmail = memberRepository.findByEmail(session.getAttribute("sEmail").toString()).orElse(null);
+      qnaRepository.save(QnA.builder()
+                   .parentId(id)
+                   .fromEmail(fromEmail)
+                   .dearEmail(dearEmail)
+                   .title(parentQnA.getTitle())
+                   .content(content)
+                   .progress(Progress.ANSWER)
+                   .build());
+      parentQnA.setLastDate(LocalDateTime.now());
+      qnaRepository.save(parentQnA);
+    } catch (Exception e) {System.out.println("세션 이메일 체크.");}
   }
 
   public void updateOpenSWOK(QnA qna) {

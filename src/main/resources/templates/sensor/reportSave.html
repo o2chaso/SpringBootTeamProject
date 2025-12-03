@@ -31,10 +31,16 @@
       }
       // 날짜 입력시 최대날짜 제한 메소드.
       $(() => {
+        let newDate = new Date($("#measureDatetime").val());
         $("#measureDatetime").on("input", () => {
           let rawDate = new Date([[${measureDatetime}]]);
-          let newDate = new Date($("#measureDatetime").val());
-          if(rawDate < newDate) $("#measureDatetime").val([[${measureDatetime}]]);
+          let date = new Date($("#measureDatetime").val());
+
+          if(date == 'Invalid Date') date = newDate;
+          else newDate = date;
+
+          if(rawDate < date) $("#measureDatetime").val([[${measureDatetime}]]);
+          else $("#measureDatetime").val(date.toISOString().slice(0,10));
         });
       });
 
@@ -53,8 +59,8 @@
     <p></p>
     <div class="row">
       <div class="col"></div>
-      <div class="col input-group" style="min-width:390px">
-        <input type="date" max="9999-12-31" id="measureDatetimePast" th:value="${measureDatetimePast}" readonly />
+      <div class="col input-group" style="min-width:410px">
+        <input type="date" id="measureDatetimePast" th:value="${measureDatetimePast}" readonly />
         <div class="input-group-text">~</div>
         <input type="date" th:max="${measureDatetime}" id="measureDatetime" th:value="${measureDatetime}" onchange="dayChange()" />
         <input type="button" value="데이터 출력" th:onclick="|reportCreate()|" class="btn btn-info btn-sm ms-1" />

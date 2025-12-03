@@ -17,4 +17,7 @@ public interface SensorRepository extends JpaRepository<SensorEntity, Long> {
   List<SensorEntity> findTop20ByDeviceCodeAndMeasureDatetimeLessThanOrderByMeasureDatetimeDesc(String deviceCode, LocalDateTime now);
 
   List<SensorEntity> findByDeviceCodeAndMeasureDatetimeBetweenOrderByMeasureDatetimeAsc(String deviceCode, LocalDateTime startTime, LocalDateTime endTime);
+
+  @Query(value = "SELECT * FROM sensor WHERE measure_datetime LIKE CONCAT(:date, '%')", nativeQuery = true)
+  List<SensorEntity> selectMeasureDatetime(String date);
 }
