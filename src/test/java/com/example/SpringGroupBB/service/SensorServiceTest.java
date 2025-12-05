@@ -16,10 +16,10 @@ class SensorServiceTest {
 
   @Test
   public void sensorDateUpdateTest() {
-    List<SensorEntity> sensorList = sensorRepository.selectMeasureDatetime("2025-02-17");
+    List<SensorEntity> sensorList = sensorRepository.selectMeasureDatetime("2025-02-19");
     System.out.println("sensorList.size: "+sensorList.size());
     sensorList.forEach(entity -> {
-      entity.setMeasureDatetime(LocalDateTime.parse("2025-12-03"+entity.getMeasureDatetime().toString().substring(10)));
+      entity.setMeasureDatetime(LocalDateTime.parse("2025-12-05"+entity.getMeasureDatetime().toString().substring(10)));
       sensorRepository.save(entity);
     });
 

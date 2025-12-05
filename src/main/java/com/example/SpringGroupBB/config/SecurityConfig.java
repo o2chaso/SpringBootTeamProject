@@ -9,12 +9,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -66,6 +70,7 @@ public class SecurityConfig {
             .requestMatchers("/member/memberJoin", "/member/memberLogin", "/member/login/error", "/member/memberLoginOk").permitAll()
             .requestMatchers("/guest/**", "/board/List", "/board/boardContent", "/member/kakaoLogin", "/member/kakaoJoin").permitAll()
             .requestMatchers("/member/kakaoLogout").permitAll()
+            .requestMatchers("/company/**").permitAll()
             .requestMatchers("/member/memberEmailCheck", "/member/memberEmailCheckOk", "/member/memberEmailCheckNo").permitAll()
             .requestMatchers("/member/memberPasswordChange", "/member/memberProfileUpdate","/member/memberDelete").authenticated()
             .requestMatchers("/board/replyInput", "/board/replyDelete", "/member/memberDelete").hasAnyAuthority("USER", "ADMIN")
@@ -79,6 +84,8 @@ public class SecurityConfig {
     // 권한 없는 user의 접근시 예외처리
     security.exceptionHandling(exception -> exception
             .accessDeniedPage("/error/accessDenied"));
+
+
 
 
     // iframe 보안 정책(x-frame-options)
