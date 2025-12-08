@@ -6,6 +6,19 @@
   <script th:inline="javascript">
     let message = [[${message}]];
     if(message != null) alert(message);
+
+
+    function newWindow(id) {
+      let url = "/product/productContent/"+id;
+      let windowName = "";
+      let windowWidth = 800;
+      let windowHeight = 500;
+
+      let x = window.screenX + (window.outerWidth - windowWidth) / 2;
+      let y = window.screenY + (window.outerHeight - windowHeight) / 2;
+      let option = `width=${windowWidth}, height=${windowHeight}, left=${x}, top=${y}`;
+      window.open(url, windowName, option);
+    }
   </script>
 </th:block>
 <div layout:fragment="content">
@@ -14,12 +27,12 @@
     <th:block th:each="product : ${productList}">
       <div class="col">
         <div class="card h-100 shadow-sm border-0 rounded-3">
-          <a th:href="@{/product/productContent/{id}(id=${product.id})}"
-              th:onclick="|window.open(this.href, 'popup', 'width=600,height=500'); return false;|"
-              class="text-decoration-none">
+          <button
+                  th:onclick="|newWindow(${product.id})|"
+                  class="btn p-0 border-0 bg-transparent w-100">
             <img th:src="@{'/admin/product/' + ${product.sensorImage}}" th:alt="${product.sensorName}"
-                    class="card-img-top img-fluid rounded-top"
-                    style="object-fit: contain; height: 200px; width: 100%; border-bottom: 1px solid #ddd;" />
+                  class="card-img-top img-fluid rounded-top"
+                  style="object-fit: contain; height: 200px; width: 100%; border-bottom: 1px solid #ddd;" />
             <div class="card-body">
               <h6 class="card-title text-dark fw-semibold mb-2 text-truncate" style="font-size: 1rem">
                 [[${product.model}]]
@@ -28,7 +41,7 @@
                 [[${product.sensorName}]]
               </p>
             </div>
-          </a>
+          </button>
         </div>
       </div>
     </th:block>

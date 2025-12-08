@@ -82,4 +82,11 @@ public class MemberDTO {
             .delDate(member.getDelDate())
             .build();
   }
+
+  public MemberDTO(Long id, String email, String name) {
+    this.id = id;
+    this.email = email;
+    this.name = name;
+  }
+
 }

@@ -1,9 +1,14 @@
 package com.example.SpringGroupBB.service;
 
+import com.example.SpringGroupBB.common.Pagination;
 import com.example.SpringGroupBB.common.ProjectProvide;
 import com.example.SpringGroupBB.constant.UserDel;
+import com.example.SpringGroupBB.dto.LoginHistoryDTO;
 import com.example.SpringGroupBB.dto.MemberDTO;
+import com.example.SpringGroupBB.dto.PageDTO;
+import com.example.SpringGroupBB.entity.LoginHistory;
 import com.example.SpringGroupBB.entity.Member;
+import com.example.SpringGroupBB.repository.LoginHistoryRepository;
 import com.example.SpringGroupBB.repository.MemberRepository;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpSession;
@@ -20,10 +25,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +38,8 @@ public class MemberService implements UserDetailsService {
   private final MemberRepository memberRepository;
   private final PasswordEncoder passwordEncoder;
   private final ProjectProvide projectProvide;
+  private final LoginHistoryRepository loginHistoryRepository;
+  private final Pagination pagination;
 
   @Override
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -191,5 +199,90 @@ public class MemberService implements UserDetailsService {
       return "OK";
     }
     else return "NO";
+  }
+
+  public void insertLoginHistory(LoginHistory loginHistory) {
+    loginHistoryRepository.save(loginHistory);
+  }
+
+  public PageDTO searchMemberHistory(PageDTO pageDTO) {
+    return pageDTO = pagination.pagination(pageDTO);
+  }
+
+  public Map<String, Long> searchLoginDataForChart(PageDTO dto) {
+
+    LocalDateTime start = dto.getStartDate() != null ? dto.getStartDate().atStartOfDay() : null;
+    LocalDateTime end = dto.getEndDate() != null ? dto.getEndDate().atTime(23, 59, 59) : null;
+    if (dto.getMemberId() == null) dto.setMemberId(0L);
+
+    boolean hasMember = dto.getMemberId() != null && dto.getMemberId() != 0;
+    boolean isOneDay = start.toLocalDate().equals(end.toLocalDate());
+
+    List<LoginHistory> loginHistories = hasMember
+            ? loginHistoryRepository.findByMember_IdAndCreateDateBetween(dto.getMemberId(), start, end)
+            : loginHistoryRepository.findByCreateDateBetween(start, end);
+
+    Map<String, Long> result = new HashMap<>();
+
+    for(LoginHistory l :loginHistories) {
+      String key = isOneDay
+              ? String.format("%02d", l.getCreateDate().getHour())
+              : l.getCreateDate().toLocalDate().toString();
+      result.put(key, result.getOrDefault(key, 0L) + 1);
+    }
+    return result;
+  }
+
+  public List<MemberDTO> searchMemberIdAndEmailAnaName() {
+    return memberRepository.searchMemberIdAndEmailAnaName();
+  }
+
+  public  List<LoginHistoryDTO> memberHistoryDetailGet(Long id, String date, int hour) {
+    LocalDate localDate = LocalDate.parse(date);
+    LocalDateTime start = localDate.atTime(hour, 0);
+    LocalDateTime end = localDate.atTime(hour, 59, 59);
+
+    List<LoginHistory>  list =
+            id == 0
+                    ? loginHistoryRepository.findByCreateDateBetween(start, end)
+                    : loginHistoryRepository.findByMember_IdAndCreateDateBetween(id, start, end);
+    return list.stream()
+            .map(LoginHistoryDTO::entityToDto)
+            .collect(Collectors.toList());
+  }
+
+  public String searchMemberEmailFind(String name, String tel) {
+
+    Optional<Member> opMember = memberRepository.findByNameAndTel(name, tel);
+    if(opMember.isPresent()) {
+      String email = opMember.get().getEmail();
+      int atIndex = email.indexOf("@");
+      if(atIndex <= 2) return email;
+
+      StringBuilder masked = new StringBuilder();
+      for (int i = 0; i < atIndex; i++) {
+        if (i % 2 == 0) { // 짝수 인덱스는 그대로, 홀수는 *
+          masked.append(email.charAt(i));
+        } else {
+          masked.append("*");
+        }
+      }
+      masked.append(email.substring(atIndex)); // @ 뒤는 그대로
+      return masked.toString();
+    }
+      else return "";
+
+  }
+
+  public Optional<Long> getMemberPwdFind(String email, String name) {
+    return memberRepository.findByEmailAndName(email,name).map(Member::getId);
+  }
+
+  public void setMemberPwdChange(Long id, String newPassword) {
+    Member member = memberRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));;
+
+      member.setPassword(passwordEncoder.encode(newPassword));
+      memberRepository.save(member);
   }
 }

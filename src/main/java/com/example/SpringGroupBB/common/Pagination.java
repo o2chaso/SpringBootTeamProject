@@ -1,9 +1,12 @@
 package com.example.SpringGroupBB.common;
 
 
+import com.example.SpringGroupBB.dto.LoginHistoryDTO;
 import com.example.SpringGroupBB.dto.PageDTO;
+import com.example.SpringGroupBB.entity.LoginHistory;
 import com.example.SpringGroupBB.entity.Member;
 import com.example.SpringGroupBB.entity.Product;
+import com.example.SpringGroupBB.repository.LoginHistoryRepository;
 import com.example.SpringGroupBB.repository.MemberRepository;
 import com.example.SpringGroupBB.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ public class Pagination {
 
   private final MemberRepository memberRepository;
   private final ProductRepository productRepository;
+  private final LoginHistoryRepository loginHistoryRepository;
 
 
 
@@ -65,13 +67,37 @@ public class Pagination {
       totRecCnt = (int) page.getTotalElements();
       totPage = page.getTotalPages();
     }
+    else if(dto.getSection().equals("History")) {
+      LocalDateTime startDateTime = dto.getStartDate() != null ? dto.getStartDate().atStartOfDay() : null;
+      LocalDateTime endDateTime = dto.getEndDate() != null ? dto.getEndDate().atTime(23, 59, 59) : null;
+      Page<LoginHistory> page;
+      switch (dto.getSearchStr() != null ? dto.getSearchStr() : "") {
+        case "name":
+          page = (startDateTime != null && endDateTime != null)
+                  ? loginHistoryRepository.findByMember_NameContainingAndCreateDateBetween(dto.getSearchString(), startDateTime, endDateTime, pageable)
+                  : loginHistoryRepository.findByMember_NameContaining(dto.getSearchString(), pageable);
+          break;
 
+        case "email":
+          page = (startDateTime != null && endDateTime != null)
+                  ? loginHistoryRepository.findByMember_EmailContainingAndCreateDateBetween(dto.getSearchString(), startDateTime, endDateTime, pageable)
+                  : loginHistoryRepository.findByMember_EmailContaining(dto.getSearchString(), pageable);
+          break;
 
-
+        default:
+          page = (startDateTime != null && endDateTime != null)
+                  ? loginHistoryRepository.findByCreateDateBetween(startDateTime, endDateTime, pageable)
+                  : loginHistoryRepository.findAll(pageable);
+          break;
+      }
+      dto.setLoginHistoryList(page.map(LoginHistoryDTO::entityToDto).getContent());
+      totRecCnt = (int) page.getTotalElements();
+      totPage = page.getTotalPages();
+    }
 
     int startIndexNo = pag * pageSize;
 		int curScrStartNo = totRecCnt - startIndexNo;
-		
+
 		int blockSize = 3;
     int curBlock = ((pag + 1) - 1) / blockSize;
     int lastBlock = (totPage - 1) / blockSize;
@@ -92,10 +118,10 @@ public class Pagination {
 		}
 		dto.setSearch(dto.getSearch());
 		dto.setSearchStr(dto.getSearchStr());
-		
+
 		dto.setPart(part);
 		dto.setBoardFlag(dto.getBoardFlag());
-		
+
 		return dto;
 	}
 }

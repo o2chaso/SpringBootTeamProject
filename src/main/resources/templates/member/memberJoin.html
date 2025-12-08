@@ -244,9 +244,9 @@
             <option value="019">019</option>
           </select>
           <span class="pt-1 ms-1 me-1">-</span>
-          <input type="tel" th:field="*{tel2}" class="form-control ms-1 me-1"/>
+          <input type="tel" th:field="*{tel2}" class="form-control ms-1 me-1" maxlength="4"/>
           <span class="pt-1 ms-1 me-1">-</span>
-          <input type="tel" th:field="*{tel3}" class="form-control ms-1 me-1"/>
+          <input type="tel" th:field="*{tel3}" class="form-control ms-1 me-1" maxlength="4"/>
         </div>
         <div class="col-sm-4">
           <div th:if="${#fields.hasErrors('tel')}" th:errors="*{tel}" class="fieldError ms-3" style="color:red; font-size:13px; text-align:left">Incorrect data</div>

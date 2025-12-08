@@ -6,6 +6,7 @@ import com.example.SpringGroupBB.entity.Member;
 import com.example.SpringGroupBB.entity.Product;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -33,12 +34,21 @@ public class PageDTO {
   private String searchStr; // '글제목/글쓴이/글내용'
   private String boardFlag;	// 검색기에서 글내용보기 호출시 사용하는 변수
 
+
+  private LocalDate startDate;
+  private LocalDate endDate;
+  private String dateRange;
+  private Long memberId;
+
+
+
   private int level;	// 회원 등급(초기값:99 - 비회원)
 
   //private List<Board> boardList;  // 게시판의 글 리스트를 저장하기위한 변수
 
   private List<Member> memberList;
   private List<Product> productList;
+  private List<LoginHistoryDTO> loginHistoryList;
 
   // QnA
   //private List<QnA> qnaList;

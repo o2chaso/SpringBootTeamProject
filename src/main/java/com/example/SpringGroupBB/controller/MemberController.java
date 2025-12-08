@@ -2,8 +2,9 @@ package com.example.SpringGroupBB.controller;
 
 import com.example.SpringGroupBB.custom.CustomOAuth2User;
 import com.example.SpringGroupBB.dto.MemberDTO;
+import com.example.SpringGroupBB.entity.LoginHistory;import com.example.SpringGroupBB.entity.LoginHistory;
 import com.example.SpringGroupBB.entity.Member;
-import com.example.SpringGroupBB.repository.MemberRepository;
+import com.example.SpringGroupBB.service.BoardService;
 import com.example.SpringGroupBB.service.MemberService;
 import com.example.SpringGroupBB.validation.CreateGroup;
 import com.example.SpringGroupBB.validation.UpdateGroup;
@@ -16,7 +17,6 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
@@ -27,14 +27,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @Controller
 @RequestMapping("/member")
 @RequiredArgsConstructor
 public class MemberController {
 
   private final MemberService memberService;
-  private final MemberRepository memberRepository;
-  private final PasswordEncoder passwordEncoder;
+  private final BoardService boardService;
 
   /* Login */
   @GetMapping("/memberLogin")
@@ -87,6 +89,7 @@ public class MemberController {
 
   @GetMapping("/memberLoginOk")
   public String memberLoginOKGet(RedirectAttributes rttr,
+                                  HttpServletRequest request,
                                   Authentication authentication,
                                   HttpSession session
   ) {
@@ -100,9 +103,20 @@ public class MemberController {
     else if (authentication instanceof UsernamePasswordAuthenticationToken) {
       session.setAttribute("loginMethod", "db");
     }
+    String loginMethod = (String) session.getAttribute("loginMethod");
+
+    LoginHistory loginHistory = LoginHistory.builder()
+            .member(member)
+            .ip(request.getRemoteAddr())
+            .loginMethod(loginMethod)
+            .createDate(LocalDateTime.now())
+            .build();
+
+    memberService.insertLoginHistory(loginHistory);
 
     session.setAttribute("sName", member.getName());
     session.setAttribute("strLevel", strLevel);
+    session.setAttribute("sEmail", member.getEmail());
 
     rttr.addFlashAttribute("message", member.getName() + "님 로그인 되셨습니다.");
     return "redirect:/member/memberMain";
@@ -121,9 +135,13 @@ public class MemberController {
 
   @GetMapping("/memberMain")
   public String memberMain(Model model, Authentication authentication) {
-
     Member member = memberService.searchMember(authentication);
+    int boardCnt = boardService.searchEmailBoardCnt(member.getEmail());
+    int boardReplyCnt = boardService.searchEmailBoardReplyCnt(member.getEmail());
 
+    model.addAttribute("userCsrf", true);
+    model.addAttribute("boardCnt", boardCnt);
+    model.addAttribute("boardReplyCnt", boardReplyCnt);
     model.addAttribute("member", member);
 
     return "member/memberMain";
@@ -139,10 +157,10 @@ public class MemberController {
 
   @PostMapping("/memberJoin")
   public String memberJoinPost(RedirectAttributes rttr,
-                                Model model,
-                                @Validated(CreateGroup.class) MemberDTO dto,
-                                BindingResult bindingResult,
-                                @RequestParam(name ="emailSw", defaultValue = "0", required = false) int emailSw) {
+                               Model model,
+                               @Validated(CreateGroup.class) MemberDTO dto,
+                               BindingResult bindingResult,
+                               @RequestParam(name ="emailSw", defaultValue = "0", required = false) int emailSw) {
 
     if(bindingResult.hasErrors()) {
       if(emailSw == 1) model.addAttribute("emailSw", emailSw);
@@ -190,9 +208,9 @@ public class MemberController {
 
   @PostMapping("/memberPasswordChange")
   public String memberPasswordChangePost(RedirectAttributes rttr,
-                                          String newPassword,
-                                          String currentPassword,
-                                          Authentication authentication) {
+                                         String newPassword,
+                                         String currentPassword,
+                                         Authentication authentication) {
     String email = authentication.getName();
     boolean res = memberService.updateMemberPassword(email, currentPassword, newPassword);
 
@@ -208,7 +226,7 @@ public class MemberController {
 
   @GetMapping("/memberProfileUpdate")
   public String memberProfileUpdateGet(Model model,
-                                        Authentication authentication) {
+                                       Authentication authentication) {
     String email = authentication.getName();
     MemberDTO memberDTO = memberService.memberProfileUpdateGet(email);
 
@@ -265,9 +283,9 @@ public class MemberController {
 
   @PostMapping("/kakaoJoin")
   public String kakaoJoinPost(RedirectAttributes rttr,
-                                @Validated(CreateGroup.class) MemberDTO memberDTO,
-                                BindingResult bindingResult,
-                                HttpSession session) {
+                              @Validated(CreateGroup.class) MemberDTO memberDTO,
+                              BindingResult bindingResult,
+                              HttpSession session) {
     if(bindingResult.hasErrors()) {
       return "member/kakaoJoin";
     }
@@ -295,9 +313,8 @@ public class MemberController {
   @PostMapping("/updateProfileImage")
   public String updateProfileImagePost(MultipartFile sFile, HttpServletRequest request,
                                        Authentication authentication,
-                                        RedirectAttributes rttr) {
+                                       RedirectAttributes rttr) {
     String email = authentication.getName();
-
     if(sFile == null || sFile.isEmpty()) {
       rttr.addFlashAttribute("파일 업로드할 파일을 선택하세요");
       return "redirect:/member/memberMain";
@@ -308,5 +325,65 @@ public class MemberController {
     memberService.updateProfileImage(sFile, email, realPath);
     rttr.addFlashAttribute("message", "프로필 사진이 변경되었습니다.");
     return "redirect:/member/memberMain";
+  }
+
+  @GetMapping("/memberMidFind")
+  public String memberMidFindGet() {
+    return "member/memberMidFind";
+  }
+
+  @PostMapping("/memberMidFind")
+  public String memberMidFindPost(RedirectAttributes rttr, Model model, String name, String tel) {
+    String email = memberService.searchMemberEmailFind(name, tel);
+
+    if(email.isBlank()) {
+      rttr.addFlashAttribute("message", "회원정보가 없습니다.");
+      return "redirect:/member/memberMidFind";
+    }
+
+    model.addAttribute("email", email);
+    return "member/memberMidFindResult";
+  }
+  @GetMapping("/memberPwdFind")
+  public String memberPwdFindGet(Model model) {
+
+    model.addAttribute("userCsrf", true);
+    return "member/memberPwdFind";
+  }
+
+  @PostMapping("/memberPwdFind")
+  public String memberPwdFindPost(RedirectAttributes rttr, Model model, String email, String name) {
+    Optional<Long> memberId = memberService.getMemberPwdFind(email, name);
+    if(memberId.isEmpty()) {
+      rttr.addFlashAttribute("message", "회원정보가 없습니다.");
+      return "redirect:/member/memberPwdFind";
+    }
+    System.out.println("memberId : " + memberId.get());
+    rttr.addFlashAttribute("message", "비밀번호를 변경해주세요.");
+    rttr.addFlashAttribute("id", memberId.get());
+
+    return "redirect:/member/memberPwdChange";
+  }
+
+  @GetMapping("/memberPwdChange")
+  public String memberPwdChange() {
+    return "member/memberPwdChange";
+  }
+
+  @PostMapping("/memberPwdChange")
+  public String memberPwdChange(RedirectAttributes rttr, Long id, String newPassword, String confirmPassword) {
+    System.out.println("id1 : "+id);
+    if(!newPassword.equals(confirmPassword)) {
+      rttr.addFlashAttribute("message", "비밀번호가 다릅니다. 다시 확인해주세요");
+      return "redirect:/member/memberPwdChange";
+    }
+    try {
+      memberService.setMemberPwdChange(id, newPassword);
+    } catch (IllegalArgumentException e) {
+      rttr.addFlashAttribute("message", e.getMessage());
+      return "redirect:/member/memberPwdChange";
+    }
+    rttr.addFlashAttribute("message", "비밀번호가 변경되었습니다. 로그인 해주세요");
+    return "redirect:/member/memberLogin";
   }
 }

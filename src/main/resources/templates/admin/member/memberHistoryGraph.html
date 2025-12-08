@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script th:inline="javascript">
+    let message = [[${message}]];
+    if(message != null) alert(message);
+
+    $(function () {
+      $('#dateRange').daterangepicker({
+        locale: {
+          format: 'YYYY-MM-DD',
+          separator: ' ~ ',
+          applyLabel: "적용",
+          cancelLabel: "취소",
+          customRangeLabel: "날짜 선택",
+          daysOfWeek: ["일","월","화","수","목","금","토"],
+          monthNames: ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]
+        },
+        opens: 'left',
+        autoUpdateInput: false,
+        ranges: {
+          '오늘': [moment(), moment()],
+          '어제': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+          '지난 7일': [moment().subtract(6, 'days'), moment()],
+          '지난 30일': [moment().subtract(29, 'days'), moment()]
+        }
+      });
+
+      $('#dateRange').on('apply.daterangepicker', function(ev, picker) {
+        $(this).val(
+          picker.startDate.format('YYYY-MM-DD') + ' ~ ' + picker.endDate.format('YYYY-MM-DD')
+        );
+      });
+
+      $('#dateRange').on('cancel.daterangepicker', function(ev, picker) {
+        $(this).val('');
+      });
+    });
+
+    function isSameDay(start, end) {
+      return start === end;
+    }
+
+    function drawChart() {
+      var loginCountByDate = JSON.parse([[${loginCountByDate}]]);
+      let startDate = [[${pageDTO.startDate}]];
+      let endDate   = [[${pageDTO.endDate}]];
+      let memberId  = [[${pageDTO.memberId}]];
+
+      let memberSelect  = document.getElementById('memberId');
+      let email = memberSelect.options[memberSelect.selectedIndex].text;
+
+      let isOneDay = startDate === endDate;
+
+      var loginCounts = {};
+      var rows = buildChartRows(loginCountByDate, isOneDay);
+
+      let chartTitle = isOneDay
+        ? `${startDate} : ${memberId ? email : '전체'}`
+        : `${startDate} ~ ${endDate} : ${memberId ? email : '전체'}`;
+
+      document.getElementById("chartHeader").innerHTML = `
+      <div style="font-size: 22px; font-weight: bold; margin-bottom: 2px;">
+        ${chartTitle}
+      </div>`;
+
+      var data = new google.visualization.DataTable();
+      data.addColumn('string', isOneDay ? '시간대' : '날짜');
+      data.addColumn('number', '로그인 횟수');
+      data.addRows(rows);
+
+      var options = {
+        hAxis: {title: '로그인 횟수' },
+        vAxis: {
+          title: isOneDay ? '시간대' : '날짜',
+          slantedText: true,
+          slantedTextAngle: 90
+        },
+        bars: 'vertical',
+        animation: {
+          startup: true,
+          duration: 1000,
+          easing: 'out'
+        }
+      };
+
+      var chart = new google.visualization.BarChart(document.getElementById('bar_chart'));
+      chart.draw(data, options);
+
+      google.visualization.events.addListener(chart, 'select', () => onChartClick(chart, data));
+    }
+
+    function buildChartRows(loginCountByDate, isOneDay) {
+      let rows = [];
+
+      if(isOneDay) {
+        console.log(loginCountByDate);
+        for(let hour=0; hour<24; hour++) {
+          const label = `${hour.toString().padStart(2, '0')}`;
+          rows.push([label, loginCountByDate[label] || 0]);
+        }
+      }
+      else {
+        Object.entries(loginCountByDate).forEach(([date, count]) => {
+          rows.push([date, Number(count)]);
+          });
+      }
+      return rows;
+    }
+
+    function onChartClick(chart, data) {
+      const selection = chart.getSelection();
+      if (!selection.length) return;
+
+      const row = selection[0].row;
+      const label = data.getValue(row, 0);
+      const count = data.getValue(row, 1);
+
+      let startDate = [[${pageDTO.startDate}]];
+      let endDate   = [[${pageDTO.endDate}]];
+      let id = [[${pageDTO.memberId}]];
+
+
+      if( startDate !== endDate ) {
+        location.href = `/admin/member/memberHistoryGraph?memberId=${id}&dateRange=${label}+~+${label}`;
+        return;
+      }
+
+      $.ajax({
+        url: '/admin/member/memberHistoryDetail/'+id,
+        type: 'get',
+        data: {
+          date: startDate,
+          hour: label
+        },
+        success: function(list) {
+          makeModalTable(list);
+          $('#detailModal').modal('show');
+        },
+        error: () => alert("전송오류")
+      });
+    }
+    google.charts.load('current', {packages: ['corechart', 'bar']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function makeModalTable(list) {
+      let html = "";
+      list.forEach(item => {
+        html += `
+          <tr>
+            <td>${moment(item.createDate).format('YYYY-MM-DD HH:mm:ss')}</td>
+            <td>${item.memberEmail}</td>
+            <td>${item.memberName}</td>
+            <td>${item.ip}</td>
+            <td>${item.loginMethod}</td>
+          </tr>
+        `;
+      });
+      $('#modalTBody').html(html);
+    }
+  </script>
+</th:block>
+
+<div layout:fragment="content">
+  <div class="card p-3 mb-4 shadow-sm">
+    <h2 class="card-title mb-3">로그인 기록</h2>
+    <div class="d-flex gap-3 flex-wrap mb-2">
+      <form name="searchForm" method="get" class="d-flex align-items-center w-100">
+        <div class="d-flex align-items-center me-3">
+          <label for="memberId" class="form-label mb-0 me-2">이메일</label>
+          <select name="memberId" id="memberId" class="form-select form-select-sm" style="width:120px;">
+            <option value="0" >전체</option>
+            <option th:each="mDTO : ${mDTOList}" th:value="${mDTO.id}" th:text="${mDTO.email}"
+                    th:selected="${pageDTO.memberId != null && mDTO.id==pageDTO.memberId}">
+            </option>
+          </select>
+        </div>
+        <div class="d-flex align-items-center me-3">
+          <label class="form-label me-2 fw-bold">기간 조회</label>
+          <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-text">
+              <i class="bi bi-calendar-event"></i>
+            </span>
+            <input type="text" id="dateRange" name="dateRange" class="form-control"
+                   placeholder="기간을 선택하세요" style="max-width: 300px;"
+                   th:value="${pageDTO.startDate != null} ? ${pageDTO.startDate} + ' ~ ' + ${pageDTO.endDate} : ''">
+          </div>
+        </div>
+        <div class="d-flex align-items-center me-3">
+          <button class="btn btn-primary" type="submit" >
+            <i class="bi bi-search"></i> 검색
+          </button>
+        </div>
+        <div class="d-flex align-items-center me-2">
+          <a href="javascript:location.href='/admin/member/memberHistoryGraph'" class="btn btn-dark btn-sm me-2">전체보기</a>
+        </div>
+      </form>
+    </div>
+    <div id="chartHeader"></div>
+    <div id="bar_chart" style="width: 900px; height: 500px;"></div>
+  </div>
+  <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content shadow-lg rounded-3">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title">
+            로그인 상세 내역<!--icon-->
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <table class="table table-sm table-bordered">
+            <thead>
+              <tr>
+                <th>시간</th>
+                <th>이메일</th>
+                <th>이름</th>
+                <th>IP</th>
+                <th>로그인 종류</th>
+              </tr>
+            </thead>
+            <tbody id="modalTBody"></tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</html>
