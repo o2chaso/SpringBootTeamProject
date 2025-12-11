@@ -35,6 +35,11 @@
       padding: 18px 20px;
       width: 100%;
       margin: 0;
+    }
+
+    #mybos {
+      background-color: rgb(203, 228, 252) !important;
+    }
   </style>
 
   <h2 class="font-weight-bold text-primary heading mb-1 text-start" style="font-size:2.2">자유게시판</h2>
@@ -43,6 +48,7 @@
     <a th:if="${!isSearch}" th:href="@{/board/boardInput}" class="btn btn-success btn-sm">글쓰기</a>
     <a th:if="${isSearch}" th:href="@{/board/boardList}" class="btn btn-outline-secondary btn-sm">돌아가기</a>
   </div>
+  <div id="mybos">테스트 박스</div>
   <!-- 검색기 시작 -->
   <div class="text-center" style="margin: 60px 0;">
     <div class="search-bg" style="display:inline-block; width:100% margin:0;">

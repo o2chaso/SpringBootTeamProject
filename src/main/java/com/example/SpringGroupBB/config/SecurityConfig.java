@@ -61,15 +61,15 @@ public class SecurityConfig {
     // 페이지 접근 권한설정
     security.authorizeHttpRequests(request -> request
             // 비회원도 열람 가능(메인페이지, 회사소개, 기술소개, 상품 리스트).
-            .requestMatchers("/", "/company/**", "/technology/**", "/product/productList").permitAll()
+            .requestMatchers("/", "/company/**", "/technology/**", "/product/**").permitAll()
             // 회원가입(memberLogin, memberLoginOk는 사용자 지정 로그인 폼에서 이미 허용처리 되어있음).
             .requestMatchers("/member/login/error", "/member/memberJoin", "/member/memberEmailCheck", "/member/memberEmailCheckOk", "/member/memberEmailCheckNo").permitAll()
             // 카카오로그인.
             .requestMatchers("/member/kakaoJoin", "/member/kakaoLogout").permitAll()
             // 이미지 처리.
-            .requestMatchers("/images/**").permitAll()
+            .requestMatchers("/images/**", "/admin/product/**").permitAll()
             // 관리자 처리.
-            .requestMatchers("/qna/qnaAnswer", "/admin/**").hasRole("ADMIN")
+            .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated());
 
     // 권한 없는 user의 접근시 예외처리
