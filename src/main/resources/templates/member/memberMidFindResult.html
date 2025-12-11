@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+
+  </script>
+</th:block>
+
+<style layout:fragment="css">
+  body {
+    font-family: Arial, sans-serif;
+  }
+  .result-box {
+    border: 1px solid #ddd;
+    padding: 25px;
+    border-radius: 8px;
+    background: #fafafa;
+    text-align: center;
+    margin-top: 20px;
+  }
+  h2 {
+    font-weight: bold;
+  }
+  .email-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin: 20px 0;
+  }
+</style>
+
+<div layout:fragment="content">
+  <h2>아이디 찾기 결과</h2>
+  <div class="result-box">
+    <p>고객님이 찾으신 이메일(ID)은 아래와 같습니다.</p>
+    <p class="email-text" th:text="${email}">maskedEmailHere</p>
+    <div class="d-flex justify-content-center gap-3 mt-4">
+      <button type="button" class="btn btn-dark px-4" onclick="location.href='/SpringGroupBB/member/memberLogin'">로그인</button>
+      <button type="button" class="btn btn-dark px-4" onclick="location.href='/SpringGroupBB/member/memberPwdFind'">비밀번호 찾기</button>
+    </div>
+  </div>
+</div>
+</html>

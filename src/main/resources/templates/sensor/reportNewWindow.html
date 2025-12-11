@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <th:block th:insert="~{include/bs5}"></th:block>
+</head>
+<body>
+<div class="container text-center">
+  <p><br/></p>
+  <h2 th:text="${(flag==0?'전날과':flag==1?'전주와비교':'전달과')+' 비교'}"></h2>
+  <p></p>
+  <div class="row">
+    <div class="col">
+      <h4>[[${measureDatetimePast}]]</h4>
+      <p></p>
+      <th:block th:if="${restReport != null}">
+        <table class="table table-hover">
+          <tr class="table-secondary">
+            <th>번호</th>
+            <th>센서</th>
+            <th>최솟값</th>
+            <th>평균값</th>
+            <th>최댓값</th>
+            <th>이벤트</th>
+          </tr>
+          <th:block th:each="i : ${#numbers.sequence(1,10)}">
+            <tr>
+              <td>[[${i}]]</td>
+              <td>[[${value[i-1]}]]</td>
+              <td>[[${restReport['value'+i+'MinData']}]]</td>
+              <td>[[${restReport['value'+i+'AvgData']}]]</td>
+              <td>[[${restReport['value'+i+'MaxData']}]]</td>
+              <td>[[${restReport['value'+i+'EventData']}]]</td>
+            </tr>
+          </th:block>
+        </table>
+      </th:block>
+      <th:block th:if="${restReport == null}">
+        <th:block th:if="${#lists.isEmpty(restSensorList)}">
+          <h1>결과가 존재하지 않습니다.</h1>
+        </th:block>
+        <th:block th:if="${!#lists.isEmpty(restSensorList)}">
+          <table class="table table-hover">
+            <tr class="table-secondary">
+              <th>번호</th>
+              <th>센서</th>
+              <th>최솟값</th>
+              <th>평균값</th>
+              <th>최댓값</th>
+              <th>이벤트</th>
+            </tr>
+            <th:block th:each="dto, st:${restSensorList}">
+              <tr>
+                <td>[[${st.count}]]</td>
+                <td>[[${value[st.index]}]]</td>
+                <td>[[${dto.minData}]]</td>
+                <td>[[${dto.avgData}]]</td>
+                <td>[[${dto.maxData}]]</td>
+                <td>[[${dto.eventData}]]</td>
+              </tr>
+            </th:block>
+          </table>
+        </th:block>
+      </th:block>
+    </div>
+    <div class="col">
+      <h4>[[${measureDatetime}]]</h4>
+      <p></p>
+      <th:block th:if="${report != null}">
+        <table class="table table-hover">
+          <tr class="table-secondary">
+            <th>번호</th>
+            <th>센서</th>
+            <th>최솟값</th>
+            <th>평균값</th>
+            <th>최댓값</th>
+            <th>이벤트</th>
+          </tr>
+          <th:block th:each="i : ${#numbers.sequence(1,10)}">
+            <tr>
+              <td>[[${i}]]</td>
+              <td>[[${value[i-1]}]]</td>
+              <td>[[${report['value'+i+'MinData']}]]</td>
+              <td>[[${report['value'+i+'AvgData']}]]</td>
+              <td>[[${report['value'+i+'MaxData']}]]</td>
+              <td>[[${report['value'+i+'EventData']}]]</td>
+            </tr>
+          </th:block>
+        </table>
+      </th:block>
+      <th:block th:if="${report == null}">
+        <table class="table table-hover">
+          <tr class="table-secondary">
+            <th>번호</th>
+            <th>센서</th>
+            <th>최솟값</th>
+            <th>평균값</th>
+            <th>최댓값</th>
+            <th>이벤트</th>
+          </tr>
+          <th:block th:each="dto, st:${sensorList}">
+            <tr>
+              <td>[[${st.count}]]</td>
+              <td>[[${value[st.index]}]]</td>
+              <td>[[${dto.minData}]]</td>
+              <td>[[${dto.avgData}]]</td>
+              <td>[[${dto.maxData}]]</td>
+              <td>[[${dto.eventData}]]</td>
+            </tr>
+          </th:block>
+        </table>
+      </th:block>
+    </div>
+  </div>
+</div>
+</body>
+</html>

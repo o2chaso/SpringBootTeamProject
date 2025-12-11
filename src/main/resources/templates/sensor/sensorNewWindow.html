@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <th:block th:insert="~{include/bs5}"></th:block>
+  <script>
+  </script>
+</head>
+
+<body class="bg-light">
+  <div class="container d-flex justify-content-center mt-5">
+    <div class="card" style="width: 430px; border-radius: 12px;">
+      <div class="card-header text-center bg-white border-0 pt-3 pd-2">
+        <h4 class="fw-bold">센서 상세정보입니다.</h4>
+      </div>
+
+      <div class="card-body text-center">
+        <div th:utext="${contents}" class="mb-3" style="line-height: 1.5; font-size: 14px;"></div>
+
+        <div class="mt-4">
+          <img th:if="${value1}" src="/SpringGroupBB/images/image01.png"
+               class="img-fluid rounded shadow-sm"
+               style="width: 320px; height: 360px;" alt="실내온도, 상대습도, 이산화탄소, VOC, 초미세먼지">
+          <img th:if="${value2}" src="/SpringGroupBB/images/image02.png"
+               class="img-fluid rounded shadow-sm"
+               style="width: 320px; height: 360px;" alt="온도">
+          <img th:if="${value3}" src="/SpringGroupBB/images/image03.png"
+               class="img-fluid rounded shadow-sm"
+               style="width: 320px; height: 360px;" alt="소음">
+          <img th:if="${value4}" src="/SpringGroupBB/images/image04.png"
+               class="img-fluid rounded shadow-sm"
+               style="width: 320px; height: 360px;" alt="비접촉">
+          <img th:if="${value5}" src="/SpringGroupBB/images/image05.png"
+               class="img-fluid rounded shadow-sm"
+               style="width: 320px; height: 360px;" alt="조도">
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</body>
+</html>

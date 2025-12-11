@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <link rel="icon" th:href="@{/images/favi.png}" type="image/png">
+    <title>QnA</title>
+    <th:block th:insert="~{include/bs5}"></th:block>
+    <script th:inline="javascript">
+      'use strict';
+
+      const token = $("meta[name='_csrf']").attr("content");
+      const header = $("meta[name='_csrf_header']").attr("content");
+
+      // 대화창 로딩이 끝나면 스크롤 가장 아래로.
+      window.addEventListener('load', () => {
+        autoScroll();
+      });
+
+      let qnaId = 0;
+      // 처리중인 문의면 실행.
+      if([[${progress.name()}]] == 'RESOLVING') {
+        $(() => {
+          // 0.5초마다 갱신해서 상대편이 메시지를 보냈는지 체크.
+          setInterval(() => {
+            $.ajax({
+              url : "/SpringGroupBB/qna/qnaNewWindow",
+              type: "post",
+              data: {"id" : [[${id}]]},
+              beforeSend : (xhr) => xhr.setRequestHeader(header, token),
+              success : (res) => {
+                // qnaId와 res(마지막 채팅의 id)가 다르면 새로고침.
+                if(res != qnaId) {
+                  // qnaId 갱신.
+                  qnaId = res;
+                  // 부분 리로드.
+                  $("#msgReload").load(location.href+' #msgReload');
+                  // 리로드 후, 스크롤 가장 아래로.
+                  autoScroll();
+                }
+              },
+              error : () => alert("전송오류")
+            });
+          },500);
+
+          // 엔터로 메시지 보내기.
+          $('#content').keydown((e) => {
+            if(e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              qnaReply([[${id}]]);
+            }
+          });
+        });
+      }
+
+      // 메시지 보내기.
+      function qnaReply(id) {
+        if($("#content").val().replace(" ","")=="") {
+          alert("보낼 내용을 입력해주세요.");
+          $("#content").focus();
+          return false;
+        }
+
+        $.ajax({
+          url : "/SpringGroupBB/qna/qnaAnswer",
+          type: "post",
+          data: {
+            "id" : id,
+            "content" : $("#content").val()
+          },
+          beforeSend : (xhr) => xhr.setRequestHeader(header, token),
+          success : (res) => {
+            if(res == 1) {
+              // 메시지 보낸 후, 메시지창 리로드.
+              $("#msgReload").load(location.href+' #msgReload');
+              // textarea 비우기.
+              $("#content").val("");
+              // 채팅창 스크롤 아래로(바로 내리면 새로고침쪽이 늦기 때문에 0.1초 후에).
+              setTimeout(() => autoScroll(), 100);
+            }
+            else if(res == -1) {
+              alert("잘못된 접근입니다.");
+              location.href = "/";
+            }
+            else alert("닫힌 채팅입니다.\n확인 후, 문제가 있으면 문의를 보내주세요.");
+          },
+          error : () => alert("전송오류")
+        });
+      }
+
+      // 자동스크롤.
+      function autoScroll() {
+        $("#msgReload").get(0).scrollTop = $("#msgReload").get(0).scrollHeight;
+      }
+    </script>
+    <style>
+      .chat {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #87CEDD;
+      }
+      .msg {
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 10px;
+      }
+      .block {border-radius: 10px;}
+      .from {background: yellow; color: black;}
+      .dear {background: gray; color: white;}
+    </style>
+  </head>
+  <body>
+    <div class="chat container">
+      <p></p>
+      <div id="msgReload" class="msg">
+        <th:block th:each="dto:${qnaList}">
+          <div class="d-flex mb-4">
+            <div class="block p-2 border border-dark"
+                 th:classappend="${dto.fromEmail.email==session.sEmail?'from ms-auto text-end':'dear me-auto text-start'}">
+              <div th:text="${dto.content}" class="text-start" style="white-space: pre-line;"></div>
+            </div>
+          </div>
+        </th:block>
+      </div>
+      <div class="input-group mb-2">
+        <textarea rows="4" id="content" name="content"
+                  th:placeholder="${progress.name()=='RESOLVING'?'문의 내용을 적어주세요.':'처리가 끝난 문의입니다.'}"
+                  th:readonly="${progress.name()!='RESOLVING'}"
+                  class="form-control"></textarea>
+        <input type="button" value="송신" th:onclick="|qnaReply(${id})|" th:disabled="${progress.name()!='RESOLVING'}" class="btn btn-success" />
+      </div>
+    </div>
+  </body>
+</html>

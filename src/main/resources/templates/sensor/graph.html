@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Graph</title>
+  <link rel="icon" th:href="@{/images/favi.png}" type="image/png">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script th:inline="javascript"></script>
+</head>
+<body>
+  <h2 th:text="${sensorName}" style="margin-top: 10px;"></h2>
+  <!-- 실시간 데이터를 받아오는 방식 SSE: 구글 차트와 상성 최악(SSE를 받을 때마다 DataTable 전체를 새로 생성 후 차트를 다시 그림) -->
+  <div id="chartCont" th:fragment="content"
+       class="chart-container">
+    <canvas id="chart"></canvas>
+    <!-- Sensor Off 시 text 출력 -->
+    <div id="offMessage" style="display: none; font-size: 20px; font-weight: bold; color: red; text-align: center; margin-top: 20px;">
+      오류!! : 센서와의 통신이 종료 되었습니다.
+    </div>
+  </div>
+</body>
+</html>

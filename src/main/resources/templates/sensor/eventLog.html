@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+  <title>Event Log</title>
+  <link rel="icon" th:href="@{/images/favi.png}" type="image/png">
+
+  <script th:inline="javascript">
+
+  </script>
+</head>
+<body>
+  <div th:fragment="content">
+    <h2 style="text-align: center;">Event Log</h2>
+    <div id="paginationArea1" style="margin-bottom: 10px; text-align: center;"></div>
+    <table border="1" width="100%">
+      <thead>
+        <tr>
+          <th>번호</th>
+          <th>센서</th>
+          <th>값</th>
+          <th>상태</th>
+          <th>발생시간</th>
+        </tr>
+      </thead>
+      <tbody id="logTable">
+        <!-- AJAX 공간 -->
+      </tbody>
+    </table>
+    <div id="paginationArea2" style="margin-top:10px; text-align: center;"></div>
+  </div>
+</body>
+</html>

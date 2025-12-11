@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+  <th:block layout:fragment="css">
+    <style>
+      .title {font-size:70px;}
+      .subTitle {font-size:50px;}
+      .end {font-size:30px;}
+      .content {
+        font-size: 20px;
+        font-weight: bold;
+      }
+      .text {
+        text-shadow: -1px 0px white, 0px 1px white, 1px 0px white, 0px -1px white;
+      }
+      .back::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: url('/SpringGroupBB/company/bizforce.jpg') center/cover no-repeat;
+        opacity: 0.2;
+        z-index: -2;
+      }
+    </style>
+  </th:block >
+
+  <div layout:fragment="content">
+    <div class="back">
+      <div data-content="CEO Message" class="text">
+        <div class="title">CEO Message</div>
+        <p><br/></p>
+        <div class="subTitle">비즈니스 강자가 되게 하는 파트너</div>
+        <p><br/></p>
+        <div class="content">
+          안녕하십니까.<br/>
+          비즈포스 대표 황선민입니다.<br/>
+          <p></p>
+          비즈포스는 다양한 산업 환경에서 필요한 정보를 정확하게 수집하고 분석할 수 있도록,<br/>
+          센서 기반 솔루션과 데이터 기술을 전문적으로 개발·제공하는 기업입니다.<br/>
+          <p></p>
+          우리는 “데이터가 정확해야 비즈니스가 정확해진다”는 믿음 아래,
+          고객의 현장에서 실제로 도움이 되는 기술을 만들어 왔습니다.<br/>
+          <p></p>
+          오늘날 기업은 단순한 정보 수집을 넘어,<br/>
+          실시간 모니터링·이상 감지·예측 분석·자동화된 대응 등 더 높은 수준의 기능을 요구하고 있습니다.<br/>
+          <p></p>
+          비즈포스는 이러한 변화에 발맞춰 센서 하드웨어, 데이터 플랫폼, 분석 알고리즘까지 아우르는 엔드투엔드(End-to-End) 솔루션을 제공하며<br/>
+          기술적 신뢰성을 쌓아가고 있습니다.<br/>
+          <p></p>
+          비즈포스가 중요하게 생각하는 세 가지 약속은 다음과 같습니다.<br/>
+          <p><br/></p>
+          1. 정밀도와 신뢰성<br/>
+          센서 데이터는 작은 오차 하나가 큰 문제로 이어질 수 있습니다.<br/>
+          우리는 높은 정확도와 안정성을 갖춘 기술을 기반으로, 고객이 안심하고 사용할 수 있는 시스템을 제공합니다.<br/>
+          <p><br/></p>
+          2. 현장 중심의 실용성<br/>
+          기술은 현장에서 실제로 작동해야 의미가 있습니다.<br/>
+          비즈포스는 다양한 환경을 철저히 분석하고 테스트하며, 고객 업무 흐름에 자연스럽게 녹아드는 실용적 솔루션을 만드는 데 집중합니다.<br/>
+          <p><br/></p>
+          3. 지속적인 기술 혁신<br/>
+          센서와 IoT 분야는 빠르게 발전하고 있습니다.<br/>
+          비즈포스는 새로운 기술과 데이터를 바탕으로 꾸준히 연구·개발하며, 더 스마트하고 더 효율적인 미래 환경을 만들어 갑니다.<br/>
+          <p><br/></p>
+          앞으로도 비즈포스는<br/>
+          정확한 데이터, 신뢰할 수 있는 기술, 그리고 고객의 성장에 실질적인 도움을 주는 솔루션을 통해 센서·IoT 분야의 확실한 파트너가 되겠습니다.<br/>
+          <p><br/></p>
+          비즈포스를 믿고 함께해 주시는 모든 분들께 감사드리며,<br/>
+          우리는 여러분의 비즈니스가 더 안전하고 더 똑똑해질 수 있도록 최선을 다하겠습니다.<br/>
+          <p></p>
+          감사합니다.<br/>
+        </div>
+        <p><br/></p>
+        <div class="end">비즈포스 대표 황선민 드림</div>
+        <br/>
+      </div>
+    </div>
+  </div>
+</html>

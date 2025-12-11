@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script th:src="@{/ckeditor/ckeditor.js}"></script>
+  <script th:inline="javascript">
+  </script>
+</th:block>
+
+<div layout:fragment="content">
+  <h2>글쓰기</h2>
+  <form method="post">
+    <table class="table table-bordered">
+      <tr>
+        <th>글쓴이</th>
+        <td><input type="text" name="name" id="name" th:value="${session.sName}" readonly class="form-control"/></td>
+      </tr>
+      <tr>
+        <th>글제목</th>
+        <td><input type="text" name="title" class="form-control" /></td>
+      </tr>
+      <th:tr sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+        <th>공지사항 여부</th>
+        <td>
+          <input type="radio" name="noticeSw" id="noticeSw1" value="OK" /> 공지사항 &nbsp;
+          <input type="radio" name="noticeSw" id="noticeSw2" value="NO" checked /> 일반글
+        </td>
+      </th:tr>
+      <tr>
+        <th>글내용</th>
+        <td>
+          <textarea name="content" id="ckeditor" rows="6"></textarea>
+          <script>
+            CKEDITOR.replace("ckeditor", {
+              height: 300,
+              filebrowserUploadMethod: "form",
+              filebrowserUploadUrl: "/SpringGroupBB/ckeditor/imageUpload",
+              uploadUrl : "/SpringGroupBB/ckeditor/imageUpload"
+            });
+          </script>
+        </td>
+      </tr>
+      <tr>
+        <th>공개여부</th>
+        <td>
+          <input type="radio" name="openSw" id="openSw1" value="OK" th:checked="*{openSw == 'OK'}" /> 공개 &nbsp;
+          <input type="radio" name="openSw" id="openSw2" value="NO" th:checked="*{openSw == 'NO'}" /> 비공개
+        </td>
+      </tr>
+    </table>
+    <input type="submit" value="글올리기" class="btn btn-success me-2"/>
+    <input type="reset" value="다시입력" class="btn btn-warning me-2"/>
+    <input type="button" value="돌아가기" onclick="location.href='/SpringGroupBB/board/boardList';" class="btn btn-info"/>
+    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+  </form>
+</div>
+
+</html>

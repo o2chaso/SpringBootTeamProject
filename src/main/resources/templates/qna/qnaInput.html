@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+  <script layout:fragment="script" th:inline="javascript">
+    'use strict';
+
+    // input조건 실시간 피드백.
+    $(() => {
+      // 문의작성폼에 들어왔을 때 바로 피드백.
+      qnaValidate()
+      // 문의제목, 문의내용 입력할 때 피드백.
+      $("#title, #content").on("input", () => qnaValidate());
+    });
+
+    // 실제 피드백 메소드.
+    function qnaValidate() {
+      $.ajax({
+        url : "/SpringGroupBB/qna/qnaValid",
+        type: "post",
+        data: {
+          // QnADTO에 있어야하는 것들을 data로 보낸다.
+          // 보내는 사람의 이메일.
+          "fromEmail" : $("#fromEmail").val(),
+          // 받는 사람의 이메일.
+          "dearEmail" : $("#dearEmail").val(),
+          // 제목.
+          "title" : $("#title").val(),
+          // 내용.
+          "content" : $("#content").val()
+        },
+        success : (res) => {
+          // 오류 출력 폼 초기화.
+          $("#titleValid1").hide();
+          $("#contentValid1").hide();
+          $("#titleValid2").empty();
+          $("#contentValid2").empty();
+
+          // 리턴값(String배열)의 첫 번째 값이 공백이 아닐 때(오류가 존재할 때).
+          if(res[0] != "") {
+            for(let i=0; i<res.length; i++) {
+              if(res[i].includes("제목")) {
+                $("#titleValid1").show();
+                $("#titleValid2").html('<font color="red">'+res[i]+'</font>');
+              }
+              if(res[i].includes("내용")) {
+                $("#contentValid1").show();
+                $("#contentValid2").html('<font color="red">'+res[i]+'</font>');
+              }
+            }
+          }
+        },
+        error : () => alert("전송오류")
+      });
+    }
+
+    function qnaCheck() {
+      if($("#title").val().replace(" ","") == "") {
+        alert("문의제목을 입력해주세요.");
+        $("#title").focus();
+        return false;
+      }
+      else if($("#title").val().replace(" ","").length > 20) {
+        alert("문의제목이 너무 깁니다.");
+        $("#title").focus();
+        return false;
+      }
+      if($("#content").val().replace(" ","") == "") {
+        alert("문의내용을 입력해주세요.");
+        $("#content").focus();
+        return false;
+      }
+
+      qnaForm.submit();
+    }
+  </script>
+  <div layout:fragment="content">
+    <form name="qnaForm" method="post" th:object="${dto}" class="was-validated">
+      <table class="table table-bordered">
+        <tr>
+          <th>문의제목</th>
+          <td><input type="text" id="title" name="title" placeholder="문의 제목을 적어주세요." required class="form-control" /></td>
+          <th>문의자</th>
+          <td><input type="text" id="fromEmail" name="fromEmail" th:value="${dto.get().email}" required readonly class="form-control" /></td>
+        </tr>
+        <tr id="titleValid1" class="text-start" style="display:none"><td></td><td colspan="3" id="titleValid2"></td></tr>
+        <tr>
+          <th>문의내용</th>
+          <td colspan="3"><textarea rows="10" id="content" name="content" placeholder="문의 내용을 적어주세요." required class="form-control"></textarea></td>
+        </tr>
+        <tr id="contentValid1" class="text-start" style="display:none"><td></td><td colspan="3" id="contentValid2"></td></tr>
+      </table>
+      <input type="button" value="문의보내기" onclick="qnaCheck()" class="btn btn-success" />
+      <a th:href="@{/qna/qnaList}" class="btn btn-warning">돌아가기</a>
+
+      <input type="hidden" name="dearEmail" value="admin@green.com" />
+      <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}" />
+    </form>
+  </div>>
+
+</html>

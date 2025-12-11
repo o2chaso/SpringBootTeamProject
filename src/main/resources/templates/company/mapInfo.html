@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+  <th:block layout:fragment="script">
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=6bf1408a4cfa868792077ab97ebbbff1"></script>
+    <script th:inline="javascript">
+      $(() => {
+        let map1 = $(".map").get(0);
+        let mapOption1 = {center: new kakao.maps.LatLng(36.640563, 127.440326), level: 2};
+        let mapCreate1 = new kakao.maps.Map(map1, mapOption1);
+        let marker1 = new kakao.maps.Marker({position: mapCreate1.getCenter()});
+        marker1.setMap(mapCreate1);
+        let infoWindow1 = new kakao.maps.InfoWindow({content: '<div class="text-center p-1" style="min-width:340px; min-height:58px">충북 청주시 흥덕구 직지대로 436번길&nbsp;76<br/>직지스마트타워 1242호</div>'});
+        infoWindow1.open(mapCreate1, marker1);
+
+        let map2 = $(".map").get(1);
+        let mapOption2 = {center: new kakao.maps.LatLng(36.635168, 127.459541), level: 2};
+        let mapCreate2 = new kakao.maps.Map(map2, mapOption2);
+        let marker2 = new kakao.maps.Marker({position: mapCreate2.getCenter()});
+        marker2.setMap(mapCreate2);
+        let infoWindow2 = new kakao.maps.InfoWindow({content: '<div class="text-center p-1">충북 청주시 서원구 사직대로 109 4층 &nbsp;</div>'});
+        infoWindow2.open(mapCreate2, marker2);
+      });
+    </script>
+  </th:block>
+  <th:block layout:fragment="css">
+    <style>
+      .title {font-size:50px;}
+      .subTitle {font-size:30px;}
+    </style>
+  </th:block>
+
+  <div layout:fragment="content">
+    <div class="title">사업장 안내</div>
+    <p><br/></p>
+    <div class="row text-start">
+      <div class="col border border-dark me-2">
+        <div class="map" style="width:auto; height:300px"></div>
+        <br/>
+        <div class="subTitle mb-1">본사</div>
+        <div class="mb-1">충청북도 청주시 흥덕구 송정동 70-73번지 1242호</div>
+        <div>📞 043-211-9301</div>
+        <br/>
+      </div>
+      <div class="col border border-dark ms-2">
+        <div class="map" style="width:auto; height:300px"></div>
+        <br/>
+        <div class="subTitle mb-1">지부</div>
+        <div class="mb-1">충북 청주시 서원구 사창동 148-7 4층</div>
+        <div>📞 043-111-2222</div>
+        <br/>
+      </div>
+    </div>
+  </div>
+
+</html>

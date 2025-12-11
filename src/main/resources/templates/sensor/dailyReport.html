@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+<th:block layout:fragment="script">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script th:inline="javascript">
+    'use strict';
+
+    // 보고 있는 리포트 변경(일일, 주간, 월간 or 층).
+    function reportChange(flag) {
+      // 층을 바꿀 때(deviceCode).
+      if(flag == 3) {
+        // flag(리포트 종류)는 그대로여야하기 때문에 thymeleaf에 flag를 포함시킨다.
+        let baseURL = /*[[@{/sensor/dailyReport(measureDatetime=${measureDatetime},flag=${flag})}]]*/"";
+        location.href = baseURL+"&deviceCode="+$("#deviceCode").val();
+      }
+      else if(flag == 4) {
+        let baseURL = /*[[@{/sensor/dailyReport(deviceCode=${deviceCode},flag=${flag})}]]*/"";
+        location.href = baseURL+"&measureDatetime="+$("#measureDatetime").val();
+      }
+      else {
+        let baseURL = /*[[@{/sensor/dailyReport(deviceCode=${deviceCode},measureDatetime=${measureDatetime})}]]*/"";
+        location.href = baseURL+"&flag="+flag;
+      }
+    }
+
+    // 이전 리포트와 비교.
+    function newWindow() {
+      let url = "/SpringGroupBB/sensor/reportNewWindow/"+[[${flag}]]+"/"+[[${measureDatetime}]]+"/"+[[${measureDatetimePast}]]+"/"+[[${deviceCode}]];
+      let windowName = "";
+      let windowWidth = 1000;
+      let windowHeight = 610;
+
+      let x = window.screenX + (window.outerWidth - windowWidth) / 2;
+      let y = window.screenY + (window.outerHeight - windowHeight) / 2;
+      let option = `width=${windowWidth}, height=${windowHeight}, left=${x}, top=${y}, location=no`;
+
+      window.open(url, windowName, option);
+    }
+
+    // 날짜 입력시 최대날짜 제한 메소드.
+    $(() => {
+      // 백업용 날짜.
+      let newDate = new Date($("#measureDatetime").val());
+
+      $("#measureDatetime").on("input", () => {
+        // 오늘 날짜.
+        let rawDate = new Date([[${toDay}]]);
+        // 입력 받은 날짜.
+        let date = new Date($("#measureDatetime").val());
+
+        // 없늘 날짜 입력시 백업 데이터로 입력 받은 날짜 살리기.
+        if(date == 'Invalid Date') date = newDate;
+        // 백업 갱신.
+        else newDate = date;
+
+        // 미래 날짜 입력 받으면 오늘 날짜로.
+        if(rawDate < date) $("#measureDatetime").val([[${toDay}]]);
+        // 입력 받은 날짜로.
+        else $("#measureDatetime").val(date.toISOString().slice(0,10));
+      });
+    });
+
+    function printPage() {
+      window.print();
+    }
+
+    // Table 순수 텍스트만 추출
+    function extractTableData() {
+      let table = document.getElementById("reportTable");
+      let rows = table.querySelectorAll("tr");
+      let data = [];
+
+      rows.forEach(function(row) {
+        let cells = row.querySelectorAll("th, td");
+        let rowData = [];
+
+        cells.forEach(function(cell) {
+
+          // 전체 텍스트
+          let fullText = cell.innerText.trim();
+          let match = fullText.match(/^[-]?\d+(\.\d+)?/);
+
+          // 숫자가 있으면 그 숫자만 사용
+          let pureValue = match ? match[0] : fullText;
+
+          rowData.push(pureValue);
+        });
+
+        data.push(rowData);
+      });
+
+      return data;
+    }
+
+    function reportSave() {
+      // 층 이름 - 리포트 이름 - 날짜 엑셀에 집어 넣기
+      let floorName = document.getElementById("deviceCode").options[document.getElementById("deviceCode").selectedIndex].text;
+      let reportName = document.getElementById("reportTitle").innerText;
+      let dateValue = document.getElementById("tableDate").innerText;
+
+      // 엑셀 헤더 생성
+      let header = [
+        ["", "", reportName],
+        ["", "", dateValue],
+        []
+      ];
+
+      // table 데이터를 JSON 배열로 추출
+      let tableJs = extractTableData();
+
+      // 만들어 놓은 헤더 + 테이블 합치기
+      let sheetData = header.concat(tableJs);
+
+      // 최종 엑셀 시트 생성
+      let ws = XLSX.utils.aoa_to_sheet(sheetData);
+      let wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+      // 엑셀파일로 저장
+      XLSX.writeFile(wb, "report.xlsx");
+    }
+
+  </script>
+</th:block>
+
+<div layout:fragment="content">
+  <h2 id="reportTitle" th:text="${device + ': ' + (flag==0?'일일':flag==1?'주간':'월간')+'리포트'}"></h2>
+  <div class="row">
+    <div class="col text-start">
+      <input type="button" value="일일 리포트" th:onclick="|reportChange(0)|" class="btn btn-success btn-sm" th:style="${flag==0?'display: none':''}" />
+      <input type="button" value="주간 리포트" th:onclick="|reportChange(1)|" class="btn btn-primary btn-sm" th:style="${flag==1?'display: none':''}" />
+      <input type="button" value="월간 리포트" th:onclick="|reportChange(2)|" class="btn btn-secondary btn-sm" th:style="${flag==2?'display: none':''}" />
+    </div>
+    <div class="col d-flex justify-content-end">
+      <select id="deviceCode" onchange="reportChange(3)" class="form-select" style="width:120px; flex:0 0 auto;">
+        <option value="ENV_V2_1" th:selected="${deviceCode=='ENV_V2_1'}">1층</option>
+        <option value="ENV_V2_2" th:selected="${deviceCode=='ENV_V2_2'}">2층</option>
+        <option value="ENV_V2_3" th:selected="${deviceCode=='ENV_V2_3'}">자재실</option>
+        <option value="ENV_V2_4" th:selected="${deviceCode=='ENV_V2_4'}">연구실</option>
+      </select>
+      <input type="button" value="출력" class="btn btn-info btn-sm ms-1" onclick="printPage()"/>
+      <input type="button" value="저장" class="btn btn-info btn-sm ms-1" onclick="reportSave()"/>
+    </div>
+    <div class="col">
+      <input type="button" value="전날과 비교" onclick="newWindow(0)" class="btn btn-dark btn-sm" th:style="${flag==0?'':flag==1?'display: none':'display: none'}" />
+      <input type="button" value="전주와 비교" onclick="newWindow(1)" class="btn btn-dark btn-sm" th:style="${flag==0?'display: none':flag==1?'':'display: none'}" />
+      <input type="button" value="전달과 비교" onclick="newWindow(2)" class="btn btn-dark btn-sm" th:style="${flag==0?'display: none':flag==1?'display: none':''}" />
+    </div>
+    <div class="col text-end">
+      <input type="button" value="돌아가기" onclick="location.href='/SpringGroupBB/sensor/reportList'" class="btn btn-warning btn-sm" />
+    </div>
+  </div>
+  <p></p>
+  <div class="row">
+    <div class="col input-group d-flex justify-content-strat">
+      <input type="date" th:max="${toDay}" id="measureDatetime" th:value="${measureDatetime}" />
+      <input type="button" value="조회" th:onclick="|reportChange(4)|" class="btn btn-info btn-sm ms-1" />
+    </div>
+  </div>
+  <p><br/></p>
+  <h4  id="tableDate" th:text="'센서 측정 기록('+ ${flag==0?measureDatetime:measureDatetimePast+'~'+measureDatetime}+')'"></h4>
+  <p></p>
+  <th:block th:if="${report != null}">
+    <table th:id="${report != null ? 'reportTable' : ''}" class="table table-hover">
+      <tr class="table-secondary">
+        <th>번호</th>
+        <th>센서</th>
+        <th>최솟값</th>
+        <th>평균값</th>
+        <th>최댓값</th>
+        <th>이벤트</th>
+      </tr>
+      <th:block th:each="i : ${#numbers.sequence(1,10)}">
+        <tr>
+          <td>[[${i}]]</td>
+          <td>[[${value[i-1]}]]</td>
+          <td>[[${report['value'+i+'MinData']}]]
+            <span th:text="${report['value'+i+'MinRate']==0?'변화없음':report['value'+i+'MinRate']+'%'}" th:class="${report['value'+i+'MinRate']>0?'badge text-bg-success':report['value'+i+'MinRate']<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+          </td>
+          <td>[[${report['value'+i+'AvgData']}]]
+            <span th:text="${report['value'+i+'AvgRate']==0?'변화없음':report['value'+i+'AvgRate']+'%'}" th:class="${report['value'+i+'AvgRate']>0?'badge text-bg-success':report['value'+i+'AvgRate']<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+          </td>
+          <td>[[${report['value'+i+'MaxData']}]]
+            <span th:text="${report['value'+i+'MaxRate']==0?'변화없음':report['value'+i+'MaxRate']+'%'}" th:class="${report['value'+i+'MaxRate']>0?'badge text-bg-success':report['value'+i+'MaxRate']<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+          </td>
+          <td>[[${report['value'+i+'EventData']}]]
+            <span th:text="${report['value'+i+'EventRate']==0?'변화없음':report['value'+i+'EventRate']+'건'}" th:class="${report['value'+i+'EventRate']>0?'badge text-bg-success':report['value'+i+'EventRate']<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+          </td>
+        </tr>
+      </th:block>
+    </table>
+  </th:block>
+  <th:block th:if="${report == null}">
+    <th:block th:if="${#lists.isEmpty(sensorList)}">
+      <h1>결과가 존재하지 않습니다.</h1>
+    </th:block>
+    <th:block th:if="${!#lists.isEmpty(sensorList)}">
+      <table th:id="${report == null ? 'reportTable' : ''}" class="table table-hover">
+        <tr class="table-secondary">
+          <th>번호</th>
+          <th>센서</th>
+          <th>최솟값</th>
+          <th>평균값</th>
+          <th>최댓값</th>
+          <th>이벤트</th>
+        </tr>
+        <th:block th:each="dto, st:${sensorList}">
+          <tr>
+            <td>[[${st.count}]]</td>
+            <td>[[${value[st.index]}]]</td>
+            <td>[[${dto.minData}]]
+              <span th:text="${dto.minRate==0?'변화없음':dto.minRate+'%'}" th:class="${dto.minRate>0?'badge text-bg-success':dto.minRate<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+            </td>
+            <td>[[${dto.avgData}]]
+              <span th:text="${dto.avgRate==0?'변화없음':dto.avgRate+'%'}" th:class="${dto.avgRate>0?'badge text-bg-success':dto.avgRate<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+            </td>
+            <td>[[${dto.maxData}]]
+              <span th:text="${dto.maxRate==0?'변화없음':dto.maxRate+'%'}" th:class="${dto.maxRate>0?'badge text-bg-success':dto.maxRate<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+            </td>
+            <td>[[${dto.eventData}]]
+              <span th:text="${dto.eventRate==0?'변화없음':dto.eventRate+'건'}" th:class="${dto.eventRate>0?'badge text-bg-success':dto.eventRate<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+            </td>
+          </tr>
+        </th:block>
+      </table>
+    </th:block>
+  </th:block>
+</div>
+
+</html>

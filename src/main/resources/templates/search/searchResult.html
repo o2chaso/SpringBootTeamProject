@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+  <th:block layout:fragment="script">
+    <script th:inline="javascript">
+      function newWindow(flag, id) {
+        let windowName = "";
+        let url = "";
+        let windowWidth = 0;
+        let windowHeight = 0;
+
+        if(flag == 0) {
+          url = "/SpringGroupBB/product/productContent/"+id;
+          windowWidth = 770;
+          windowHeight = 460;
+        }
+        else if(flag == 1) {
+          url = "/SpringGroupBB/board/boardSearchContent/"+id;
+          windowWidth = 700;
+          windowHeight = 700;
+        }
+        else if(flag == 2) {
+          url = "/SpringGroupBB/qna/qnaNewWindow/"+id;
+          windowWidth = 400;
+          windowHeight = 700;
+        }
+        let x = window.screenX + (window.outerWidth - windowWidth) / 2;
+        let y = window.screenY + (window.outerHeight - windowHeight) / 2;
+        let option = `width=${windowWidth}, height=${windowHeight}, left=${x}, top=${y}, location=no`;
+        window.open(url, windowName, option);
+      }
+    </script>
+  </th:block>
+  <th:block layout:fragment="css">
+    <style>
+      .title {font-size:70px;}
+      .subTitle {font-size:30px;}
+
+      .thTitle {width:20%;}
+      .thContent {width:60%;}
+      .thDat e{width:20%;}
+      .selectHover:hover td {color: blue;}
+    </style>
+  </th:block>
+
+  <div layout:fragment="content">
+    <div class="title"><span style="background-color:yellow; color:red">[[${searchStr}]]</span> 의 검색결과</div>
+    <p><br/></p>
+    <div class="subTitle text-start">상품리스트([[${#lists.size(productList)}]]개의 결과)</div>
+    <hr/>
+    <th:block th:if="${#lists.isEmpty(productList)}">
+      <h4>검색결과가 없습니다.</h4>
+    </th:block>
+    <th:block th:if="!${#lists.isEmpty(productList)}">
+      <table class="table table-hover">
+        <tr>
+          <th>센서이름</th>
+          <th>모델명</th>
+          <th>센서타입</th>
+          <th>한줄소개</th>
+          <th>특징</th>
+          <th>제조사</th>
+        </tr>
+        <th:block th:each="product : ${productList}">
+          <tr th:onclick="|newWindow(0, ${product.id})|" class="selectHover" style="cursor:pointer">
+            <td>[(${product.sensorName})]</td>
+            <td>[(${product.model})]</td>
+            <td>[(${product.sensorType})]</td>
+            <th:block th:if="${#strings.contains(product.shortDescription, searchStr)}">
+              <td>[(${product.shortDescription})]</td>
+            </th:block>
+            <th:block th:if="${!#strings.contains(product.shortDescription, searchStr)}">
+              <td>[(${#strings.abbreviate(product.shortDescription, #strings.length(searchStr)+10)})]</td>
+            </th:block>
+            <th:block th:if="${#strings.contains(product.features, searchStr)}">
+              <td>[(${product.features})]</td>
+            </th:block>
+            <th:block th:if="${!#strings.contains(product.features, searchStr)}">
+              <td>[(${#strings.abbreviate(product.features, #strings.length(searchStr)+10)})]</td>
+            </th:block>
+            <td>[(${product.manufacturer})]</td>
+          </tr>
+        </th:block>
+      </table>
+    </th:block>
+    <div class="subTitle text-start">게시판([(${#lists.size(boardList)})]개의 결과)</div>
+    <hr/>
+    <th:block th:if="${#lists.isEmpty(boardList)}">
+      <h4>검색결과가 없습니다.</h4>
+    </th:block>
+    <th:block th:if="!${#lists.isEmpty(boardList)}">
+      <table class="table table-hover">
+        <tr>
+          <th class="thTitle">글제목</th>
+          <th class="thContent">글내용</th>
+          <th class="thDate">글쓴날짜</th>
+        </tr>
+        <th:block th:each="board : ${boardList}">
+          <tr th:onclick="|newWindow(1, ${board.id})|" class="selectHover" style="cursor:pointer">
+            <td>[(${board.title})]</td>
+            <th:block th:if="${#strings.contains(board.content, searchStr)}">
+              <td>[(${board.content})]</td>
+            </th:block>
+            <th:block th:if="${!#strings.contains(board.content, searchStr)}">
+              <td>[(${#strings.abbreviate(board.content, #strings.length(searchStr)+10)})]</td>
+            </th:block>
+            <td>[(${#strings.substring(board.wDate,0,10)})]</td>
+          </tr>
+        </th:block>
+      </table>
+    </th:block>
+    <p><br/></p>
+    <div class="subTitle text-start">1:1문의 내역([(${#lists.size(qnaList)})]개의 결과)</div>
+    <hr/>
+    <th:block th:if="${#lists.isEmpty(qnaList)}">
+      <h4>검색결과가 없습니다.</h4>
+    </th:block>
+    <th:block th:if="!${#lists.isEmpty(qnaList)}">
+      <table class="table table-hover">
+        <tr>
+          <th class="thTitle">문의제목</th>
+          <th class="thContent">문의내용</th>
+          <th class="thDate">문의날짜</th>
+        </tr>
+        <th:block th:each="qna : ${qnaList}">
+          <tr th:onclick="|newWindow(2, ${qna.parentId})|" class="selectHover" style="cursor:pointer">
+            <td>[(${qna.title})]</td>
+            <th:block th:if="${#strings.contains(qna.content, searchStr)}">
+              <td>[(${qna.content})]</td>
+            </th:block>
+            <th:block th:if="${!#strings.contains(qna.content, searchStr)}">
+              <td>[(${#strings.abbreviate(qna.content, #strings.length(searchStr)+10)})]</td>
+            </th:block>
+            <td>[(${#strings.substring(qna.lastDate,0,10)})]</td>
+          </tr>
+        </th:block>
+      </table>
+    </th:block>
+  </div>
+
+</html>

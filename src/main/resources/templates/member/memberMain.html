@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    let message = [[${message}]];
+    if(message != null) alert(message);
+
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("profileImage").onclick = function() {
+          document.getElementById("sFile").click();
+      };
+    });
+
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+          document.getElementById('profileImage').src = e.target.result;
+      }
+      reader.readAsDataURL(file);
+    }
+
+    function fCheck() {
+      let fName = document.getElementById("sFile").value;
+      let maxSize = 1024 * 1024 * 10;
+      let ext = fName.substring(fName.lastIndexOf(".")+1).toLowerCase();
+
+      if(fName.trim() == "") {
+        alert("업로드할 파일을 선택하세요");
+        return false;
+      }
+
+      let fileSize = document.getElementById("sFile").files[0].size;
+      if(fileSize > maxSize) {
+        alert("업로드할 파일의 최대용량은 10MByte 입니다.");
+      }
+
+      else if(ext != 'jpg' && ext != 'gif' && ext != 'png') {
+        alert("업로드 가능한 파일은 'jpg, gif, png '만 가능합니다.")
+      }
+      else {
+        if(confirm("프로필 사진을 변경하시겠습니까?")) {
+          uploadForm.submit();
+        }
+        else {
+          return false;
+        }
+      }
+    }
+  </script>
+</th:block>
+<th:block layout:fragment="css">
+  <style>
+    .profile-container {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .profile-image {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid #007bff;
+      transition: 0.3s;
+    }
+    .profile-image:hover {
+      opacity: 0.8;
+    }
+    .info-card {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      min-height: 150px;
+    }
+    .info-card h5 {
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #007bff;
+    }
+    .info-card div, .info-card p {
+      margin: 5px 0;
+    }
+  </style>
+</th:block>
+<div layout:fragment="content">
+  <h2>내 정보</h2>
+  <div class="row mt-4">
+    <div class="col-md-6 d-flex flex-column align-items-center mb-3">
+      <form th:action="@{/member/updateProfileImage}" method="post" name="uploadForm" enctype="multipart/form-data" class="text-center mb-3">
+        <img th:src="${member.profileImage != 'noImage.jpg'} ? @{'/member/profile/'+${member.profileImage}} : @{/images/noimage.jpg}"
+          id="profileImage" alt="프로필 이미지" class="profile-image mb-2">
+        <div class="d-flex gap-2 justify-content-center">
+          <label for="sFile" class="btn btn-primary btn-sm">사진 선택</label>
+          <input type="file" id="sFile" name="sFile" class="d-none" accept="image/*" onchange="previewImage(event)">
+          <button type="button" onclick="fCheck()" class="btn btn-success btn-sm">저장</button>
+        </div>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      </form>
+    </div>
+    <div class="col-md-6 mb-3 d-flex">
+      <div class="info-card flex-fill text-center">
+        <h5>기본 정보</h5>
+        <div>이름 : [[${member.name}]]</div>
+        <div>이메일 : [[${member.email}]]</div>
+        <div>휴대폰 : [[${member.tel}]]</div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="info-card flex-fill text-center ">
+        <h5>계정 정보</h5>
+        <div>회원 등급 : <span th:text="${member.role.korean} + ' (' + ${member.role.name} + ')'">관리자 (ADMIN)</span></div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="info-card h-100">
+        <h5>활동 정보</h5>
+        <div>내가 쓴 글 수 :
+          <a th:href="@{/board/boardList(search='name', searchString=${member.name})}" class="text-decoration-none">
+            <span th:text="${boardCnt}">0</span>
+          </a>
+        </div>
+        <div>댓글 수 : <span th:text="${boardReplyCnt}">0</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</html>

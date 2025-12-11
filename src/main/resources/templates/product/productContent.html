@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<link rel="icon" th:href="@{/images/favi.png}" type="image/png">
+
+<head>
+  <meta charset="UTF-8">
+  <title>센서 정보</title>
+  <th:block th:insert="~{include/bs5}"></th:block>
+  <style>
+    .sensor-image {
+      width: 100%;
+      height: auto;
+      max-height: 300px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h2 class="mb-4 fw-bold text-center">센서 설명</h2>
+    <div class="row align-items-center justify-content-center">
+      <div class="col-md-5 mb-3 d-flex justify-content-center">
+        <div class="card shadow-sm p-3">
+          <img th:src="@{'/admin/product/'+${productDTO.sensorImage}}" class="sensor-image" alt="센서 이미지"/>
+        </div>
+      </div>
+      <div class="col-md-7">
+        <div class="card shadow-sm p-4">
+          <h4 class="fw-bold mb-3 ps-3">[[${productDTO.model}]]</h4>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>센서명 :</strong> [[${productDTO.sensorName}]]</li>
+            <li class="list-group-item"><strong>설명 :</strong> [[${productDTO.shortDescription}]]</li>
+            <li class="list-group-item"><strong>특징 :</strong> [[${productDTO.features}]]</li>
+            <li class="list-group-item"><strong>종류 :</strong> [[${productDTO.sensorType}]]</li>
+            <li class="list-group-item"><strong>제조사 :</strong> [[${productDTO.manufacturer}]]</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
