@@ -48,6 +48,9 @@ public class BoardController {
     model.addAttribute("pageVO", pageVO);
     model.addAttribute("isSearch", searchString != null && !searchString.isEmpty());
     model.addAttribute("boardList", boardService.getBoardListWithNoticeFirst());
+
+    Map<Long,Boolean> expiredMap = boardService.getNoticeExpiredMap(boardService.getBoardListWithNoticeFirst());
+    model.addAttribute("expiredMap", expiredMap);
     return "board/boardList";
   }
 

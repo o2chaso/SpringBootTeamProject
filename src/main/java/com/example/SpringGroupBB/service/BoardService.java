@@ -13,7 +13,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -151,5 +155,24 @@ public class BoardService {
   @Transactional
   public void ReplyDeleteByBoardId(Long id) {
     boardReplyRepository.deleteByBoardId(id);
+  }
+
+  // 공지사항 만료 여부를 Map으로 반환
+  public Map<Long, Boolean> getNoticeExpiredMap(List<Board> boardList) {
+    Map<Long, Boolean> expiredMap = new HashMap<>();
+
+    if (boardList == null || boardList.isEmpty()) {
+      return expiredMap;
+    }
+    LocalDateTime now = LocalDateTime.now();
+    for(Board board : boardList) {
+      if("OK".equals(board.getNoticeSw())) {
+        long daysDiff = ChronoUnit.DAYS.between(board.getWDate(),now);
+        expiredMap.put(board.getId(), daysDiff >= 7);
+      } else {
+        expiredMap.put(board.getId(), false);
+      }
+    }
+    return expiredMap;
   }
 }

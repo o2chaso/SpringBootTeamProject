@@ -41,7 +41,7 @@ public interface BoardRepository extends JpaRepository<Board, Long>, QuerydslPre
   @Query("update Board b set b.good = b.good + :goodCnt where b.id = :id")
   void setBoardGoodNumPlusMinus(@Param("id") Long id, @Param("goodCnt") int goodCnt);
 
-  @Query("SELECT b FROM Board b ORDER BY CASE WHEN b.noticeSw='OK' THEN 1 ELSE 0 END DESC, b.id DESC")
+  @Query("SELECT b FROM Board b ORDER BY CASE WHEN b.noticeSw='OK' THEN 1 ELSE 0 END DESC, b.wDate DESC")
   List<Board> findAllWithNoticeFirst();
 
   @Query(value = "SELECT * FROM board WHERE complaint = 'NO' AND open_sw = 'OK' AND (title LIKE CONCAT('%',:searchStr,'%') OR content LIKE CONCAT('%',:searchStr,'%'))", nativeQuery = true)
