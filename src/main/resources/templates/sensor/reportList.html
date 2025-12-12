@@ -27,42 +27,138 @@
       }
     }
   </script>
+
+  <style>
+
+    /* 전체 카드 배경 */
+    #report-container {
+      background: #ffffff;
+      padding: 25px;
+      margin-top: 20px;
+      border-radius: 18px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+      border: 1px solid #dce9f9;
+    }
+
+    /* 제목 */
+    #report-container h2 {
+      padding: 16px;
+      border-radius: 10px;
+      background-color: rgb(203, 228, 252);
+      color: #003a78;
+      text-align: center;
+      font-weight: 800;
+      font-size: 26px;
+      letter-spacing: 1px;
+    }
+
+    /* 버튼 — 파스텔 하늘색 */
+    .btn-custom-blue {
+      background-color: rgb(203, 228, 252);
+      color: #003a78;
+      border: 1px solid #aac8e8;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .btn-custom-blue:hover {
+      background-color: #d9ecff;
+      color: #002e57;
+    }
+
+    /* 테이블 */
+    .table-report {
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #d6e6f8;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+    }
+
+    /* 테이블 헤더 — 더 밝게 */
+    .table-report thead {
+      background-color: #e7f2ff; /* 산뜻한 하늘색 */
+      color: #003a78;
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    /* 테이블 셀 */
+    .table-report td, .table-report th {
+      vertical-align: middle;
+      padding: 12px 5px;
+      text-align: center;
+    }
+
+    /* Hover 효과 */
+    .table-report tbody tr:hover {
+      background-color: rgba(203, 228, 252, 0.45);
+      transition: 0.2s;
+    }
+
+    /* 열기 버튼 (파스텔 민트 톤) */
+    .btn-info.btn-sm {
+      background-color: #7ee0ff !important;
+      border: none !important;
+      color: #004b62 !important;
+      font-weight: bold;
+    }
+
+    .btn-info.btn-sm:hover {
+      background-color: #9beaff !important;
+    }
+
+    /* 삭제 버튼 (파스텔 핑크) */
+    .btn-danger.btn-sm {
+      background-color: #ff8c8c !important;
+      border: none !important;
+      color: white !important;
+      font-weight: bold;
+    }
+
+    .btn-danger.btn-sm:hover {
+      background-color: #ffb3b3 !important;
+    }
+
+  </style>
 </th:block>
 
 <div layout:fragment="content">
-  <h2>저장된 리포트 정보</h2>
-  <div class="row">
-    <div class="col text-end">
-      <input type="button" value="리포트생성" onclick="location.href='/SpringGroupBB/sensor/reportSave'" class="btn btn-success btn-sm" />
+  <div id="report-container">
+    <h2>저장된 리포트 정보</h2>
+    <div class="row">
+      <div class="col text-end">
+        <input type="button" value="리포트생성" onclick="location.href='/SpringGroupBB/sensor/reportSave'" class="btn btn-success btn-sm" />
+      </div>
     </div>
-  </div>
-  <p></p>
-  <th:block th:if="${#lists.isEmpty(reportSaveList)}">
-    <h4>저장된 리포트가 존재하지 않습니다.</h4>
-  </th:block>
-  <th:block th:if="${!#lists.isEmpty(reportSaveList)}">
-    <table class="table table-hover">
-      <tr class="table-secondary">
-        <th>번호</th>
-        <th>날짜</th>
-        <th>장소</th>
-        <th>리포트형식</th>
-        <th>버튼</th>
-      </tr>
-      <th:block th:each="dto, st : ${reportSaveList}">
-        <tr>
-          <td>[[${st.count}]]</td>
-          <td>[[${#strings.substring(dto.saveReportDate,0,10)}]]</td>
-          <td th:text="${dto.deviceCode=='ENV_V2_1'?'1층':dto.deviceCode=='ENV_V2_2'?'2층':dto.deviceCode=='ENV_V2_3'?'자재실':'연구실'}"></td>
-          <td>[[${dto.report}]]</td>
-          <td>
-            <input type="button" value="열기" th:onclick="|location.href='@{/sensor/dailyReport(id=${dto.id}, flag=${dto.report=='일일'?'0':dto.report=='주간'?'1':2})}'|" class="btn btn-info btn-sm" />
-            <input type="button" value="삭제" th:onclick="|reportDelete(${dto.id})|" class="btn btn-danger btn-sm" />
-          </td>
+    <p></p>
+    <th:block th:if="${#lists.isEmpty(reportSaveList)}">
+      <h4>저장된 리포트가 존재하지 않습니다.</h4>
+    </th:block>
+    <th:block th:if="${!#lists.isEmpty(reportSaveList)}">
+      <table class="table table-hover">
+        <tr class="table-secondary">
+          <th>번호</th>
+          <th>날짜</th>
+          <th>장소</th>
+          <th>리포트형식</th>
+          <th>버튼</th>
         </tr>
-      </th:block>
-    </table>
-  </th:block>
+        <th:block th:each="dto, st : ${reportSaveList}">
+          <tr>
+            <td>[[${st.count}]]</td>
+            <td>[[${#strings.substring(dto.saveReportDate,0,10)}]]</td>
+            <td th:text="${dto.deviceCode=='ENV_V2_1'?'1층':dto.deviceCode=='ENV_V2_2'?'2층':dto.deviceCode=='ENV_V2_3'?'자재실':'연구실'}"></td>
+            <td>[[${dto.report}]]</td>
+            <td>
+              <input type="button" value="열기" th:onclick="|location.href='@{/sensor/dailyReport(id=${dto.id}, flag=${dto.report=='일일'?'0':dto.report=='주간'?'1':2})}'|" class="btn btn-info btn-sm" />
+              <input type="button" value="삭제" th:onclick="|reportDelete(${dto.id})|" class="btn btn-danger btn-sm" />
+            </td>
+          </tr>
+        </th:block>
+      </table>
+    </th:block>
+  </div>
 </div>
 
 </html>

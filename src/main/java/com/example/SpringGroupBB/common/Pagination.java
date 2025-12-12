@@ -32,6 +32,7 @@ public class Pagination {
 
     int pag = dto.getPag();
     int pageSize = dto.getPageSize() == 0 ? 10 : dto.getPageSize();
+    int startIndexNo = pag * pageSize;
     String part = dto.getPart() == null ? "" : dto.getPart();
 
     int totRecCnt = 0, totPage = 0;
@@ -130,12 +131,12 @@ public class Pagination {
       // 자신의 문의를 현황 별로 검색.
       if(progress != null) {
         fromEmail = memberRepository.findByEmail(authentication.getName()).orElse(null);
-        page = qnaRepository.findByFromEmailAndProgress(fromEmail, progress, pageable);
+        page = qnaRepository.findByFromEmailAndProgressOrderByOpenSWDescLastDateDesc(fromEmail, progress, pageable);
       }
       // 문의현황 없으면 답변(ANSWER)를 제외한 자신의 문의 목록 검색.
       else {
         fromEmail = memberRepository.findByEmail(authentication.getName()).orElse(null);
-        page = qnaRepository.findByFromEmailAndProgressNot(fromEmail, Progress.ANSWER, pageable);
+        page = qnaRepository.findByFromEmailAndProgressNotOrderByOpenSWDescLastDateDesc(fromEmail, Progress.ANSWER, pageable);
       }
 
       // Page객체를 List객체로 변환.
@@ -162,16 +163,20 @@ public class Pagination {
 
       Page<QnA> page;
       // 문의 현황별로 검색.
-      if(progress != null) page = qnaRepository.findByProgress(progress, pageable);
-        // 답변(ANSWER)을 제외한 문의 목록 검색.
-      else page = qnaRepository.findAllByProgressNot(Progress.ANSWER, pageable);
-
-      // Page객체 List객체로 변환.
-      dto.setQnaList(page.getContent());
-
-      // 전체 개수와 전체 페이지 수.
-      totRecCnt = (int) page.getTotalElements();
-      totPage = page.getTotalPages();
+      if(progress != null) {
+        page = qnaRepository.findByProgressOrderByOpenSWAscLastDateDesc(progress, pageable);
+        // Page객체 List객체로 변환.
+        dto.setQnaList(page.getContent());
+        // 전체 개수와 전체 페이지 수.
+        totRecCnt = (int) page.getTotalElements();
+        totPage = page.getTotalPages();
+      }
+      // 답변(ANSWER)을 제외한 문의 목록 검색.
+      else {
+        dto.setQnaList(qnaRepository.selectQnAAdminProgress(startIndexNo, pageSize));
+        totRecCnt = qnaRepository.selectQnATotRecCnt();
+        totPage = (int)Math.ceil(totRecCnt / (double)pageSize);
+      }
     }
     // 문의삭제.
     else if(dto.getSection().equals("qnaDelete")) {
@@ -184,7 +189,7 @@ public class Pagination {
         Progress progress1 = Progress.RESOLVED;
         Progress progress2 = Progress.UNRESOLVABLE;
 
-        page = qnaRepository.findByProgressOrProgress(progress1, progress2, pageable);
+        page = qnaRepository.findByProgressOrProgressOrderByOpenSWAscLastDateDesc(progress1, progress2, pageable);
       }
       // 관리자가 보려고하는 문의현황 항목을 보여준다.
       else {
@@ -192,7 +197,7 @@ public class Pagination {
         if(dto.getProgress().equals("RESOLVED")) progress = Progress.RESOLVED;
         else if(dto.getProgress().equals("UNRESOLVABLE")) progress = Progress.UNRESOLVABLE;
         else progress = null;
-        page = qnaRepository.findByProgress(progress, pageable);
+        page = qnaRepository.findByProgressOrderByOpenSWAscLastDateDesc(progress, pageable);
       }
 
       // Page객체 List객체로 변환.
@@ -232,11 +237,10 @@ public class Pagination {
       totPage = page.getTotalPages();
     }
 
-    int startIndexNo = pag * pageSize;
     int curScrStartNo = totRecCnt - startIndexNo;
 
     int blockSize = 3;
-    int curBlock = ((pag + 1) - 1) / blockSize;
+    int curBlock = pag / blockSize;
     int lastBlock = (totPage - 1) / blockSize;
     dto.setPag(pag+1);
     dto.setPageSize(pageSize);

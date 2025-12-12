@@ -30,7 +30,6 @@ public class SecurityConfig {
     // 요청(request)에 _csrf라는 이름으로 토큰 값을 저장하고 처리
     requestHandler.setCsrfRequestAttributeName("_csrf");
 
-
     // 사용자가 만든 로그인폼에 대해서만 허용처리
     security
             .csrf(csrf -> csrf
@@ -69,7 +68,7 @@ public class SecurityConfig {
             // 이미지 처리.
             .requestMatchers("/images/**", "/admin/product/**").permitAll()
             // 관리자 처리.
-            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/qna/qnaDelete", "/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated());
 
     // 권한 없는 user의 접근시 예외처리

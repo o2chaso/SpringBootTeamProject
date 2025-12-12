@@ -8,14 +8,16 @@
   <link rel="icon" th:href="@{/images/favi.png}" type="image/png">
 
   <script th:inline="javascript">
-
   </script>
+  <style>
+
+  </style>
 </head>
 <body>
-  <div th:fragment="content">
+  <div class="device-card" th:fragment="content" style="width: 95%;">
     <h2 style="text-align: center;">Event Log</h2>
     <div id="paginationArea1" style="margin-bottom: 10px; text-align: center;"></div>
-    <table border="1" width="100%">
+    <table class="event-log-table" width="100%">
       <thead>
         <tr>
           <th>번호</th>

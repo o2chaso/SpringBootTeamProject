@@ -12,8 +12,11 @@
   </script>
 </head>
 <body>
-<div th:fragment="content" style="max-width:700px; margin:20px; padding:20px; border:1px solid #ddd; border-radius:8px;
-            display:flex; justify-content:space-between; align-items:flex-start;">
+<div th:fragment="content" style="max-width:700px; margin:20px; padding:20px;
+            border:1px solid #ddd; border-radius:8px;
+            display:flex; justify-content:space-between; align-items:flex-start;
+            box-shadow:0 4px 12px rgba(0,0,0,0.08);
+            border:1px solid #e2e2e2;">
   <div style="flex:1; padding-right:20px;">
     <h2 th:text="${sensorName}"></h2>
     <input type="hidden" id="deviceCode" th:value="${deviceCode}" />

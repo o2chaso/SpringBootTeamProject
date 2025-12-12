@@ -56,78 +56,121 @@
 </th:block>
 <th:block layout:fragment="css">
   <style>
-    .profile-container {
-      text-align: center;
-      margin-top: 30px;
-    }
+    /* 프로필 이미지 */
     .profile-image {
-      width: 150px;
-      height: 150px;
+      width: 160px;
+      height: 160px;
+      border-radius: 12px;
+      border: 3px solid #a8c9ff;
       object-fit: cover;
-      cursor: pointer;
-      border: 2px solid #007bff;
-      transition: 0.3s;
+      background: #f0f4ff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     }
-    .profile-image:hover {
-      opacity: 0.8;
-    }
+
+    /* 정보 카드 공통 스타일 */
     .info-card {
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 20px;
-      background-color: #f9f9f9;
-      min-height: 150px;
+      background: rgba(203, 228, 252, 0.45); /* 파스텔 톤 */
+      border-radius: 12px;
+      padding: 20px 22px;
+      border: 1px solid #d2e4ff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      transition: 0.25s ease;
+      text-align: center;
+
+      /* 두 카드 높이 동일하게 */
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
+
+    /* hover 효과 */
+    .info-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    /* info 제목 */
     .info-card h5 {
-      font-weight: bold;
-      margin-bottom: 15px;
-      color: #007bff;
+      font-weight: 700;
+      color: #1d4f89;
+      font-size: 19px;
+      margin-bottom: 14px;
+      letter-spacing: 0.5px;
     }
-    .info-card div, .info-card p {
-      margin: 5px 0;
+
+    /* info 텍스트 */
+    .info-card div {
+      margin-bottom: 8px;
+      font-size: 15.5px;
+      color: #1e2a3a;
+      font-weight: 500;
+      line-height: 1.55;
+      letter-spacing: 0.2px;
+    }
+
+    /* 선택/저장 버튼 */
+    .btn-primary.btn-sm,
+    .btn-success.btn-sm {
+      padding: 6px 14px;
+      font-size: 13px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    /* 버튼 크기統一 */
+    .d-flex.gap-2 button,
+    .d-flex.gap-2 label {
+      min-width: 70px;
     }
   </style>
 </th:block>
 <div layout:fragment="content">
-  <h2>내 정보</h2>
-  <div class="row mt-4">
-    <div class="col-md-6 d-flex flex-column align-items-center mb-3">
-      <form th:action="@{/member/updateProfileImage}" method="post" name="uploadForm" enctype="multipart/form-data" class="text-center mb-3">
-        <img th:src="${member.profileImage != 'noImage.jpg'} ? @{'/member/profile/'+${member.profileImage}} : @{/images/noimage.jpg}"
-          id="profileImage" alt="프로필 이미지" class="profile-image mb-2">
-        <div class="d-flex gap-2 justify-content-center">
-          <label for="sFile" class="btn btn-primary btn-sm">사진 선택</label>
-          <input type="file" id="sFile" name="sFile" class="d-none" accept="image/*" onchange="previewImage(event)">
-          <button type="button" onclick="fCheck()" class="btn btn-success btn-sm">저장</button>
+  <div  class="device-card">
+
+    <h2>내 정보</h2>
+    <div class="row mt-4">
+      <div class="col-md-6 d-flex flex-column align-items-center mb-3">
+        <form th:action="@{/member/updateProfileImage}" method="post" name="uploadForm" enctype="multipart/form-data" class="text-center mb-3">
+          <img th:src="${member.profileImage != 'noImage.jpg'} ? @{'/member/profile/'+${member.profileImage}} : @{/images/noimage.jpg}"
+            id="profileImage" alt="프로필 이미지" class="profile-image mb-2">
+          <div class="d-flex gap-2 justify-content-center">
+            <label for="sFile" class="btn btn-primary btn-sm">사진 선택</label>
+            <input type="file" id="sFile" name="sFile" class="d-none" accept="image/*" onchange="previewImage(event)">
+            <button type="button" onclick="fCheck()" class="btn btn-success btn-sm">저장</button>
+          </div>
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        </form>
+      </div>
+      <div class="col-md-6 mb-3 d-flex">
+        <div class="info-card flex-fill text-center">
+          <h5>기본 정보</h5>
+          <div>이름 : [[${member.name}]]</div>
+          <div>이메일 : [[${member.email}]]</div>
+          <div>휴대폰 : [[${member.tel}]]</div>
         </div>
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-      </form>
-    </div>
-    <div class="col-md-6 mb-3 d-flex">
-      <div class="info-card flex-fill text-center">
-        <h5>기본 정보</h5>
-        <div>이름 : [[${member.name}]]</div>
-        <div>이메일 : [[${member.email}]]</div>
-        <div>휴대폰 : [[${member.tel}]]</div>
       </div>
     </div>
-  </div>
-  <div class="row">
-    <div class="col-md-6">
-      <div class="info-card flex-fill text-center ">
-        <h5>계정 정보</h5>
-        <div>회원 등급 : <span th:text="${member.role.korean} + ' (' + ${member.role.name} + ')'">관리자 (ADMIN)</span></div>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="info-card h-100">
-        <h5>활동 정보</h5>
-        <div>내가 쓴 글 수 :
-          <a th:href="@{/board/boardList(search='name', searchString=${member.name})}" class="text-decoration-none">
-            <span th:text="${boardCnt}">0</span>
-          </a>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="info-card flex-fill text-center ">
+          <h5>계정 정보</h5>
+          <div>회원 등급 : <span th:text="${member.role.korean} + ' (' + ${member.role.name} + ')'">관리자 (ADMIN)</span></div>
         </div>
-        <div>댓글 수 : <span th:text="${boardReplyCnt}">0</span></div>
+      </div>
+      <div class="col-md-6">
+        <div class="info-card h-100">
+          <h5>활동 정보</h5>
+          <div>
+            내가 쓴 글 수 :
+            <a th:href="@{/board/boardList(search='name', searchString=${member.name})}" class="text-decoration-none">
+              <span th:text="${boardCnt} + '건'">0건</span>
+            </a>
+          </div>
+          <div>
+            댓글 수 :
+            <span th:text="${boardReplyCnt} + '건'">0건</span>
+          </div>
       </div>
     </div>
   </div>

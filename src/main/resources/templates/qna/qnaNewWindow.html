@@ -106,9 +106,16 @@
         overflow-y: auto;
         padding-bottom: 10px;
       }
-      .block {border-radius: 10px;}
+      .block {
+        border-radius: 10px;
+        max-width: 60%;
+      }
       .from {background: yellow; color: black;}
       .dear {background: gray; color: white;}
+      .balloon {
+        white-space: pre-line;
+        word-break: break-word;
+      }
     </style>
   </head>
   <body>
@@ -119,7 +126,7 @@
           <div class="d-flex mb-4">
             <div class="block p-2 border border-dark"
                  th:classappend="${dto.fromEmail.email==session.sEmail?'from ms-auto text-end':'dear me-auto text-start'}">
-              <div th:text="${dto.content}" class="text-start" style="white-space: pre-line;"></div>
+              <div th:text="${dto.content}" class="balloon text-start"></div>
             </div>
           </div>
         </th:block>

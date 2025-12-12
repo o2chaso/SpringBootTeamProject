@@ -38,12 +38,125 @@
         width: 700px !important;
         height: 350px !important;
     }
+
+    /* 이벤트 로그 테이블 전체 */
+    .event-log-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 6px;
+      font-size: 14px;
+    }
+
+    /* 각 행 기본 스타일 */
+    .event-log-table tr {
+      transition: background-color 0.2s ease;
+    }
+
+    /* 셀 스타일 */
+    .event-log-table td,
+    .event-log-table th {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    /* Alarm */
+    .event-log-table tr.event-alarm td {
+      background-color: rgba(255, 75, 75, 0.35) !important;
+      color: dark !important;
+      font-weight: bold !important;
+    }
+
+    /* Warning */
+    .event-log-table tr.event-warning td {
+      background-color: rgba(255, 190, 80, 0.35) !important;
+      color: dark !important;
+      font-weight: bold !important;
+    }
+
+    /* Normal */
+    .event-log-table tr.event-normal td {
+      background-color: #98fb98 !important;
+      color: dark !important;
+      font-weight: bold !important;
+    }
+
+    /* off */
+    .event-log-table tr.event-off td {
+      background-color: gray !important;
+      color: white !important;
+      font-weight: bold !important;
+    }
+
+    /* Hover 시 전체 행을 강조 */
+    .event-log-table tbody tr:hover td {
+      background-color: rgba(0, 140, 255, 0.18) !important;
+      cursor: pointer;
+    }
+
+    /* 페이지네이션 전체 영역 */
+    .pagination {
+      display: inline-flex;
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    /* 기본 버튼 스타일 */
+    .pagination-btn {
+      padding: 6px 12px;
+      border: 1px solid #007bff;
+      background-color: white;
+      color: #007bff;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    /* hover */
+    .pagination-btn:hover {
+      background-color: #007bff;
+      color: white;
+    }
+
+    /* 활성 페이지 버튼 */
+    .pagination-btn.active {
+      background-color: #0056b3;
+      color: white;
+      font-weight: bold;
+      cursor: default;
+    }
+
+    .device-card {
+      width: 60%;
+      margin: 20px auto;
+      padding: 15px 20px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e2e2;
+      text-align: center;
+    }
+
+    .device-card h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+      letter-spacing: 1px;
+    }
   </style>
 </head>
 
 <body>
-<div style="text-align: center;">
-  <h2 style="display: inline-block;">[[${deviceCode}]]</h2>
+<div  class="device-card" style="text-align: center;">
+  <h2 th:switch="${deviceCode}" style="display: inline-block;">
+    <span th:case="'ENV_V2_1'">1층</span>
+    <span th:case="'ENV_V2_2'">2층</span>
+    <span th:case="'ENV_V2_3'">자재실</span>
+    <span th:case="'ENV_V2_4'">개발실</span>
+    <span th:case="*">[[${deviceCode}]]</span>
+  </h2>
 </div>
 
 <!-- 탭 버튼 -->
@@ -388,7 +501,7 @@
 
   // EventLog ========================================================================
   var currentPage = 0;
-  var pageSize = 20;
+  var pageSize = 10;
 
   function initEventLog() {
     var deviceCode = [[${deviceCode}]];
@@ -414,12 +527,33 @@
         for(var i=0; i<list.length; i++) {
           var log = list[i];
 
-          html += "<tr>"
+          var rowClass = "";
+
+          if(log.event == "Alarm") {
+            rowClass = "event-alarm";
+          }
+          else if(log.event == "Warning") {
+            rowClass = "event-warning";
+          }
+          else if(log.event == "Normal") {
+            rowClass = "event-normal";
+          }
+          else if(log.event == "OFF") {
+            rowClass = "event-off";
+          }
+          console.log("===== Event Log Raw Data =====");
+          console.log(res.data);
+
+          let mdate = log.measureDatetime;
+          console.log("mdate", mdate);
+          let formatted = mdate.substring(0, 19).replace("T", " ");
+          console.log("formatted", formatted);
+          html += "<tr class='" + rowClass + "'>"
                 + "<td>" + ((currentPage * pageSize) + (i+1)) + "</td>"
                 + "<td>" + sensorName + "</td>"
                 + "<td>" + log.value + "</td>"
                 + "<td>" + log.event + "</td>"
-                + "<td>" + log.measureDatetime + "</td>"
+                + "<td>" + formatted + "</td>"
                 + "</tr>";
         }
 
@@ -438,10 +572,18 @@
 
   function makePagination(total) {
     var totalPages = Math.ceil(total / pageSize);
-    var html = "";
-    for(var i=0; i<totalPages; i++) {
-      html += "<button onclick='goPage(" + i + ")'>" + (i+1) + "</button>";
+    var html = "<div class='pagination'>";
+
+    for (var i = 0; i < totalPages; i++) {
+      var active = (i === currentPage) ? " active" : "";
+
+      html += "<button class='pagination-btn" + active + "' onclick='goPage(" + i + ")'>"
+              + (i + 1)
+              + "</button>";
     }
+
+    html += "</div>";
+
     $("#paginationArea1").html(html);
     $("#paginationArea2").html(html);
   }
