@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -35,5 +36,12 @@ public class ProductController {
     model.addAttribute("productDTO", productDTO);
 
     return "/product/productContent";
+  }
+
+  @GetMapping("/productDetail")
+  public String productDetailGet(@RequestParam(required = false) Integer flag, Model model) {
+    System.out.println(flag);
+    model.addAttribute("flag", flag);
+    return "/product/productDetail";
   }
 }

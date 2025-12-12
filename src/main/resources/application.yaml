@@ -1,6 +1,7 @@
 # server port : 9099
 server:
   port: 9099
+  address: 0.0.0.0
   servlet:
     context-path: /SpringGroupBB
 

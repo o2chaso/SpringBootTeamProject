@@ -180,198 +180,200 @@
   </script>
 </th:block>
 <div layout:fragment="content">
-  <h2 class="text-center mb-4">글 내용 보기</h2>
-  <th:block th:if="${board.complaint eq 'HI' and session.strLevel ne '관리자'}">
-    <hr class="border border-dark">
-    <h3 class="text-center text-danger">해당 게시글은 신고된 글입니다.</h3>
-    <hr class="border border-dark">
-    <div class="text-center">
-      <input type="button" value="돌아가기"
-             th:onclick="|location.href='@{/board/boardList(pag=${pageVO.pag-1},pageSize=${pageVO.pageSize},search=${pageVO.search},searchString=${pageVO.searchString})}'|"
-             class="btn btn-info"/>
-    </div>
-  </th:block>
-
-  <th:block th:if="${board.complaint eq 'DE' and session.strLevel ne '관리자'}">
-    <hr class="border border-dark">
-    <h3 class="text-center text-danger">해당 게시글은 3일 후 삭제될 예정입니다.</h3>
-    <hr class="border border-dark">
-    <div class="text-center">
-      <input type="button" value="돌아가기"
-             th:onclick="|location.href='@{/board/boardList(pag=${pageVO.pag-1},pageSize=${pageVO.pageSize},search=${pageVO.search},searchString=${pageVO.searchString})}'|"
-             class="btn btn-info"/>
-    </div>
-  </th:block>
-
-  <!-- 정상 글 (HI,DE 아닌 경우) - 전체 내용 표시 -->
-  <th:block th:if="${session.strLevel eq '관리자' or (board.complaint ne 'HI' and board.complaint ne 'DE')}">
-    <table class="table table-bordered text-center border-secondary-subtle">
-      <tr>
-        <th class="table-secondary">글쓴이</th>
-        <td>[[${board.name}]]</td>
-        <th class="table-secondary">글쓴날짜</th>
-        <td>[[${#strings.substring(board.wDate,0,19)}]]</td>
-      </tr>
-      <tr>
-        <th class="table-secondary">글조회수</th>
-        <td>[[${board.readNum}]]</td>
-        <th class="table-secondary">접속IP</th>
-        <td>[[${board.hostIp}]]</td>
-      </tr>
-      <tr>
-        <th class="table-secondary">글제목</th>
-        <td colspan="3" class="text-start">[[${board.title}]]
-          (<a th:href="|javascript:goodCheckPlus(1)|" title="좋아요" style="text-decoration: none;">👍</a>
-          <a th:href="|javascript:goodCheckMinus(-1)|" title="싫어요" style="text-decoration: none;">👎</a>([[${board.good}]]))
-        </td>
-      </tr>
-      <tr>
-        <th class="table-secondary">글내용</th>
-        <td colspan="3" style="height:250px" class="text-start" th:utext="${#strings.replace(board.content, newLine, '<br/>')}"></td>
-      </tr>
-    </table>
-
-    <div class="row">
-      <div class="col text-start">
+  <div class="device-card">
+    <h2 class="text-center mb-4">글 내용 보기</h2>
+  </div>
+  <div class="device-card">
+    <th:block th:if="${board.complaint eq 'HI' and session.strLevel ne '관리자'}">
+      <hr class="border border-dark">
+      <h3 class="text-center text-danger">해당 게시글은 신고된 글입니다.</h3>
+      <hr class="border border-dark">
+      <div class="text-center">
         <input type="button" value="돌아가기"
                th:onclick="|location.href='@{/board/boardList(pag=${pageVO.pag-1},pageSize=${pageVO.pageSize},search=${pageVO.search},searchString=${pageVO.searchString})}'|"
                class="btn btn-info"/>
       </div>
-      <div class="col">
-        <th:block th:if="${board.noticeSw eq 'NO' and session.sName ne board.name and board.complaint eq 'NO'}">
-          <a href="#" data-bs-toggle="modal" data-bs-target="#myModal" class="btn btn-danger">신고하기</a>
-        </th:block>
-        <th:block th:if="${board.complaint eq 'OK'}">
-          <font color="red"><b>현재 게시글은 신고된 글입니다.</b></font>
-        </th:block>
+    </th:block>
+
+    <th:block th:if="${board.complaint eq 'DE' and session.strLevel ne '관리자'}">
+      <hr class="border border-dark">
+      <h3 class="text-center text-danger">해당 게시글은 3일 후 삭제될 예정입니다.</h3>
+      <hr class="border border-dark">
+      <div class="text-center">
+        <input type="button" value="돌아가기"
+               th:onclick="|location.href='@{/board/boardList(pag=${pageVO.pag-1},pageSize=${pageVO.pageSize},search=${pageVO.search},searchString=${pageVO.searchString})}'|"
+               class="btn btn-info"/>
       </div>
-      <div class="col text-end">
-        <th:block th:if="${pageVO.isOwner}">
-          <input type="button" value="수정"
-                 th:onclick="|location.href='@{/board/boardUpdate(id=${board.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize},search=${pageVO.search},searchString=${pageVO.searchString})}'|"
-                 class="btn btn-warning"/>
-          <input type="button" value="삭제" onclick="delCheck()" class="btn btn-danger"/>
-        </th:block>
-      </div>
-    </div>
-
-    <hr/>
-
-    <!-- 이전글/다음글 -->
-    <div class="row">
-      <div class="col text-start">
-        <th:block th:if="${!#strings.isEmpty(nextVO)}">
-          👆 <a th:href="@{/board/boardContent(id=${nextVO.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">다음글 : [[${nextVO.title}]]</a><br/>
-        </th:block>
-        <th:block th:if="${!#strings.isEmpty(preVO)}">
-          👇 <a th:href="@{/board/boardContent(id=${preVO.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">이전글 : [[${preVO.title}]]</a><br/>
-        </th:block>
-      </div>
-    </div>
-
-    <hr/>
-
-    <!-- 댓글처리(리스트/입력) -->
-    <!-- 댓글 리스트 -->
-    <table class="table table-hover text-center">
-      <tr class="table-secondary">
-        <th>작성자</th>
-        <th>댓글내용</th>
-        <th>댓글일자</th>
-        <th>접속IP</th>
-      </tr>
-      <th:block th:each="replyVO, st : ${replyVos}">
+    </th:block>
+    <!-- 정상 글 (HI,DE 아닌 경우) - 전체 내용 표시 -->
+    <th:block th:if="${session.strLevel eq '관리자' or (board.complaint ne 'HI' and board.complaint ne 'DE')}">
+      <table class="table table-bordered text-center border-secondary-subtle">
         <tr>
-          <td>
-            [[${replyVO.name}]]
-            <th:block th:if="${session.sName eq replyVO.name || strLevel eq '관리자'}">
-              (<a th:href="|javascript:replyDeleteCheck(${replyVO.id})|" title="댓글삭제">x</a>)
-              <th:block th:if="${session.sName eq replyVO.name}">
-                (<a th:href="|javascript:replyUpdateCheck(${replyVO.id})|" title="댓글수정">√</a>)
-              </th:block>
-            </th:block>
-          </td>
-          <td class="text-start" th:utext="${replyVO.content}" style="white-space: pre-line;"></td>
-          <td th:text="${#strings.substring(replyVO.wDate, 0, 10)}"></td>
-          <td th:text="${replyVO.hostIp}"></td>
-        <tr/>
-        <!-- 댓글 수정 폼 -->
-        <tr class="border-light">
-          <td colspan="4" class="m-0 p-0">
-            <div th:id="replyUpdateForm+${replyVO.id}" class="replyUpdateForm m-0 p-0" style="display:none;">
-              <form name="replyUpdateForm">
-                <table class="table text-center">
-                  <tr>
-                    <td class="text-start" style="width:85%">
-                      글내용 :
-                      <textarea rows="4" name="content" th:id="content+${replyVO.id}" class="form-control">[[${replyVO.content}]]</textarea>
-                    </td>
-                    <td style="width:15%"><br/>
-                      <p>작성자 : [[${session.sName}]]</p>
-                      <p>
-                        <a th:href="|javascript:replyUpdateCheckOk(${replyVO.id})|" class="badge bg-primary">댓글수정</a>
-                        <a th:href="|javascript:replyUpdateViewClose(${replyVO.id})|" class="badge bg-warning">창닫기</a>
-                      </p>
-                    </td>
-                  </tr>
-                </table>
-              </form>
-            </div>
+          <th class="table-secondary">글쓴이</th>
+          <td>[[${board.name}]]</td>
+          <th class="table-secondary">글쓴날짜</th>
+          <td>[[${#strings.substring(board.wDate,0,19)}]]</td>
+        </tr>
+        <tr>
+          <th class="table-secondary">글조회수</th>
+          <td>[[${board.readNum}]]</td>
+          <th class="table-secondary">접속IP</th>
+          <td>[[${board.hostIp}]]</td>
+        </tr>
+        <tr>
+          <th class="table-secondary">글제목</th>
+          <td colspan="3" class="text-start">[[${board.title}]]
+            (<a th:href="|javascript:goodCheckPlus(1)|" title="좋아요" style="text-decoration: none;">👍</a>
+            <a th:href="|javascript:goodCheckMinus(-1)|" title="싫어요" style="text-decoration: none;">👎</a>([[${board.good}]]))
           </td>
         </tr>
-      </th:block>
-    </table>
-
-    <hr/>
-
-    <!-- 댓글 입력창 -->
-    <form name="replyForm">
-      <table class="table text-center">
         <tr>
-          <td class="text-start" style="width:85%">
-            글내용 :
-            <textarea rows="4" name="content" id="content" class="form-control"></textarea>
-          </td>
-          <td style="width:15%"><br/>
-            <p>작성자 : [[${session.sName}]]</p>
-            <p><input type="button" value="댓글달기" onclick="replyCheck()" class="btn btn-info btn-sm"/></p>
-          </td>
+          <th class="table-secondary">글내용</th>
+          <td colspan="3" style="height:250px" class="text-start" th:utext="${#strings.replace(board.content, newLine, '<br/>')}"></td>
         </tr>
       </table>
-    </form>
 
-    <!-- 신고하기 모달폼 -->
-    <div class="modal fade" id="myModal">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">현재 게시글을 신고합니다.</h4>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <b>신고사유 선택</b>
-            <hr class="border border-secondary">
-            <form name="modalForm">
-              <div><input type="radio" name="complaint" id="complaint1" value="광고,홍보,영리목적"/> 광고,홍보,영리목적</div>
-              <div><input type="radio" name="complaint" id="complaint2" value="욕설,비방,차별,혐오"/> 욕설,비방,차별,혐오</div>
-              <div><input type="radio" name="complaint" id="complaint3" value="불법정보"/> 불법정보</div>
-              <div><input type="radio" name="complaint" id="complaint4" value="음란,청소년유해"/> 음란,청소년유해</div>
-              <div><input type="radio" name="complaint" id="complaint5" value="개인정보노출,유포,거래"/> 개인정보노출,유포,거래</div>
-              <div><input type="radio" name="complaint" id="complaint6" value="도배,스팸"/> 도배,스팸</div>
-              <div><input type="radio" name="complaint" id="complaint7" value="기타" onclick="etcShow()"/> 기타</div>
-              <div id="etc"><textarea rows="2" id="complaintTxt" class="form-control" style="display:none"></textarea></div>
+      <div class="row">
+        <div class="col text-start">
+          <input type="button" value="돌아가기"
+                 th:onclick="|location.href='@{/board/boardList(pag=${pageVO.pag-1},pageSize=${pageVO.pageSize},search=${pageVO.search},searchString=${pageVO.searchString})}'|"
+                 class="btn btn-info"/>
+        </div>
+        <div class="col">
+          <th:block th:if="${board.noticeSw eq 'NO' and session.sName ne board.name and board.complaint eq 'NO'}">
+            <a href="#" data-bs-toggle="modal" data-bs-target="#myModal" class="btn btn-danger">신고하기</a>
+          </th:block>
+          <th:block th:if="${board.complaint eq 'OK'}">
+            <font color="red"><b>현재 게시글은 신고된 글입니다.</b></font>
+          </th:block>
+        </div>
+        <div class="col text-end">
+          <th:block th:if="${pageVO.isOwner}">
+            <input type="button" value="수정"
+                   th:onclick="|location.href='@{/board/boardUpdate(id=${board.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize},search=${pageVO.search},searchString=${pageVO.searchString})}'|"
+                   class="btn btn-warning"/>
+            <input type="button" value="삭제" onclick="delCheck()" class="btn btn-danger"/>
+          </th:block>
+        </div>
+      </div>
+
+      <hr/>
+
+      <!-- 이전글/다음글 -->
+      <div class="row">
+        <div class="col text-start">
+          <th:block th:if="${!#strings.isEmpty(nextVO)}">
+            👆 <a th:href="@{/board/boardContent(id=${nextVO.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">다음글 : [[${nextVO.title}]]</a><br/>
+          </th:block>
+          <th:block th:if="${!#strings.isEmpty(preVO)}">
+            👇 <a th:href="@{/board/boardContent(id=${preVO.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">이전글 : [[${preVO.title}]]</a><br/>
+          </th:block>
+        </div>
+      </div>
+
+      <hr/>
+
+      <!-- 댓글처리(리스트/입력) -->
+      <!-- 댓글 리스트 -->
+      <table class="table table-hover text-center">
+        <tr class="table-secondary">
+          <th>작성자</th>
+          <th>댓글내용</th>
+          <th>댓글일자</th>
+          <th>접속IP</th>
+        </tr>
+        <th:block th:each="replyVO, st : ${replyVos}">
+          <tr>
+            <td>
+              [[${replyVO.name}]]
+              <th:block th:if="${session.sName eq replyVO.name || strLevel eq '관리자'}">
+                (<a th:href="|javascript:replyDeleteCheck(${replyVO.id})|" title="댓글삭제">x</a>)
+                <th:block th:if="${session.sName eq replyVO.name}">
+                  (<a th:href="|javascript:replyUpdateCheck(${replyVO.id})|" title="댓글수정">√</a>)
+                </th:block>
+              </th:block>
+            </td>
+            <td class="text-start" th:utext="${replyVO.content}" style="white-space: pre-line;"></td>
+            <td th:text="${#strings.substring(replyVO.wDate, 0, 10)}"></td>
+            <td th:text="${replyVO.hostIp}"></td>
+          <tr/>
+          <!-- 댓글 수정 폼 -->
+          <tr class="border-light">
+            <td colspan="4" class="m-0 p-0">
+              <div th:id="replyUpdateForm+${replyVO.id}" class="replyUpdateForm m-0 p-0" style="display:none;">
+                <form name="replyUpdateForm">
+                  <table class="table text-center">
+                    <tr>
+                      <td class="text-start" style="width:85%">
+                        글내용 :
+                        <textarea rows="4" name="content" th:id="content+${replyVO.id}" class="form-control">[[${replyVO.content}]]</textarea>
+                      </td>
+                      <td style="width:15%"><br/>
+                        <p>작성자 : [[${session.sName}]]</p>
+                        <p>
+                          <a th:href="|javascript:replyUpdateCheckOk(${replyVO.id})|" class="badge bg-primary">댓글수정</a>
+                          <a th:href="|javascript:replyUpdateViewClose(${replyVO.id})|" class="badge bg-warning">창닫기</a>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </form>
+              </div>
+            </td>
+          </tr>
+        </th:block>
+      </table>
+
+      <hr/>
+
+      <!-- 댓글 입력창 -->
+      <form name="replyForm">
+        <table class="table text-center">
+          <tr>
+            <td class="text-start" style="width:85%">
+              글내용 :
+              <textarea rows="4" name="content" id="content" class="form-control"></textarea>
+            </td>
+            <td style="width:15%"><br/>
+              <p>작성자 : [[${session.sName}]]</p>
+              <p><input type="button" value="댓글달기" onclick="replyCheck()" class="btn btn-info btn-sm"/></p>
+            </td>
+          </tr>
+        </table>
+      </form>
+
+      <!-- 신고하기 모달폼 -->
+      <div class="modal fade" id="myModal">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">현재 게시글을 신고합니다.</h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <b>신고사유 선택</b>
               <hr class="border border-secondary">
-              <input type="button" value="신고하기" onclick="complaintCheck()" class="btn btn-success form-control" />
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <form name="modalForm">
+                <div><input type="radio" name="complaint" id="complaint1" value="광고,홍보,영리목적"/> 광고,홍보,영리목적</div>
+                <div><input type="radio" name="complaint" id="complaint2" value="욕설,비방,차별,혐오"/> 욕설,비방,차별,혐오</div>
+                <div><input type="radio" name="complaint" id="complaint3" value="불법정보"/> 불법정보</div>
+                <div><input type="radio" name="complaint" id="complaint4" value="음란,청소년유해"/> 음란,청소년유해</div>
+                <div><input type="radio" name="complaint" id="complaint5" value="개인정보노출,유포,거래"/> 개인정보노출,유포,거래</div>
+                <div><input type="radio" name="complaint" id="complaint6" value="도배,스팸"/> 도배,스팸</div>
+                <div><input type="radio" name="complaint" id="complaint7" value="기타" onclick="etcShow()"/> 기타</div>
+                <div id="etc"><textarea rows="2" id="complaintTxt" class="form-control" style="display:none"></textarea></div>
+                <hr class="border border-secondary">
+                <input type="button" value="신고하기" onclick="complaintCheck()" class="btn btn-success form-control" />
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </th:block>
-
+    </th:block>
+  </div>
 </div>
 
 </html>

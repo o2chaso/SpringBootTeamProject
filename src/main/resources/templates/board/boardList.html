@@ -25,7 +25,7 @@
   </style>
 </th:block>
 
-<div layout:fragment="content" style="max-width:1000px; margin:40px auto;">
+<div layout:fragment="content">
   <style>
     @charset "UTF-8";
     .search-bg {
@@ -37,90 +37,105 @@
       margin: 0;
     }
 
-    #mybos {
-      background-color: rgb(203, 228, 252) !important;
-    }
   </style>
+   <div class="device-card">
+      <h2 class="font-weight-bold text-primary heading mb-1 text-start" style="font-size:2.2">자유게시판</h2>
+      <hr class="secondary">
+   </div>
 
-  <h2 class="font-weight-bold text-primary heading mb-1 text-start" style="font-size:2.2">자유게시판</h2>
-  <hr class="secondary">
-  <div class="d-flex justify-content-start">
-    <a th:if="${!isSearch}" th:href="@{/board/boardInput}" class="btn btn-success btn-sm">글쓰기</a>
-    <a th:if="${isSearch}" th:href="@{/board/boardList}" class="btn btn-outline-secondary btn-sm">돌아가기</a>
-  </div>
-  <div id="mybos">테스트 박스</div>
-  <!-- 검색기 시작 -->
-  <div class="text-center" style="margin: 60px 0;">
-    <div class="search-bg" style="display:inline-block; width:100% margin:0;">
-      <form class="d-flex justify-content-center" name="searchForm" method="get" style="margin:0; padding:0;">
-      <select name="search" id="search" class="me-2" style="height:28px; font-size:0.95em; margin-top:4px">
-        <option value="title"   th:selected="${pageVO.searchStr=='글제목'}">글제목</option>
-        <option value="name"    th:selected="${pageVO.searchStr=='글쓴이'}">글쓴이</option>
-        <option value="content" th:selected="${pageVO.searchStr=='글내용'}">글내용</option>
-      </select>
-        <input type="text" name="searchString" id="searchString" th:value="${pageVO.searchString}" placeholder="검색어를 입력해주세요." required style="height:36px; font-size:1em; width:400px" />
-        <input type="submit" value="검색" style="height=36px; font-size:0.98em; width:90px" class="btn btn-dark px-3"/>
-      </form>
+  <div class="device-card">
+    <div class="row mt-3 mb-1">
+      <div class="col text-start">
+      </div>
+      <div class="col text-end">
+        <select name="pageSize" id="pageSize" onchange="pageSizeCheck()">
+          <option th:selected="${pageVO.pageSize==5}">5</option>
+          <option th:selected="${pageVO.pageSize==10}">10</option>
+          <option th:selected="${pageVO.pageSize==15}">15</option>
+          <option th:selected="${pageVO.pageSize==20}">20</option>
+          <option th:selected="${pageVO.pageSize==30}">30</option>
+          <option th:selected="${pageVO.pageSize==50}">50</option>
+        </select>
+      </div>
     </div>
-  </div>
-  <!-- 검색기 끝 -->
-  <div class="row mt-3 mb-1">
-    <div class="col text-start">
-    </div>
-    <div class="col text-end">
-      <select name="pageSize" id="pageSize" onchange="pageSizeCheck()">
-        <option th:selected="${pageVO.pageSize==5}">5</option>
-        <option th:selected="${pageVO.pageSize==10}">10</option>
-        <option th:selected="${pageVO.pageSize==15}">15</option>
-        <option th:selected="${pageVO.pageSize==20}">20</option>
-        <option th:selected="${pageVO.pageSize==30}">30</option>
-        <option th:selected="${pageVO.pageSize==50}">50</option>
-      </select>
-    </div>
-  </div>
 
-  <table class="table">
-    <tr style="border-bottom: 3px solid #484848;">
-      <th>번호</th>
-      <th>제목</th>
-      <th>이름</th>
-      <th>작성일</th>
-      <th>조회수(♥)</th>
-    </tr>
-    <th:block th:each="board, st : ${pageVO.boardList}"
-              th:if="${board.openSw == 'OK'
-                      or #authorization.expression('hasAuthority(''ROLE_ADMIN'')')
-                      or (board.member != null and board.member.email == #authentication.name)}">
-      <tr>
-        <td>
-          <span th:if="${board.noticeSw == 'OK'}">📌</span>
-          <span th:unless="${board.noticeSw == 'OK'}" th:text="${pageVO.curScrStartNo - st.index}"></span>
-        </td>
-        <td class="text-start">
-          <a th:href="@{/board/boardContent(id=${board.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">[[${board.title}]]</a>
-          <th:block th:if="${board.openSw == 'NO'}">
-            <span class="badge bg-info">비공개</span>
-          </th:block>
-          <th:block th:if="${board.complaint == 'HI'}">
-            <span class="badge bg-danger">신고중</span>
-          </th:block>
-          <th:block th:if="${board.complaint == 'DE'}">
-            <span class="badge bg-dark">삭제예정</span>
-          </th:block>
-          <th:block th:if="${board.hourDiff <= 24}"><img th:src="@{/images/new.gif}"></th:block>
-          <th:block th:if="${board.replyCnt != 0}">([[${board.replyCnt}]])</th:block>
-        </td>
-        <td>[[${board.name}]]</td>
-        <td>
-          <th:block th:if="${board.hourDiff <= 24}">
-            <span th:text="${board.dateDiff == 0} ? ${#temporals.format(board.wDate, 'HH:mm:ss')} : ${#temporals.format(board.wDate, 'yyyy-MM-dd HH:mm')}"></span>
-          </th:block>
-          <th:block th:if="${board.hourDiff > 24}"><span th:text="${#strings.substring(board.wDate,0,10)}"></span></th:block>
-        </td>
-        <td>[[${board.readNum}]]([[${board.good}]])</td>
+    <table class="table">
+      <tr style="border-bottom: 3px solid #484848;">
+        <th>번호</th>
+        <th>제목</th>
+        <th>이름</th>
+        <th>작성일</th>
+        <th>조회수(♥)</th>
       </tr>
-    </th:block>
-  </table>
+      <th:block th:each="board, st : ${pageVO.boardList}"
+                th:if="${board.openSw == 'OK'
+                        or #authorization.expression('hasAuthority(''ROLE_ADMIN'')')
+                        or (board.member != null and board.member.email == #authentication.name)}">
+        <tr>
+          <td>
+            <span th:if="${board.noticeSw == 'OK'}">📌</span>
+            <span th:unless="${board.noticeSw == 'OK'}" th:text="${pageVO.curScrStartNo - st.index}"></span>
+          </td>
+          <td class="text-start">
+            <a th:href="@{/board/boardContent(id=${board.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">[[${board.title}]]</a>
+            <th:block th:if="${board.openSw == 'NO'}">
+              <span class="badge bg-info">비공개</span>
+            </th:block>
+            <th:block th:if="${board.complaint == 'HI'}">
+              <span class="badge bg-danger">신고중</span>
+            </th:block>
+            <th:block th:if="${board.complaint == 'DE'}">
+              <span class="badge bg-dark">삭제예정</span>
+            </th:block>
+            <th:block th:if="${board.hourDiff <= 24}"><img th:src="@{/images/new.gif}"></th:block>
+            <th:block th:if="${board.replyCnt != 0}">([[${board.replyCnt}]])</th:block>
+          </td>
+          <td>[[${board.name}]]</td>
+          <td>
+            <th:block th:if="${board.hourDiff <= 24}">
+              <span th:text="${board.dateDiff == 0} ? ${#temporals.format(board.wDate, 'HH:mm:ss')} : ${#temporals.format(board.wDate, 'yyyy-MM-dd HH:mm')}"></span>
+            </th:block>
+            <th:block th:if="${board.hourDiff > 24}"><span th:text="${#strings.substring(board.wDate,0,10)}"></span></th:block>
+          </td>
+          <td>[[${board.readNum}]]([[${board.good}]])</td>
+        </tr>
+      </th:block>
+    </table>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <!-- 왼쪽: 글쓰기 버튼 -->
+      <div>
+        <a th:if="${!isSearch}"
+           th:href="@{/board/boardInput}"
+           class="btn btn-success btn-sm">
+          글쓰기
+        </a>
+        <a th:if="${isSearch}"
+           th:href="@{/board/boardList}"
+           class="btn btn-outline-secondary btn-sm">
+          돌아가기
+        </a>
+      </div>
+      <!-- 가운데: 검색폼 -->
+      <form name="searchForm" method="get"
+            class="d-flex align-items-center mx-auto"
+            style="gap: 8px;">
+        <select name="search" id="search"
+                style="height:35px; font-size:0.9em;">
+          <option value="title"   th:selected="${pageVO.searchStr=='글제목'}">글제목</option>
+          <option value="name"    th:selected="${pageVO.searchStr=='글쓴이'}">글쓴이</option>
+          <option value="content" th:selected="${pageVO.searchStr=='글내용'}">글내용</option>
+        </select>
+        <input type="text" name="searchString" id="searchString"
+               th:value="${pageVO.searchString}"
+               placeholder="검색어를 입력해주세요."
+               required
+               style="height:35px; width:300px; font-size:0.95em;">
+        <input type="submit" value="검색" class="btn btn-dark btn-sm px-3">
+      </form>
+      <!-- 오른쪽: (비워두거나 향후 버튼 추가 가능) -->
+      <div style="width:80px;"></div>
+    </div>
+  </div>
 
   <!-- 블록페이지 시작 -->
   <div class="text-center">

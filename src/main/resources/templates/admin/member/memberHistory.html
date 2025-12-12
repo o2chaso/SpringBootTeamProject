@@ -52,71 +52,75 @@
 </th:block>
 
 <div layout:fragment="content">
-  <div class="card p-3 mb-4 shadow-sm">
-    <h2 class="card-title mb-3">로그인 기록(테이블)</h2>
-    <div class="d-flex gap-3 flex-wrap">
-      <form name="searchForm" method="get" class="row d-flex align-items-center w-100">
-        <div class="col-auto">
-          <select name="searchStr" id="searchStr" class="form-select form-select-sm me-2" style="width:120px;">
-            <option value="">선택</option>
-            <option value="name" th:selected="${pageDTO.searchStr=='name'}">이름</option>
-            <option value="email" th:selected="${pageDTO.searchStr=='email'}">이메일</option>
-          </select>
-        </div>
-        <div class="col-auto">
-          <input type="text" name="searchString" id="searchString" th:value="${pageDTO.searchString}"
-                  placeholder="검색어를 입력하세요" class="form-control form-control-sm" style="max-width:200px;">
-        </div>
-        <div class="col-auto d-flex align-items-center me-2">
-          <label class="form-label me-2 fw-bold" style="min-width:120px;">기간 조회</label>
-          <div class="input-group" style="max-width: 300px;">
-            <span class="input-group-text">
-              <i class="bi bi-calendar-event"></i>
-            </span>
-            <input type="text" id="dateRange" name="dateRange" class="form-control form-control-sm"
-                    placeholder="기간을 선택하세요" style="max-width: 300px;" autocomplete="off"
-                    th:value="${pageDTO.dateRange}">
+  <div class="device-card">
+    <div class="card p-3 mb-4 shadow-sm">
+      <h2 class="card-title mb-3">로그인 기록(테이블)</h2>
+      <div class="d-flex gap-3 flex-wrap">
+        <form name="searchForm" method="get" class="row d-flex align-items-center w-100">
+          <div class="col-auto">
+            <select name="searchStr" id="searchStr" class="form-select form-select-sm me-2" style="width:120px;">
+              <option value="">선택</option>
+              <option value="name" th:selected="${pageDTO.searchStr=='name'}">이름</option>
+              <option value="email" th:selected="${pageDTO.searchStr=='email'}">이메일</option>
+            </select>
           </div>
-        </div>
-        <div class="col-auto me-2">
-            <button class="btn btn-sm btn-primary" type="submit" >
-              <i class="bi bi-search"></i> 검색
-            </button>
-        </div>
-        <div class="col-auto d-flex align-items-center me-2">
-          <a th:href="@{/admin/member/memberHistory}" class="btn btn-dark btn-sm me-2">전체보기</a>
-          <a th:href="@{/admin/member/memberHistoryGraph}" class="btn btn-dark btn-sm">그래프보기</a>
-        </div>
-      </form>
+          <div class="col-auto">
+            <input type="text" name="searchString" id="searchString" th:value="${pageDTO.searchString}"
+                    placeholder="검색어를 입력하세요" class="form-control form-control-sm" style="max-width:200px;">
+          </div>
+          <div class="col-auto d-flex align-items-center me-2">
+            <label class="form-label me-2 fw-bold" style="min-width:120px;">기간 조회</label>
+            <div class="input-group" style="max-width: 300px;">
+              <span class="input-group-text">
+                <i class="bi bi-calendar-event"></i>
+              </span>
+              <input type="text" id="dateRange" name="dateRange" class="form-control form-control-sm"
+                      placeholder="기간을 선택하세요" style="max-width: 300px;" autocomplete="off"
+                      th:value="${pageDTO.dateRange}">
+            </div>
+          </div>
+          <div class="col-auto me-2">
+              <button class="btn btn-sm btn-primary" type="submit" >
+                <i class="bi bi-search"></i> 검색
+              </button>
+          </div>
+          <div class="col-auto d-flex align-items-center me-2">
+            <a th:href="@{/admin/member/memberHistory}" class="btn btn-dark btn-sm me-2">전체보기</a>
+            <a th:href="@{/admin/member/memberHistoryGraph}" class="btn btn-dark btn-sm">그래프보기</a>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
-  <div class="card shadow-sm mb-3">
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle text-center">
-          <thead class="table-dark">
-          <tr>
-            <th>번호</th>
-            <th>이름</th>
-            <th>이메일</th>
-            <th>IP</th>
-            <th>로그인</th>
-            <th>날짜</th>
-          </tr>
-          </thead>
-          <tbody>
-          <th:block th:each="loginHistory, st : ${pageDTO.loginHistoryList}">
+  <div class="device-card">
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle text-center">
+            <thead class="table-dark">
             <tr>
-              <td>[[${pageDTO.curScrStartNo - st.index}]]</td>
-              <td>[[${loginHistory.memberName}]]</td>
-              <td>[[${loginHistory.memberEmail}]]</td>
-              <td>[[${loginHistory.ip}]]</td>
-              <td>[[${loginHistory.loginMethod}]]</td>
-              <td th:text="${#temporals.format(loginHistory.createDate, 'yyyy-MM-dd HH:mm:ss')}"></td>
+              <th>번호</th>
+              <th>이름</th>
+              <th>이메일</th>
+              <th>IP</th>
+              <th>로그인</th>
+              <th>날짜</th>
             </tr>
-          </th:block>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+            <th:block th:each="loginHistory, st : ${pageDTO.loginHistoryList}">
+              <tr>
+                <td>[[${pageDTO.curScrStartNo - st.index}]]</td>
+                <td>[[${loginHistory.memberName}]]</td>
+                <td>[[${loginHistory.memberEmail}]]</td>
+                <td>[[${loginHistory.ip}]]</td>
+                <td>[[${loginHistory.loginMethod}]]</td>
+                <td th:text="${#temporals.format(loginHistory.createDate, 'yyyy-MM-dd HH:mm:ss')}"></td>
+              </tr>
+            </th:block>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

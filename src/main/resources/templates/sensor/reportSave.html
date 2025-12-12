@@ -55,38 +55,41 @@
 </th:block>
 
 <div layout:fragment="content">
-  <h2>리포트 생성</h2>
-  <p></p>
-  <div class="row">
-    <div class="col"></div>
-    <div class="col input-group" style="min-width:410px">
-      <input type="date" id="measureDatetimePast" th:value="${measureDatetimePast}" readonly />
-      <div class="input-group-text">~</div>
-      <input type="date" th:max="${measureDatetime}" id="measureDatetime" th:value="${measureDatetime}" onchange="dayChange()" />
-      <input type="button" value="데이터 출력" th:onclick="|reportCreate()|" class="btn btn-info btn-sm ms-1" />
-    </div>
-    <div class="col text-end">
-      <input type="button" value="돌아가기" onclick="location.href='/SpringGroupBB/sensor/reportList'" class="btn btn-warning btn-sm" />
-    </div>
-  </div>
-  <p></p>
-  <div class="row">
-    <div class="col" style="min-width:390px">
-      <input type="radio" id="flag0" name="flagSW" value="0" onclick="flagSWOn(0)" checked /> 일일 레포트&nbsp;
-      <input type="radio" id="flag1" name="flagSW" value="1" onclick="flagSWOn(1)" /> 주간 레포트&nbsp;
-      <input type="radio" id="flag2" name="flagSW" value="2" onclick="flagSWOn(2)" /> 월간 레포트
+  <div  class="device-card">
+    <h2>리포트 생성</h2>
+    <p></p>
+    <div class="row">
+      <div class="col"></div>
+      <div class="col input-group" style="min-width:410px">
+        <input type="date" id="measureDatetimePast" th:value="${measureDatetimePast}" readonly />
+        <div class="input-group-text">~</div>
+        <input type="date" th:max="${measureDatetime}" id="measureDatetime" th:value="${measureDatetime}" onchange="dayChange()" />
+        <input type="button" value="데이터 출력" th:onclick="|reportCreate()|" class="btn btn-info btn-sm ms-1" />
+      </div>
+      <div class="col text-end">
+        <input type="button" value="돌아가기" onclick="location.href='/SpringGroupBB/sensor/reportList'" class="btn btn-warning btn-sm" />
+      </div>
     </div>
   </div>
-  <p><br/></p>
-  <div class="row">
-    <div class="col" style="min-width:390px">
-      <input type="radio" id="deviceCode0" name="deviceCode" value="ENV_V2_1" checked /> 1층&nbsp;
-      <input type="radio" id="deviceCode1" name="deviceCode" value="ENV_V2_2" /> 2층&nbsp;
-      <input type="radio" id="deviceCode2" name="deviceCode" value="ENV_V2_3" /> 자재실&nbsp;
-      <input type="radio" id="deviceCode3" name="deviceCode" value="ENV_V2_4" /> 연구실
+  <div class="device-card">
+    <div class="row">
+      <div class="col" style="min-width:390px">
+        <input type="radio" id="flag0" name="flagSW" value="0" onclick="flagSWOn(0)" checked /> 일일 레포트&nbsp;
+        <input type="radio" id="flag1" name="flagSW" value="1" onclick="flagSWOn(1)" /> 주간 레포트&nbsp;
+        <input type="radio" id="flag2" name="flagSW" value="2" onclick="flagSWOn(2)" /> 월간 레포트
+      </div>
     </div>
   </div>
-  <p><br/></p>
+  <div  class="device-card">
+    <div class="row">
+      <div class="col" style="min-width:390px">
+        <input type="radio" id="deviceCode0" name="deviceCode" value="ENV_V2_1" checked /> 1층&nbsp;
+        <input type="radio" id="deviceCode1" name="deviceCode" value="ENV_V2_2" /> 2층&nbsp;
+        <input type="radio" id="deviceCode2" name="deviceCode" value="ENV_V2_3" /> 자재실&nbsp;
+        <input type="radio" id="deviceCode3" name="deviceCode" value="ENV_V2_4" /> 연구실
+      </div>
+    </div>
+  </div>
 </div>
 
 </html>

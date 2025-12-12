@@ -166,42 +166,44 @@
 </th:block>
 
 <div layout:fragment="content">
-  <div class="card p-3 mb-4 shadow-sm">
-    <h2 class="card-title mb-3">로그인 기록</h2>
-    <form name="searchForm" method="get" class="row d-flex align-items-center w-100 mb-3">
-      <div class="col-auto d-flex align-items-center me-2">
-        <label for="memberId" class="form-label col-form-label-sm me-2">이메일</label>
-        <select name="memberId" id="memberId" class="form-select form-select-sm" style="width:184px;">
-          <option value="0" >전체</option>
-          <option th:each="mDTO : ${mDTOList}" th:value="${mDTO.id}" th:text="${mDTO.email}"
-                  th:selected="${pageDTO.memberId != null && mDTO.id==pageDTO.memberId}">
-          </option>
-        </select>
-      </div>
-      <div class="col-auto d-flex align-items-center me-2">
-        <label class="form-label me-2 fw-bold" style="min-width:120px;">기간 조회</label>
-        <div class="input-group" style="max-width: 300px;">
-          <span class="input-group-text">
-            <i class="bi bi-calendar-event"></i>
-          </span>
-          <input type="text" id="dateRange" name="dateRange" class="form-control form-control-sm"
-                 placeholder="기간을 선택하세요" style="min-width: 184px; max-width: 300px;" autocomplete="off"
-                 th:value="${pageDTO.startDate != null} ? ${pageDTO.startDate} + ' ~ ' + ${pageDTO.endDate} : ''">
+  <div class="device-card">
+    <div class="card p-3 mb-4 shadow-sm">
+      <h2 class="card-title mb-3">로그인 기록</h2>
+      <form name="searchForm" method="get" class="row d-flex align-items-center w-100 mb-3">
+        <div class="col-auto d-flex align-items-center me-2">
+          <label for="memberId" class="form-label col-form-label-sm me-2">이메일</label>
+          <select name="memberId" id="memberId" class="form-select form-select-sm" style="width:184px;">
+            <option value="0" >전체</option>
+            <option th:each="mDTO : ${mDTOList}" th:value="${mDTO.id}" th:text="${mDTO.email}"
+                    th:selected="${pageDTO.memberId != null && mDTO.id==pageDTO.memberId}">
+            </option>
+          </select>
         </div>
+        <div class="col-auto d-flex align-items-center me-2">
+          <label class="form-label me-2 fw-bold" style="min-width:120px;">기간 조회</label>
+          <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-text">
+              <i class="bi bi-calendar-event"></i>
+            </span>
+            <input type="text" id="dateRange" name="dateRange" class="form-control form-control-sm"
+                   placeholder="기간을 선택하세요" style="min-width: 184px; max-width: 300px;" autocomplete="off"
+                   th:value="${pageDTO.startDate != null} ? ${pageDTO.startDate} + ' ~ ' + ${pageDTO.endDate} : ''">
+          </div>
+        </div>
+        <div class="col-auto me-2">
+          <button class="btn btn-sm btn-primary" type="submit" >
+            <i class="bi bi-search"></i> 검색
+          </button>
+        </div>
+        <div class="col-auto d-flex align-items-center me-2">
+          <a th:href="@{/admin/member/memberHistoryGraph}" class="btn btn-dark btn-sm me-2">최근 7일</a>
+          <a th:href="@{/admin/member/memberHistory}" class="btn btn-dark btn-sm me-2">테이블보기</a>
+        </div>
+      </form>
+      <div class="text-center">
+        <div id="chartHeader"></div>
+        <div id="bar_chart" style="width: 900px; height: 500px;"></div>
       </div>
-      <div class="col-auto me-2">
-        <button class="btn btn-sm btn-primary" type="submit" >
-          <i class="bi bi-search"></i> 검색
-        </button>
-      </div>
-      <div class="col-auto d-flex align-items-center me-2">
-        <a th:href="@{/admin/member/memberHistoryGraph}" class="btn btn-dark btn-sm me-2">최근 7일</a>
-        <a th:href="@{/admin/member/memberHistory}" class="btn btn-dark btn-sm me-2">테이블보기</a>
-      </div>
-    </form>
-    <div class="text-center">
-      <div id="chartHeader"></div>
-      <div id="bar_chart" style="width: 900px; height: 500px;"></div>
     </div>
   </div>
   <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">

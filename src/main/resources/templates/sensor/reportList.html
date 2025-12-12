@@ -124,40 +124,42 @@
 </th:block>
 
 <div layout:fragment="content">
-  <div id="report-container">
-    <h2>저장된 리포트 정보</h2>
-    <div class="row">
-      <div class="col text-end">
-        <input type="button" value="리포트생성" onclick="location.href='/SpringGroupBB/sensor/reportSave'" class="btn btn-success btn-sm" />
+  <div  class="device-card">
+    <div id="report-container">
+      <h2>저장된 리포트 정보</h2>
+      <div class="row">
+        <div class="col text-end">
+          <input type="button" value="리포트생성" onclick="location.href='/SpringGroupBB/sensor/reportSave'" class="btn btn-success btn-sm" />
+        </div>
       </div>
-    </div>
-    <p></p>
-    <th:block th:if="${#lists.isEmpty(reportSaveList)}">
-      <h4>저장된 리포트가 존재하지 않습니다.</h4>
-    </th:block>
-    <th:block th:if="${!#lists.isEmpty(reportSaveList)}">
-      <table class="table table-hover">
-        <tr class="table-secondary">
-          <th>번호</th>
-          <th>날짜</th>
-          <th>장소</th>
-          <th>리포트형식</th>
-          <th>버튼</th>
-        </tr>
-        <th:block th:each="dto, st : ${reportSaveList}">
-          <tr>
-            <td>[[${st.count}]]</td>
-            <td>[[${#strings.substring(dto.saveReportDate,0,10)}]]</td>
-            <td th:text="${dto.deviceCode=='ENV_V2_1'?'1층':dto.deviceCode=='ENV_V2_2'?'2층':dto.deviceCode=='ENV_V2_3'?'자재실':'연구실'}"></td>
-            <td>[[${dto.report}]]</td>
-            <td>
-              <input type="button" value="열기" th:onclick="|location.href='@{/sensor/dailyReport(id=${dto.id}, flag=${dto.report=='일일'?'0':dto.report=='주간'?'1':2})}'|" class="btn btn-info btn-sm" />
-              <input type="button" value="삭제" th:onclick="|reportDelete(${dto.id})|" class="btn btn-danger btn-sm" />
-            </td>
+      <p></p>
+      <th:block th:if="${#lists.isEmpty(reportSaveList)}">
+        <h4>저장된 리포트가 존재하지 않습니다.</h4>
+      </th:block>
+      <th:block th:if="${!#lists.isEmpty(reportSaveList)}">
+        <table class="table table-hover">
+          <tr class="table-secondary">
+            <th>번호</th>
+            <th>날짜</th>
+            <th>장소</th>
+            <th>리포트형식</th>
+            <th>버튼</th>
           </tr>
-        </th:block>
-      </table>
-    </th:block>
+          <th:block th:each="dto, st : ${reportSaveList}">
+            <tr>
+              <td>[[${st.count}]]</td>
+              <td>[[${#strings.substring(dto.saveReportDate,0,10)}]]</td>
+              <td th:text="${dto.deviceCode=='ENV_V2_1'?'1층':dto.deviceCode=='ENV_V2_2'?'2층':dto.deviceCode=='ENV_V2_3'?'자재실':'연구실'}"></td>
+              <td>[[${dto.report}]]</td>
+              <td>
+                <input type="button" value="열기" th:onclick="|location.href='@{/sensor/dailyReport(id=${dto.id}, flag=${dto.report=='일일'?'0':dto.report=='주간'?'1':2})}'|" class="btn btn-info btn-sm" />
+                <input type="button" value="삭제" th:onclick="|reportDelete(${dto.id})|" class="btn btn-danger btn-sm" />
+              </td>
+            </tr>
+          </th:block>
+        </table>
+      </th:block>
+    </div>
   </div>
 </div>
 

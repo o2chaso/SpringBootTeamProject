@@ -66,26 +66,30 @@
 </style>
 
 <div layout:fragment="content">
-  <h2>회원탈퇴</h2>
-  <div class="d-flex justify-content-center">
-    <form name="form" method="post"  class="flex-grow-1">
-      <div class="row mb-2">
-        <label th:for="password" class="col-form-label col-2">비밀번호<span class="essential">*</span></label>
-        <div class="col-sm-6">
-          <input type="password" name="password" id="password" class="form-control" placeholder="비밀번호를 입력해주세요"/>
+  <div  class="device-card">
+   <h2>회원탈퇴</h2>
+  </div>
+  <div  class="device-card">
+    <div class="d-flex justify-content-center">
+      <form name="form" method="post"  class="flex-grow-1">
+        <div class="row mb-2">
+          <label th:for="password" class="col-form-label col-2">비밀번호<span class="essential">*</span></label>
+          <div class="col-sm-6">
+            <input type="password" name="password" id="password" class="form-control" placeholder="비밀번호를 입력해주세요"/>
+          </div>
         </div>
-      </div>
-      <div class="row mb-2">
-        <label for="confirmPassword" class ="col-form-label col-2">비밀번호 확인<span class="essential">*</span></label>
-        <div class="col-sm-6">
-          <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" placeholder="비밀번호 확인" required />
+        <div class="row mb-2">
+          <label for="confirmPassword" class ="col-form-label col-2">비밀번호 확인<span class="essential">*</span></label>
+          <div class="col-sm-6">
+            <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" placeholder="비밀번호 확인" required />
+          </div>
         </div>
-      </div>
-      <div class="d-flex justify-content-center gap-3 mt-4">
-          <button type="button" class="btn btn-dark w-40 px-4" onclick="fCheck()">확인</button>
-          <button type="button" class="btn btn-dark w-40 px-4" onclick="location.href='/SpringGroupBB/member/memberMain'">취소</button>
-      </div>
-    </form>
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <button type="button" class="btn btn-dark w-40 px-4" onclick="fCheck()">확인</button>
+            <button type="button" class="btn btn-dark w-40 px-4" onclick="location.href='/SpringGroupBB/member/memberMain'">취소</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 </html>

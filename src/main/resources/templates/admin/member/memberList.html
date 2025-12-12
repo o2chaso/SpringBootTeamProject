@@ -60,116 +60,122 @@
   </script>
 </th:block>
 <div layout:fragment="content">
-  <h2 class="text-center mb-2">회원 리스트</h2>
-  <form name="form" method="get" class="row g-2 align-items-center mb-2">
-    <div class="col-auto">
-      <select name="searchStr" onchange="changeStr()" class="form-select form-select-sm me-2">
-        <option value="all" th:selected="${pageDTO.searchStr==null or pageDTO.searchStr=='all'}">전체</option>
-        <option value="name" th:selected="${pageDTO.searchStr=='name'}">이름</option>
-        <option value="email" th:selected="${pageDTO.searchStr=='email'}">이메일</option>
-      </select>
-    </div>
-    <div class="col-auto">
-      <input type="te
-      xt" name="searchString" class="form-control form-control-sm me-2" th:value="${pageDTO.searchString}" placeholder="검색어 입력" >
-    </div>
-    <div class="col-auto">
-      <input type="submit" class="btn btn-sm btn-dark"  value="검색"/>
-    </div>
-  </form>
-  <div class="card shadow-sm mb-2">
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle text-center">
-          <thead class="table-dark">
-            <tr>
-              <th>번호</th>
-              <th>이름</th>
-              <th>이메일</th>
-              <th>전화번호</th>
-              <th>주소</th>
-              <th>권한</th>
-              <th>상태</th>
-              <th>관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            <th:block th:each="member, st : ${pageDTO.memberList}">
+  <div class="device-card">
+    <h2 class="text-center mb-2">회원 리스트</h2>
+    <form name="form" method="get" class="row g-2 align-items-center mb-2">
+      <div class="col-auto">
+        <select name="searchStr" onchange="changeStr()" class="form-select form-select-sm me-2">
+          <option value="all" th:selected="${pageDTO.searchStr==null or pageDTO.searchStr=='all'}">전체</option>
+          <option value="name" th:selected="${pageDTO.searchStr=='name'}">이름</option>
+          <option value="email" th:selected="${pageDTO.searchStr=='email'}">이메일</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <input type="te
+        xt" name="searchString" class="form-control form-control-sm me-2" th:value="${pageDTO.searchString}" placeholder="검색어 입력" >
+      </div>
+      <div class="col-auto">
+        <input type="submit" class="btn btn-sm btn-dark"  value="검색"/>
+      </div>
+    </form>
+  </div>
+  <div class="device-card">
+    <div class="card shadow-sm mb-2">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle text-center">
+            <thead class="table-dark">
               <tr>
-                <td>[[${pageDTO.curScrStartNo - st.index}]]</td>
-                <td>[[${member.name}]]</td>
-                <td>[[${member.email}]]</td>
-                <td>[[${member.tel}]]</td>
-                <td th:text="${#strings.replace(member.address, '/', '')}"></td>
-                <td>[[${member.role}]]</td>
-                <td>
-                  <span th:if="${member.userDel.name() == 'NO'}"
-                          class="badge bg-success">활성</span>
-                    <span th:if="${member.userDel.name() == 'OK'}"
-                          class="badge bg-danger">탈퇴</span>
-                  <!--[[${member.userDel}]]-->
-                </td>
-                <td class="text-center d-flex">
-                  <button type="button" class="btn btn-sm btn-outline-primary me-1"
-                      th:onclick="|openMemberModal(${member.id})|">보기
-                  </button>
-                  <button type="button"
-                          th:data-id="${member.id}"
-                          th:data-email="${member.email}"
-                          th:onclick="|memberDelete(this.getAttribute('data-id'), this.getAttribute('data-email'))|"
-                          th:classappend="${member.userDel.name() != 'OK'} ? 'd-none' : ''"
-                          class="btn btn-sm btn-outline-danger">삭제
-                  </button>
-                </td>
+                <th>번호</th>
+                <th>이름</th>
+                <th>이메일</th>
+                <th>전화번호</th>
+                <th>주소</th>
+                <th>권한</th>
+                <th>상태</th>
+                <th>관리</th>
               </tr>
-            </th:block>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              <th:block th:each="member, st : ${pageDTO.memberList}">
+                <tr>
+                  <td>[[${pageDTO.curScrStartNo - st.index}]]</td>
+                  <td>[[${member.name}]]</td>
+                  <td>[[${member.email}]]</td>
+                  <td>[[${member.tel}]]</td>
+                  <td th:text="${#strings.replace(member.address, '/', '')}"></td>
+                  <td>[[${member.role}]]</td>
+                  <td>
+                    <span th:if="${member.userDel.name() == 'NO'}"
+                            class="badge bg-success">활성</span>
+                      <span th:if="${member.userDel.name() == 'OK'}"
+                            class="badge bg-danger">탈퇴</span>
+                    <!--[[${member.userDel}]]-->
+                  </td>
+                  <td class="text-center d-flex">
+                    <button type="button" class="btn btn-sm btn-outline-primary me-1"
+                        th:onclick="|openMemberModal(${member.id})|">보기
+                    </button>
+                    <button type="button"
+                            th:data-id="${member.id}"
+                            th:data-email="${member.email}"
+                            th:onclick="|memberDelete(this.getAttribute('data-id'), this.getAttribute('data-email'))|"
+                            th:classappend="${member.userDel.name() != 'OK'} ? 'd-none' : ''"
+                            class="btn btn-sm btn-outline-danger">삭제
+                    </button>
+                  </td>
+                </tr>
+              </th:block>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
-  <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content shadow-lg rounded-3">
-        <div class="modal-header bg-dark text-white">
-          <h5 class="modal-title">
-            <i class="bi bi-person-circle me-2"></i>회원 정보
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-3 d-flex align-items-stretch">
-            <div class="col-md-5">
-              <div class="card shadow-sm border-0 h-100">
-                <img id="mImg" src="" alt="회원 이미지" style="max-width:100%; height:100%; object-fit:cover;">
+  <div class="device-card">
+    <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow-lg rounded-3">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-person-circle me-2"></i>회원 정보
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3 d-flex align-items-stretch">
+              <div class="col-md-5">
+                <div class="card shadow-sm border-0 h-100">
+                  <img id="mImg" src="" alt="회원 이미지" style="max-width:100%; height:100%; object-fit:cover;">
+                </div>
               </div>
-            </div>
-            <div class="col-md-7">
-              <div class="card border-0">
-                <div class="card-body">
-                  <h5 class="fw-bold mb-3">
-                    <span id="mName"></span>
-                    <span class="badge bg-secondary" id="mRole"></span>
-                  </h5>
-                  <p>
-                    <strong class="text-muted"><i class="bi bi-envelope-fill"></i> 이메일</strong><br>
-                    <span id="mEmail"></span>
-                  </p>
-                  <p>
-                    <strong class="text-muted"><i class="bi bi-telephone-fill"></i> 전화번호</strong><br>
-                    <span id="mTel"></span>
-                  </p>
-                  <p>
-                    <strong class="text-muted"><i class="bi bi-house-door-fill"></i> 주소</strong><br>
-                    <span id="mAddr"></span>
-                  </p>
+              <div class="col-md-7">
+                <div class="card border-0">
+                  <div class="card-body">
+                    <h5 class="fw-bold mb-3">
+                      <span id="mName"></span>
+                      <span class="badge bg-secondary" id="mRole"></span>
+                    </h5>
+                    <p>
+                      <strong class="text-muted"><i class="bi bi-envelope-fill"></i> 이메일</strong><br>
+                      <span id="mEmail"></span>
+                    </p>
+                    <p>
+                      <strong class="text-muted"><i class="bi bi-telephone-fill"></i> 전화번호</strong><br>
+                      <span id="mTel"></span>
+                    </p>
+                    <p>
+                      <strong class="text-muted"><i class="bi bi-house-door-fill"></i> 주소</strong><br>
+                      <span id="mAddr"></span>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+          </div>
         </div>
       </div>
     </div>

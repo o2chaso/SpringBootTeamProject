@@ -83,65 +83,70 @@
   </style>
 
   <div layout:fragment="content">
-    <div class="qna-top-controls">
-      <select id="progress" th:onchange="|progressViewChange()|" class="form-select" style="width: 160px;">
-        <option value="" th:selected="${pageDTO.progress==''}">전체보기</option>
-        <option value="RESOLVING" th:selected="${pageDTO.progress=='RESOLVING'}">처리중</option>
-        <option value="RESOLVED" th:selected="${pageDTO.progress=='RESOLVED'}">처리완료</option>
-        <option value="UNRESOLVABLE" th:selected="${pageDTO.progress=='UNRESOLVABLE'}">처리불가</option>
-      </select>
-      <div class="d-flex gap-2">
-        <a th:href="@{/qna/qnaInput}" class="btn btn-success btn-sm">문의하기</a>
-        <a th:href="@{/}" class="btn btn-warning btn-sm">돌아가기</a>
+    <div class="device-card">
+      <div class="qna-top-controls">
+        <select id="progress" th:onchange="|progressViewChange()|" class="form-select" style="width: 160px;">
+          <option value="" th:selected="${pageDTO.progress==''}">전체보기</option>
+          <option value="RESOLVING" th:selected="${pageDTO.progress=='RESOLVING'}">처리중</option>
+          <option value="RESOLVED" th:selected="${pageDTO.progress=='RESOLVED'}">처리완료</option>
+          <option value="UNRESOLVABLE" th:selected="${pageDTO.progress=='UNRESOLVABLE'}">처리불가</option>
+        </select>
+        <h2 style="text-align: center;">문의내역</h2>
+        <div class="d-flex gap-2">
+          <a th:href="@{/qna/qnaInput}" class="btn btn-success btn-sm">문의하기</a>
+          <a th:href="@{/}" class="btn btn-warning btn-sm">돌아가기</a>
+        </div>
       </div>
     </div>
-    <div id="qnaList">
-      <!-- 비었을 때 -->
-      <th:block th:if="${#lists.isEmpty(pageDTO.getQnaList)}">
-        <div class="alert alert-secondary text-center">
-          현재 진행중인 문의가 없습니다.
-        </div>
-      </th:block>
-      <!-- 리스트 있을 때 -->
-      <th:block th:if="${!#lists.isEmpty(pageDTO.getQnaList)}">
-        <table class="table table-hover align-middle text-center qna-table">
-          <thead>
-            <tr>
-              <th>문의번호</th>
-              <th>문의제목</th>
-              <th>답변자</th>
-              <th>상태</th>
-              <th>처리현황</th>
-              <th>문의날짜</th>
-              <th>갱신날짜</th>
-              <th>열기</th>
-            </tr>
-          </thead>
-          <tbody>
-            <th:block th:each="dto : ${pageDTO.getQnaList}">
+    <div class="device-card">
+      <div id="qnaList">
+        <!-- 비었을 때 -->
+        <th:block th:if="${#lists.isEmpty(pageDTO.getQnaList)}">
+          <div class="alert alert-secondary text-center">
+            현재 진행중인 문의가 없습니다.
+          </div>
+        </th:block>
+        <!-- 리스트 있을 때 -->
+        <th:block th:if="${!#lists.isEmpty(pageDTO.getQnaList)}">
+          <table class="table table-hover align-middle text-center qna-table">
+            <thead>
               <tr>
-                <td>[[${dto.id}]]</td>
-                <td class="title-left">[[${dto.title}]]</td>
-                <td th:text="${#strings.substring(dto.dearEmail.email, 0, #strings.indexOf(dto.dearEmail.email, '@'))}"></td>
-                <td>
-                  <span th:if="${dto.openSW.name()=='NO'}" class="badge bg-danger">읽지않음</span>
-                  <span th:if="${dto.openSW.name()=='OK'}" class="badge bg-success">읽음</span>
-                </td>
-                <td>
-                  <span th:if="${dto.progress.name()=='RESOLVING'}" class="badge bg-warning text-dark">처리중</span>
-                  <span th:if="${dto.progress.name()=='RESOLVED'}" class="badge bg-primary">처리완료</span>
-                  <span th:if="${dto.progress.name()=='UNRESOLVABLE'}" class="badge bg-secondary">처리불가</span>
-                </td>
-                <td th:text="${#strings.substring(#strings.replace(dto.startDate,'T',' '), 0, 19)}"></td>
-                <td th:text="${#strings.substring(#strings.replace(dto.lastDate,'T',' '), 0, 19)}"></td>
-                <td>
-                  <button type="button" class="btn btn-outline-primary btn-sm" th:onclick="|newWindow(${dto.id})|">열기</button>
-                </td>
+                <th>문의번호</th>
+                <th>문의제목</th>
+                <th>답변자</th>
+                <th>상태</th>
+                <th>처리현황</th>
+                <th>문의날짜</th>
+                <th>갱신날짜</th>
+                <th>열기</th>
               </tr>
-            </th:block>
-          </tbody>
-        </table>
-      </th:block>
+            </thead>
+            <tbody>
+              <th:block th:each="dto : ${pageDTO.getQnaList}">
+                <tr>
+                  <td>[[${dto.id}]]</td>
+                  <td class="title-left">[[${dto.title}]]</td>
+                  <td th:text="${#strings.substring(dto.dearEmail.email, 0, #strings.indexOf(dto.dearEmail.email, '@'))}"></td>
+                  <td>
+                    <span th:if="${dto.openSW.name()=='NO'}" class="badge bg-danger">읽지않음</span>
+                    <span th:if="${dto.openSW.name()=='OK'}" class="badge bg-success">읽음</span>
+                  </td>
+                  <td>
+                    <span th:if="${dto.progress.name()=='RESOLVING'}" class="badge bg-warning text-dark">처리중</span>
+                    <span th:if="${dto.progress.name()=='RESOLVED'}" class="badge bg-primary">처리완료</span>
+                    <span th:if="${dto.progress.name()=='UNRESOLVABLE'}" class="badge bg-secondary">처리불가</span>
+                  </td>
+                  <td th:text="${#strings.substring(#strings.replace(dto.startDate,'T',' '), 0, 19)}"></td>
+                  <td th:text="${#strings.substring(#strings.replace(dto.lastDate,'T',' '), 0, 19)}"></td>
+                  <td>
+                    <button type="button" class="btn btn-outline-primary btn-sm" th:onclick="|newWindow(${dto.id})|">열기</button>
+                  </td>
+                </tr>
+              </th:block>
+            </tbody>
+          </table>
+        </th:block>
+      </div>
     </div>
     <!--블록페이지 시작-->
     <div style="text-align: center; margin-top: 20px;">

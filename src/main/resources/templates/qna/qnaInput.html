@@ -75,27 +75,32 @@
     }
   </script>
   <div layout:fragment="content">
-    <form name="qnaForm" method="post" th:object="${dto}" class="was-validated">
-      <table class="table table-bordered">
-        <tr>
-          <th>문의제목</th>
-          <td><input type="text" id="title" name="title" placeholder="문의 제목을 적어주세요." required class="form-control" /></td>
-          <th>문의자</th>
-          <td><input type="text" id="fromEmail" name="fromEmail" th:value="${dto.get().email}" required readonly class="form-control" /></td>
-        </tr>
-        <tr id="titleValid1" class="text-start" style="display:none"><td></td><td colspan="3" id="titleValid2"></td></tr>
-        <tr>
-          <th>문의내용</th>
-          <td colspan="3"><textarea rows="10" id="content" name="content" placeholder="문의 내용을 적어주세요." required class="form-control"></textarea></td>
-        </tr>
-        <tr id="contentValid1" class="text-start" style="display:none"><td></td><td colspan="3" id="contentValid2"></td></tr>
-      </table>
-      <input type="button" value="문의보내기" onclick="qnaCheck()" class="btn btn-success" />
-      <a th:href="@{/qna/qnaList}" class="btn btn-warning">돌아가기</a>
+    <div class="device-card">
+      <h2 style="text-align: center;">문의하기</h2>
+    </div>
+    <div class="device-card">
+      <form name="qnaForm" method="post" th:object="${dto}" class="was-validated">
+        <table class="table table-bordered">
+          <tr>
+            <th>문의제목</th>
+            <td><input type="text" id="title" name="title" placeholder="문의 제목을 적어주세요." required class="form-control" /></td>
+            <th>문의자</th>
+            <td><input type="text" id="fromEmail" name="fromEmail" th:value="${dto.get().email}" required readonly class="form-control" /></td>
+          </tr>
+          <tr id="titleValid1" class="text-start" style="display:none"><td></td><td colspan="3" id="titleValid2"></td></tr>
+          <tr>
+            <th>문의내용</th>
+            <td colspan="3"><textarea rows="10" id="content" name="content" placeholder="문의 내용을 적어주세요." required class="form-control"></textarea></td>
+          </tr>
+          <tr id="contentValid1" class="text-start" style="display:none"><td></td><td colspan="3" id="contentValid2"></td></tr>
+        </table>
+        <input type="button" value="문의보내기" onclick="qnaCheck()" class="btn btn-success" />
+        <a th:href="@{/qna/qnaList}" class="btn btn-warning">돌아가기</a>
 
-      <input type="hidden" name="dearEmail" value="admin@green.com" />
-      <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}" />
-    </form>
+        <input type="hidden" name="dearEmail" value="admin@green.com" />
+        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}" />
+      </form>
+    </div>
   </div>
 
 </html>

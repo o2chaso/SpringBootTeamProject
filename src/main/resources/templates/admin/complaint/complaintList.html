@@ -151,100 +151,104 @@
 </th:block>
 
 <div layout:fragment="content">
-  <h2 class="text-center">신 고 글 리 스 트</h2>
-  <div class="d-flex justify-content-end mb-1">
-    <div>
-      <select name="part" id="part" th:onchange="partCheck()" class="form-select bg-secondary-subtle">
-        <option value="" th:selected="${pageDTO.part == ''}">전체보기</option>
-        <option value="신고접수" th:selected="${pageDTO.part == '신고접수'}">신고접수</option>
-        <option value="처리중(H)" th:selected="${pageDTO.part == '처리중(H)'}">처리중(H)</option>
-        <option value="처리완료(S)" th:selected="${pageDTO.part == '처리완료(S)'}">처리완료(S)</option>
-        <option value="처리완료(D)" th:selected="${pageDTO.part == '처리완료(D)'}">처리완료(D)</option>
-      </select>
-    </div>
+  <div class="device-card">
+    <h2 class="text-center">신 고 글 리 스 트</h2>
   </div>
+  <div class="device-card">
+    <div class="d-flex justify-content-end mb-1">
+      <div>
+        <select name="part" id="part" th:onchange="partCheck()" class="form-select bg-secondary-subtle">
+          <option value="" th:selected="${pageDTO.part == ''}">전체보기</option>
+          <option value="신고접수" th:selected="${pageDTO.part == '신고접수'}">신고접수</option>
+          <option value="처리중(H)" th:selected="${pageDTO.part == '처리중(H)'}">처리중(H)</option>
+          <option value="처리완료(S)" th:selected="${pageDTO.part == '처리완료(S)'}">처리완료(S)</option>
+          <option value="처리완료(D)" th:selected="${pageDTO.part == '처리완료(D)'}">처리완료(D)</option>
+        </select>
+      </div>
+    </div>
 
-  <table class="table table-hover text-center">
-    <tr class="table-secondary">
-      <th>번호</th>
-      <th>분류</th>
-      <th>글제목</th>
-      <th>신고자</th>
-      <th class="text-start ps-5">신고내역</th>
-      <th>신고날짜</th>
-      <th>진행상황</th>
-    </tr>
-    <tr th:each="dto, st : ${complaintList}" th:with="curScrStartNo=${pageDTO.curScrStartNo - st.index}">
-      <td th:text="${curScrStartNo}"></td>
-      <td th:text="${dto.part}"></td>
-      <td th:text="${dto.board.title}"></td>
-      <td th:text="${dto.cpName}"></td>
-      <td class="text-start">
-        <a th:href="@{/admin/complaint/complaintContent(partId=${dto.partId})}"
-           th:utext="${#strings.replace(dto.cpContent, '\n', '<br/>')}">
-        </a>
-      </td>
-      <td th:text="${dto.cpDate}"></td>
-      <td>
-        <!-- 신고접수 상태 -->
-        <th:block th:if="${dto.progress == '신고접수'}">
-          <a href="javascript:void(0)"
-             th:data-id="${dto.id}"
-             th:data-part="${dto.part}"
-             th:data-part-id="${dto.partId}"
-             data-complaint-sw="S"
-             class="badge bg-primary complaint-btn">신고해제</a>
+    <table class="table table-hover text-center">
+      <tr class="table-secondary">
+        <th>번호</th>
+        <th>분류</th>
+        <th>글제목</th>
+        <th>신고자</th>
+        <th class="text-start ps-5">신고내역</th>
+        <th>신고날짜</th>
+        <th>진행상황</th>
+      </tr>
+      <tr th:each="dto, st : ${complaintList}" th:with="curScrStartNo=${pageDTO.curScrStartNo - st.index}">
+        <td th:text="${curScrStartNo}"></td>
+        <td th:text="${dto.part}"></td>
+        <td th:text="${dto.board.title}"></td>
+        <td th:text="${dto.cpName}"></td>
+        <td class="text-start">
+          <a th:href="@{/admin/complaint/complaintContent(partId=${dto.partId})}"
+             th:utext="${#strings.replace(dto.cpContent, '\n', '<br/>')}">
+          </a>
+        </td>
+        <td th:text="${dto.cpDate}"></td>
+        <td>
+          <!-- 신고접수 상태 -->
+          <th:block th:if="${dto.progress == '신고접수'}">
+            <a href="javascript:void(0)"
+               th:data-id="${dto.id}"
+               th:data-part="${dto.part}"
+               th:data-part-id="${dto.partId}"
+               data-complaint-sw="S"
+               class="badge bg-primary complaint-btn">신고해제</a>
 
-          <a href="javascript:void(0)"
-             th:data-id="${dto.id}"
-             th:data-part="${dto.part}"
-             th:data-part-id="${dto.partId}"
-             data-complaint-sw="H"
-             class="badge bg-warning complaint-btn">감추기</a>
+            <a href="javascript:void(0)"
+               th:data-id="${dto.id}"
+               th:data-part="${dto.part}"
+               th:data-part-id="${dto.partId}"
+               data-complaint-sw="H"
+               class="badge bg-warning complaint-btn">감추기</a>
 
-          <a href="javascript:void(0)"
-             th:data-id="${dto.id}"
-             th:data-part="${dto.part}"
-             th:data-part-id="${dto.partId}"
-             data-complaint-sw="D"
-             class="badge bg-danger complaint-btn">글삭제</a>
-        </th:block>
+            <a href="javascript:void(0)"
+               th:data-id="${dto.id}"
+               th:data-part="${dto.part}"
+               th:data-part-id="${dto.partId}"
+               data-complaint-sw="D"
+               class="badge bg-danger complaint-btn">글삭제</a>
+          </th:block>
 
-        <!-- 처리중(H) 상태 -->
-        <th:block th:if="${dto.progress == '처리중(H)'}">
-          <div class="d-flex justify-content-center align-items-center">
-            <div class="comment-text" th:text="${dto.progress}"></div>
-            <div class="comment-menu p-0">
-              <button class="menu-btn" type="button">▼</button>
-              <ul class="menu-list">
-                <li>
-                  <a href="javascript:void(0)"
-                     th:data-id="${dto.id}"
-                     th:data-part="${dto.part}"
-                     th:data-part-id="${dto.partId}"
-                     data-complaint-sw="S"
-                     class="complaint-btn">신고취소</a>
-                </li>
-                <li>
-                  <a href="javascript:void(0)"
-                     th:data-id="${dto.id}"
-                     th:data-part="${dto.part}"
-                     th:data-part-id="${dto.partId}"
-                     data-complaint-sw="D"
-                     class="complaint-btn">글삭제</a>
-                </li>
-              </ul>
+          <!-- 처리중(H) 상태 -->
+          <th:block th:if="${dto.progress == '처리중(H)'}">
+            <div class="d-flex justify-content-center align-items-center">
+              <div class="comment-text" th:text="${dto.progress}"></div>
+              <div class="comment-menu p-0">
+                <button class="menu-btn" type="button">▼</button>
+                <ul class="menu-list">
+                  <li>
+                    <a href="javascript:void(0)"
+                       th:data-id="${dto.id}"
+                       th:data-part="${dto.part}"
+                       th:data-part-id="${dto.partId}"
+                       data-complaint-sw="S"
+                       class="complaint-btn">신고취소</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)"
+                       th:data-id="${dto.id}"
+                       th:data-part="${dto.part}"
+                       th:data-part-id="${dto.partId}"
+                       data-complaint-sw="D"
+                       class="complaint-btn">글삭제</a>
+                  </li>
+                </ul>
+              </div>
             </div>
-          </div>
-        </th:block>
+          </th:block>
 
-        <!-- 기타 상태 -->
-        <th:block th:if="${dto.progress != '신고접수' and dto.progress != '처리중(H)'}">
-          <span th:text="${dto.progress}"></span>
-        </th:block>
-      </td>
-    </tr>
-  </table>
+          <!-- 기타 상태 -->
+          <th:block th:if="${dto.progress != '신고접수' and dto.progress != '처리중(H)'}">
+            <span th:text="${dto.progress}"></span>
+          </th:block>
+        </td>
+      </tr>
+    </table>
+  </div>
 </div>
 
 <!-- 페이징 -->

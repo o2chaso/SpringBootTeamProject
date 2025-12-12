@@ -184,72 +184,81 @@
 </th:block>
 
 <div layout:fragment="content">
-  <div class="text-start">
-    <a th:href="@{/sensor/sensorData}" class="btn btn-primary" style="margin-left: 20px; ont-size: 18px; padding: 8px;">상세 데이터</a>
-  </div>
-
-  <!-- 상단 선택 박스 -->
-  <div style="margin-bottom: 20px;">
-    <label style="font-size: 18px; margin-right: 10px;">장치 선택 :</label>
-    <select id="deviceSelect" onchange="changeDevice()" style="padding: 8px; font-size: 16px">
-      <option value="ENV_V2_1">1층(ENV_V2_1)</option>
-      <option value="ENV_V2_2">2층(ENV_V2_2)</option>
-      <option value="ENV_V2_3">자재실(ENV_V2_3)</option>
-      <option value="ENV_V2_4">개발실(ENV_V2_4)</option>
-    </select>
-  </div>
-
-  <div class="row">
-    <div class="col">
-      <!-- 센서 대시보드 -->
-      <div class="sensor-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 25px;">
-        <div class="card" id="value1" onclick="openSensorPopup('value1')" style="cursor: pointer;"></div>
-        <div class="card" id="value2" onclick="openSensorPopup('value2')" style="cursor: pointer;"></div>
-        <div class="card" id="value3" onclick="openSensorPopup('value3')" style="cursor: pointer;"></div>
-        <div class="card" id="value4" onclick="openSensorPopup('value4')" style="cursor: pointer;"></div>
-        <div class="card" id="value5" onclick="openSensorPopup('value5')" style="cursor: pointer;"></div>
-        <div class="card" id="value6" onclick="openSensorPopup('value6')" style="cursor: pointer;"></div>
-        <div class="card" id="value7" onclick="openSensorPopup('value7')" style="cursor: pointer;"></div>
-        <div class="card" id="value8" onclick="openSensorPopup('value8')" style="cursor: pointer;"></div>
-        <div class="card" id="value9" onclick="openSensorPopup('value9')" style="cursor: pointer;"></div>
-        <div class="card" id="value10" onclick="openSensorPopup('value10')" style="cursor: pointer;"></div>
-        <div class="card" id="value11" onclick="openSensorPopup('value11')" style="cursor: pointer;"></div>
-        <div class="card" id="value12" onclick="openSensorPopup('value12')" style="cursor: pointer;"></div>
-        <div class="card" id="value13" onclick="openSensorPopup('value13')" style="cursor: pointer;"></div>
-        <div class="card" id="value14" onclick="openSensorPopup('value14')"></div>
-        <div class="card" id="value15" onclick="openSensorPopup('value15')"></div>
-        <div class="card" id="value16" onclick="openSensorPopup('value16')"></div>
+  <div class="device-card data-header-card">
+    <div class="header-flex">
+      <!-- 왼쪽 버튼 -->
+      <a th:href="@{/sensor/sensorData}" class="btn btn-primary data-btn">
+        상세 데이터
+      </a>
+      <h2>대시 보드</h2>
+      <!-- 오른쪽 셀렉트 박스 -->
+      <div class="select-area">
+        <label class="select-label">위치 선택 :</label>
+        <select id="deviceSelect" onchange="changeDevice()" class="select-box">
+          <option value="ENV_V2_1">1층(ENV_V2_1)</option>
+          <option value="ENV_V2_2">2층(ENV_V2_2)</option>
+          <option value="ENV_V2_3">자재실(ENV_V2_3)</option>
+          <option value="ENV_V2_4">개발실(ENV_V2_4)</option>
+        </select>
       </div>
     </div>
-    <!--날씨API 시작-->
-    <div id="weatherReport" class="col border" style="max-width: 360px">
-      <div class="row text-center"><h4>[[${toDay}]]</h4></div>
-      <div class="row mb-4">
-        <div class="col">날씨</div>
-        <div class="col">청주</div>
-      </div>
-      <div class="row mb-4">
-        <div id="SKY" class="col ms-4 d-flex align-items-center gap-2"></div>
-        <div id="T1H" class="col mt-3"></div>
-      </div>
-      <div class="row ms-3 mb-4">
-        <div class="col-auto">
-          <canvas id="pmChart1" width="80px" height="80px"></canvas>
+  </div>
+
+  <div  class="device-card">
+    <div class="row">
+      <div  class="device-card">
+        <div class="col">
+          <!-- 센서 대시보드 -->
+          <div class="sensor-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 25px;">
+            <div class="card" id="value1" onclick="openSensorPopup('value1')" style="cursor: pointer;"></div>
+            <div class="card" id="value2" onclick="openSensorPopup('value2')" style="cursor: pointer;"></div>
+            <div class="card" id="value3" onclick="openSensorPopup('value3')" style="cursor: pointer;"></div>
+            <div class="card" id="value4" onclick="openSensorPopup('value4')" style="cursor: pointer;"></div>
+            <div class="card" id="value5" onclick="openSensorPopup('value5')" style="cursor: pointer;"></div>
+            <div class="card" id="value6" onclick="openSensorPopup('value6')" style="cursor: pointer;"></div>
+            <div class="card" id="value7" onclick="openSensorPopup('value7')" style="cursor: pointer;"></div>
+            <div class="card" id="value8" onclick="openSensorPopup('value8')" style="cursor: pointer;"></div>
+            <div class="card" id="value9" onclick="openSensorPopup('value9')" style="cursor: pointer;"></div>
+            <div class="card" id="value10" onclick="openSensorPopup('value10')" style="cursor: pointer;"></div>
+            <div class="card" id="value11" onclick="openSensorPopup('value11')" style="cursor: pointer;"></div>
+            <div class="card" id="value12" onclick="openSensorPopup('value12')" style="cursor: pointer;"></div>
+            <div class="card" id="value13" onclick="openSensorPopup('value13')" style="cursor: pointer;"></div>
+            <div class="card" id="value14" onclick="openSensorPopup('value14')"></div>
+            <div class="card" id="value15" onclick="openSensorPopup('value15')"></div>
+            <div class="card" id="value16" onclick="openSensorPopup('value16')"></div>
+          </div>
         </div>
-        <div class="d-flex col-auto align-items-center">
-          <p id="pm10" class="text-start align-middle"></p>
+      </div>
+      <!--날씨API 시작-->
+      <div id="weatherReport" class="col border" style="max-width: 360px">
+        <div class="row text-center"><h4>[[${toDay}]]</h4></div>
+        <div class="row mb-4">
+          <div class="col">날씨</div>
+          <div class="col">청주</div>
+        </div>
+        <div class="row mb-4">
+          <div id="SKY" class="col ms-4 d-flex align-items-center gap-2"></div>
+          <div id="T1H" class="col mt-3"></div>
+        </div>
+        <div class="row ms-3 mb-4">
+          <div class="col-auto">
+            <canvas id="pmChart1" width="80px" height="80px"></canvas>
+          </div>
+          <div class="d-flex col-auto align-items-center">
+            <p id="pm10" class="text-start align-middle"></p>
+          </div>
+        </div>
+        <div class="row ms-3">
+          <div class="col-auto">
+            <canvas id="pmChart2" width="80px" height="80px"></canvas>
+          </div>
+          <div class="d-flex col-auto align-items-center">
+            <p id="pm25" class="text-start align-middle"></p>
+          </div>
         </div>
       </div>
-      <div class="row ms-3">
-        <div class="col-auto">
-          <canvas id="pmChart2" width="80px" height="80px"></canvas>
-        </div>
-        <div class="d-flex col-auto align-items-center">
-          <p id="pm25" class="text-start align-middle"></p>
-        </div>
-      </div>
+      <!--날씨API 끝-->
     </div>
-    <!--날씨API 끝-->
   </div>
 </div>
 
