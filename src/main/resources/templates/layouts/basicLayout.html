@@ -90,6 +90,73 @@
       background-color: rgba(203, 228, 252, 0.4) !important;
       cursor: pointer;
     }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 메인 콘텐츠가 남는 공간을 모두 차지하게 만들기 */
+    .content-wrapper {
+      flex: 1;
+    }
+
+    .message-area {
+      height: 60px;
+      margin-top: 15px;
+    }
+
+    /* product List */
+    /* 카드 공통 */
+    .sensor-card {
+      transition: all .25s ease;
+      border-radius: 14px !important;
+      border: 2px solid transparent;
+    }
+
+    /* hover 효과 */
+    .sensor-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+      border-color: rgb(203, 228, 252);
+    }
+
+    /* 버튼 기본 스타일 제거 */
+    .sensor-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    /* 이미지 영역 */
+    .sensor-img {
+      object-fit: contain;
+      height: 200px;
+      width: 100%;
+      border-bottom: 1px solid #e0e0e0;
+      background: white;
+    }
+
+    /* 제목 텍스트 */
+    .sensor-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1e1e1e;
+      margin-bottom: 4px;
+    }
+
+    /* 설명 텍스트 */
+    .sensor-sub {
+      font-size: 0.85rem;
+      color: #6c757d;
+      margin: 0;
+    }
   </style>
   <script th:inline="javascript">
     $(function() {
@@ -108,6 +175,15 @@
       });
     });
 
+    document.addEventListener("DOMContentLoaded", function() {
+      const alertBox = document.querySelector(".alert");
+      if(alertBox) {
+        setTimeout(() => {
+          const alert = new bootstrap.Alert(alertBox);
+          alert.close();
+        }, 2000); // 2초 뒤 자동 닫힘
+      }
+    });
   </script>
 
   <!-- js파일, css파일을 처리하는 영역 -->
@@ -119,20 +195,18 @@
 <body>
   <div th:replace="~{layouts/header::header}"></div>
   <!-- 메시지 alert 영역 추가 -->
-  <div class="container mt-3">
-    <div th:if="${message != null}" class="alert alert-info alert-dismissible fade show" role="alert">
+  <div class="message-area">
+    <div th:if="${message != null}"
+         class="alert alert-info alert-dismissible fade show"
+         role="alert">
       <span th:text="${message}"></span>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   </div>
 
-  <p><br/></p>
-  <div class="container text-center">
-    <div layout:fragment="content">
-
-    </div>
+  <div class="content-wrapper">
+    <div layout:fragment="content"></div>
   </div>
-  <p><br/></p>
+
   <div th:replace="~{layouts/footer::footer}"></div>
 </body>
 </html>

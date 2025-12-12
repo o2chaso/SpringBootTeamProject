@@ -126,9 +126,11 @@
   </style>
 </th:block>
 <div layout:fragment="content">
-  <div  class="device-card">
-
+<!--  <img src="/SpringGroupBB/images/title.png" style="width: 100%; height: 112px;">-->
+  <div class="device-card">
     <h2>내 정보</h2>
+  </div>
+  <div  class="device-card">
     <div class="row mt-4">
       <div class="col-md-6 d-flex flex-column align-items-center mb-3">
         <form th:action="@{/member/updateProfileImage}" method="post" name="uploadForm" enctype="multipart/form-data" class="text-center mb-3">
@@ -171,6 +173,7 @@
             댓글 수 :
             <span th:text="${boardReplyCnt} + '건'">0건</span>
           </div>
+        </div>
       </div>
     </div>
   </div>

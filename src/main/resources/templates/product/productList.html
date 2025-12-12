@@ -21,29 +21,35 @@
   </script>
 </th:block>
 <div layout:fragment="content">
-  <h2 class="text-center mb-4">센서</h2>
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-    <th:block th:each="product : ${productList}">
-      <div class="col">
-        <div class="card h-100 shadow-sm border-0 rounded-3">
-          <button
-                  th:onclick="|newWindow(${product.id})|"
-                  class="btn p-0 border-0 bg-transparent w-100">
-            <img th:src="@{'/admin/product/' + ${product.sensorImage}}" th:alt="${product.sensorName}"
-                  class="card-img-top img-fluid rounded-top"
-                  style="object-fit: contain; height: 200px; width: 100%; border-bottom: 1px solid #ddd;" />
-            <div class="card-body">
-              <h6 class="card-title text-dark fw-semibold mb-2 text-truncate" style="font-size: 1rem">
-                [[${product.model}]]
-              </h6>
-              <p class="text-muted small mb-0 text-truncate" style="font-size: 0.875rem">
-                [[${product.sensorName}]]
-              </p>
-            </div>
-          </button>
+  <div class="device-card title-box mb-4">
+    <h2 class="sensor-title">
+      <i class="bi bi-broadcast-pin"></i> 센서 목록
+    </h2>
+    <p class="sensor-subtitle">환경 모니터링 시스템에 사용되는 센서 장비들입니다</p>
+  </div>
+
+  <div class="device-card">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <th:block th:each="product : ${productList}">
+        <div class="col">
+          <div class="card h-100 shadow-sm sensor-card">
+            <button th:onclick="|newWindow(${product.id})|" class="sensor-btn">
+              <img th:src="@{'/admin/product/' + ${product.sensorImage}}"
+                   th:alt="${product.sensorName}"
+                   class="card-img-top sensor-img" />
+              <div class="card-body text-center">
+                <h6 class="sensor-title text-truncate">
+                  [[${product.model}]]
+                </h6>
+                <p class="sensor-sub text-truncate">
+                  [[${product.sensorName}]]
+                </p>
+              </div>
+            </button>
+          </div>
         </div>
-      </div>
-    </th:block>
+      </th:block>
+    </div>
   </div>
 </div>
 </html>
