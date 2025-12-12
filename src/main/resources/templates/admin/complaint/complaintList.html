@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    let message = [[${message}]];
+    if(message != null) alert(message);
+
+    // 신고내역 처리(해제/감추기/삭제)
+    function complaintProcess(id, part, partId, complaintSw) {
+      let ans = '';
+      if(complaintSw == 'S') {
+        ans = confirm("현 게시물의 신고를 해제 하시겠습니까?");
+        if(!ans) return false;
+      }
+      else if(complaintSw == 'H') {
+        ans = confirm("현 게시물을 감출까요?");
+        if(!ans) return false;
+      }
+      else if(complaintSw == 'D') {
+        ans = confirm("현 게시물을 삭제할까요?");
+        if(!ans) return false;
+      }
+
+      // CSRF 토큰 가져오기
+      let token = $("meta[name='_csrf']").attr("content");
+      let header = $("meta[name='_csrf_header']").attr("content");
+
+      let query = {
+          id      : id,
+          part    : part,
+          partId  : partId,
+          complaintSw : complaintSw
+      }
+
+      $.ajax({
+        url  :  '/SpringGroupBB/admin/complaint/complaintProcess',
+        type :  'post',
+        data :  query,
+        // CSRF 토큰 헤더에 추가하기
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader(header, token);
+        },
+        success:function(res) {
+          if(res != 0) {
+            alert("처리 완료되었습니다.");
+            location.reload();
+          }
+          else alert("처리 실패~~");
+        },
+        error : function(xhr) {
+        console.log(xhr.responseText);
+        alert("전송오류");
+         }
+      });
+    }
+
+    $(document).ready(function() {
+
+      $(".complaint-btn").on("click", function(e) {
+        e.preventDefault();
+        let id = $(this).data("id");
+        let part = $(this).data("part");
+        let partId = $(this).data("part-id");
+        let complaintSw = $(this).data("complaint-sw");
+        complaintProcess(id, part, partId, complaintSw);
+      });
+
+      // 메뉴 버튼 클릭
+      $(".menu-btn").on("click", function(e) {
+        e.stopPropagation();
+        $(".menu-list").hide();
+        $(this).siblings(".menu-list").toggle();
+      });
+
+      // 문서 아무 곳이나 클릭하면 메뉴 닫기
+      $(document).on("click", function() {
+        $(".menu-list").hide();
+      });
+
+      // 메뉴 안쪽 클릭 시 닫히지 않도록
+      $(".menu-list").on("click", function(e) {
+        e.stopPropagation();
+      });
+    });
+
+    // 분류별 보여주기
+    function partCheck() {
+      let part = $("#part").val();
+      location.href = "/SpringGroupBB/admin/complaintList?part="+part;
+    }
+  </script>
+</th:block>
+
+<th:block layout:fragment="css">
+  <style>
+    .comment-menu {
+      position: relative;
+      display: inline-block;
+    }
+
+    .menu-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 5px 10px;
+    }
+
+    .menu-list {
+      display: none;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 100%;
+      background: #555;
+      color: white;
+      list-style: none;
+      padding: 0;
+      margin: 5px 0 0 0;
+      border-radius: 4px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      min-width: 100px;
+      z-index: 100;
+      border: 1px solid #444;
+    }
+
+    .menu-list li {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #444;
+      transition: background 0.2s;
+    }
+
+    .menu-list li:last-child {
+      border-bottom: none;
+    }
+
+    .menu-list li:hover {
+      background: #333;
+    }
+
+    .menu-list li a {
+      display: block;
+      color: white;
+      text-decoration: none;
+    }
+  </style>
+</th:block>
+
+<div layout:fragment="content">
+  <h2 class="text-center">신 고 글 리 스 트</h2>
+  <div class="d-flex justify-content-end mb-1">
+    <div>
+      <select name="part" id="part" th:onchange="partCheck()" class="form-select bg-secondary-subtle">
+        <option value="" th:selected="${pageDTO.part == ''}">전체보기</option>
+        <option value="신고접수" th:selected="${pageDTO.part == '신고접수'}">신고접수</option>
+        <option value="처리중(H)" th:selected="${pageDTO.part == '처리중(H)'}">처리중(H)</option>
+        <option value="처리완료(S)" th:selected="${pageDTO.part == '처리완료(S)'}">처리완료(S)</option>
+        <option value="처리완료(D)" th:selected="${pageDTO.part == '처리완료(D)'}">처리완료(D)</option>
+      </select>
+    </div>
+  </div>
+
+  <table class="table table-hover text-center">
+    <tr class="table-secondary">
+      <th>번호</th>
+      <th>분류</th>
+      <th>글제목</th>
+      <th>신고자</th>
+      <th class="text-start ps-5">신고내역</th>
+      <th>신고날짜</th>
+      <th>진행상황</th>
+    </tr>
+    <tr th:each="dto, st : ${complaintList}" th:with="curScrStartNo=${pageDTO.curScrStartNo - st.index}">
+      <td th:text="${curScrStartNo}"></td>
+      <td th:text="${dto.part}"></td>
+      <td th:text="${dto.board.title}"></td>
+      <td th:text="${dto.cpName}"></td>
+      <td class="text-start">
+        <a th:href="@{/admin/complaint/complaintContent(partId=${dto.partId})}"
+           th:utext="${#strings.replace(dto.cpContent, '\n', '<br/>')}">
+        </a>
+      </td>
+      <td th:text="${dto.cpDate}"></td>
+      <td>
+        <!-- 신고접수 상태 -->
+        <th:block th:if="${dto.progress == '신고접수'}">
+          <a href="javascript:void(0)"
+             th:data-id="${dto.id}"
+             th:data-part="${dto.part}"
+             th:data-part-id="${dto.partId}"
+             data-complaint-sw="S"
+             class="badge bg-primary complaint-btn">신고해제</a>
+
+          <a href="javascript:void(0)"
+             th:data-id="${dto.id}"
+             th:data-part="${dto.part}"
+             th:data-part-id="${dto.partId}"
+             data-complaint-sw="H"
+             class="badge bg-warning complaint-btn">감추기</a>
+
+          <a href="javascript:void(0)"
+             th:data-id="${dto.id}"
+             th:data-part="${dto.part}"
+             th:data-part-id="${dto.partId}"
+             data-complaint-sw="D"
+             class="badge bg-danger complaint-btn">글삭제</a>
+        </th:block>
+
+        <!-- 처리중(H) 상태 -->
+        <th:block th:if="${dto.progress == '처리중(H)'}">
+          <div class="d-flex justify-content-center align-items-center">
+            <div class="comment-text" th:text="${dto.progress}"></div>
+            <div class="comment-menu p-0">
+              <button class="menu-btn" type="button">▼</button>
+              <ul class="menu-list">
+                <li>
+                  <a href="javascript:void(0)"
+                     th:data-id="${dto.id}"
+                     th:data-part="${dto.part}"
+                     th:data-part-id="${dto.partId}"
+                     data-complaint-sw="S"
+                     class="complaint-btn">신고취소</a>
+                </li>
+                <li>
+                  <a href="javascript:void(0)"
+                     th:data-id="${dto.id}"
+                     th:data-part="${dto.part}"
+                     th:data-part-id="${dto.partId}"
+                     data-complaint-sw="D"
+                     class="complaint-btn">글삭제</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </th:block>
+
+        <!-- 기타 상태 -->
+        <th:block th:if="${dto.progress != '신고접수' and dto.progress != '처리중(H)'}">
+          <span th:text="${dto.progress}"></span>
+        </th:block>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- 페이징 -->
+<div class="pagination justify-content-center">
+  <!-- 첫페이지 -->
+  <a th:if="${pageDTO.pag > 1}"
+     th:href="@{/admin/complaint/complaintList(pag=1, pageSize=${pageDTO.pageSize}, part=${pageDTO.part})}"
+     class="page-item page-link text-decoration-none text-dark link-primary">
+    첫페이지
+  </a>
+
+  <!-- 이전블록 -->
+  <a th:if="${pageDTO.curBlock > 0}"
+     th:href="@{/admin/complaint/complaintList(pag=${(pageDTO.curBlock-1)*pageDTO.blockSize + 1}, pageSize=${pageDTO.pageSize}, part=${pageDTO.part})}"
+     class="page-item page-link text-decoration-none text-dark link-primary">
+    이전블록
+  </a>
+
+  <!-- 페이지 번호 -->
+  <th:block th:each="i : ${#numbers.sequence((pageDTO.curBlock*pageDTO.blockSize)+1, (pageDTO.curBlock*pageDTO.blockSize)+pageDTO.blockSize)}">
+    <a th:if="${i <= pageDTO.totPage && i == pageDTO.pag}"
+       th:href="@{/admin/complaint/complaintList(pag=${i}, pageSize=${pageDTO.pageSize}, part=${pageDTO.part})}"
+       class="page-item page-link active text-decoration-none bg-secondary border-secondary"
+       th:text="${i}">
+    </a>
+
+    <a th:if="${i <= pageDTO.totPage && i != pageDTO.pag}"
+       th:href="@{/admin/complaint/complaintList(pag=${i}, pageSize=${pageDTO.pageSize}, part=${pageDTO.part})}"
+       class="page-item page-link text-decoration-none text-dark link-primary"
+       th:text="${i}">
+    </a>
+  </th:block>
+
+  <!-- 다음블록 -->
+  <a th:if="${pageDTO.curBlock < pageDTO.lastBlock}"
+     th:href="@{/admin/complaint/complaintList(pag=${(pageDTO.curBlock+1)*pageDTO.blockSize + 1}, pageSize=${pageDTO.pageSize}, part=${pageDTO.part})}"
+     class="page-item page-link text-decoration-none text-dark link-primary">
+    다음블록
+  </a>
+
+  <!-- 마지막페이지 -->
+  <a th:if="${pageDTO.pag < pageDTO.totPage}"
+     th:href="@{/admin/complaint/complaintList(pag=${pageDTO.totPage}, pageSize=${pageDTO.pageSize}, part=${pageDTO.part})}"
+     class="page-item page-link text-decoration-none text-dark link-primary">
+    마지막페이지
+  </a>
+</div>
+
+</html>

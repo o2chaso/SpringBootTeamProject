@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+  <title>Title</title>
+  <link rel="icon" th:href="@{/images/favi.png}" type="image/png">
+
+  <th:block th:insert="~{include/bs5}"></th:block>
+  <th:block th:insert="~{include/nav}"></th:block>
+  <script th:inline="javascript">
+    'user strict';
+    // layout 사용하지 않기 때문에 ajax사용시 필요.
+    var token = $("meta[name='_csrf']").attr("content");
+    var header = $("meta[name='_csrf_header']").attr("content");
+
+    // 경고음 발생 스위치.
+    let sAdminBeepSoundSW = [[${session.sAdminBeepSoundSW}]];
+    let beepSoundSW = false;
+
+    // 팝오버 초기화.
+    $(() => {
+      const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+      const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+    });
+
+    /*
+      절대좌표 배열.
+      실내온도 상대습도 이산화탄소 유기화합물VOC
+      미세먼지[PM1.0} 미세먼지[PM2.5} 미세먼지[PM10}
+      온도_1 온도_2 온도_3 소음
+      온도(비접촉) 조도
+    */
+
+    let abXY;
+    if([[${deviceCode}]] == "ENV_V2_1") {
+      abXY = [
+        "0.481,0.180","0.458,0.462","0.640,0.935","0.168,0.180",
+        "0.860,0.114","0.766,0.114","0.668,0.114",
+        "0.748,0.728","0.748,0.612","0.748,0.493","0.073,0.689",
+        "0.640,0.834","0.248,0.756"
+      ];
+    }
+    else if([[${deviceCode}]] == "ENV_V2_2") {
+      abXY = [
+        "0.456,0.471","0.612,0.193","0.063,0.715","0.395,0.790",
+        "0.756,0.694","0.756,0.580","0.756,0.468",
+        "0.189,0.191","0.219,0.761","0.868,0.191","0.638,0.940",
+        "0.592,0.790","0.462,0.192"
+      ];
+    }
+    else if([[${deviceCode}]] == "ENV_V2_3") {
+      abXY = [
+        "0.545,0.393","0.304,0.706","0.294,0.151","0.766,0.868",
+        "0.656,0.150","0.766,0.150","0.878,0.150",
+        "0.305,0.457","0.543,0.541","0.646,0.466","0.169,0.150",
+        "0.639,0.778","0.467,0.248"
+      ];
+    }
+    else {
+      abXY = [
+        "0.444,0.500","0.444,0.397","0.444,0.61","0.771,0.709",
+        "0.059,0.385","0.059,0.486","0.059,0.585",
+        "0.137,0.216","0.860,0.216","0.137,0.787","0.600,0.260",
+        "0.769,0.608","0.284,0.260"
+      ];
+    }
+
+    let sensorNames = [
+        "실내온도", "상대습도", "이산화탄소", "유기화합물",
+        "미세먼지[PM1.0]", "미세먼지[PM2.5]", "미세먼지[PM10]",
+        "온도1", "온도2", "온도3", "소음",
+        "온도(비접촉)", "조도"
+    ];
+
+    // SSE 연결(Server-Sent Events / 실시간 서버-클라이언트 통신 기술)
+    const eventSource = new EventSource("/SpringGroupBB/sensor/sensorList/sse");
+    let currentDevice = [[${deviceCode}]]; // 기본 선택
+
+    // SSE에서 값이 들어오면 실행.
+    eventSource.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      const sensors = data.sensor;         // 리스트
+      const threshold = data.threshold;
+
+      const thresholdMap = {};
+      threshold.forEach(t => {
+        thresholdMap[t.deviceCode + "_" + t.sensorKey] = t;
+      });
+
+      console.log("받은 데이터", data);
+
+      // 현재 선택된 deviceCode 찾기
+      const target = sensors.find(s => s.deviceCode === currentDevice);
+      console.log("target: ",target);
+      if(!target) return;
+
+      // for문 사용을 위한 target.value 배열.
+      let value = [
+        target.value1,target.value2,target.value3,target.value4,target.value5,
+        target.value6,target.value7,target.value8,target.value9,target.value10,
+        target.value11,target.value12,target.value13
+      ]
+
+      for(let i=0; i<13; i++) {
+        let sensorId = "sensor"+(i+1);
+        let sensorName = sensorNames[i];
+        let sensorValue = value[i];
+        let sensorThreshold = thresholdMap[currentDevice + "_" + "value"+(i+1)];
+        let alarm = sensorThreshold ? sensorThreshold.alarm : "";
+        let warning = sensorThreshold ? sensorThreshold.warning : "";
+        let stateTxt = "";
+
+        if(sensorThreshold) {
+          if(sensorThreshold.status == 0) {
+            stateTxt = "OFF";
+          }
+          else {
+            if(sensorValue >= sensorThreshold.alarm) stateTxt = "Alarm";
+            else if(sensorValue >= sensorThreshold.warning) stateTxt = "Warning";
+            else stateTxt = "Normal";
+          }
+        }
+        else stateTxt = "Normal";
+
+        let now = new Date();
+        let yy = now.getFullYear();
+        let mm = String(now.getMonth()+1).padStart(2, "0");
+        let dd = String(now.getDate()).padStart(2, "0");
+        let hh = String(now.getHours()).padStart(2, "0");
+        let min = String(now.getMinutes()).padStart(2, "0");
+        let ss = String(now.getSeconds()).padStart(2, "0");
+        let today = yy + "-" + mm + "-" + dd + " " + hh + ":" + min + ":" + ss;
+
+        let data = {
+          sensorId : sensorId,
+          sensorName : sensorName,
+          sensorValue : sensorValue,
+          alarm : alarm,
+          warning : warning,
+          stateTxt : stateTxt,
+          today : today
+        };
+
+        let color = "green";
+        if(stateTxt == "Alarm") color = "red";
+        else if(stateTxt == "Warning") color = "yellow";
+
+        let floorName =
+          currentDevice === "ENV_V2_1" ? "1층" :
+          currentDevice === "ENV_V2_2" ? "2층" :
+          currentDevice === "ENV_V2_3" ? "자재실" : "연구실"
+
+        let popValue = (stateTxt == "OFF") ? "연결 끊김" : sensorValue;
+        let popState = (stateTxt === "OFF") ? "<span style='color:gray; font-weight:bold;'>OFF</span>" : "<span style='color:"
+          + color
+          + "; font-weight:bold;'>"
+          + stateTxt
+          + "</span>";
+
+        if(stateTxt === "OFF") {
+          let content =
+            "<div style='font-size:14px; line-height:1.4; margin-left:10px; text-align:left;'>"
+            + "<b>오늘날짜 : </b>" + today + "<br/>"
+            + "<b>위치 : </b>" + floorName + "<br/>"
+            + "<b>센서 : </b>" + sensorName + "<br/>"
+            + "<b>수치 : </b>" + popValue + "<br/>"
+            + "<b>상태 : </b>" + popState + "<br/>"
+            + "</div>";
+
+          document.getElementById(sensorId).setAttribute("data-bs-title", "<b>" + sensorName + "</b>");
+          document.getElementById(sensorId).setAttribute("data-bs-content", content);
+          continue;
+        }
+
+        let content =
+          "<div style='font-size:14px; line-height:1.4; margin-left:10px; text-align:left;'>"
+          + "<b>오늘날짜 : </b>" + today + "<br/>"
+          + "<b>위치 : </b>" + floorName + "<br/>"
+          + "<b>센서 : </b>" + sensorName + "<br/>"
+          + "<b>수치 : </b>" + sensorValue + "<br/>"
+          + "<b>상태 : </b>"
+          + "<span style='color:" + color + "; font-weight:bold;'>" + stateTxt + "</span><br/>"
+          + "<b>Alarm : </b>" + alarm + "<br/>"
+          + "<b>Warning : </b>" + warning
+          + "</div>";
+
+        document.getElementById(sensorId).setAttribute("data-bs-title", "<b>" + sensorName + "</b>");
+        document.getElementById(sensorId).setAttribute("data-bs-content", content);
+      }
+
+      document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function(el) {
+        const pop = bootstrap.Popover.getInstance(el)
+        if(pop) pop.dispose();
+        new bootstrap.Popover(el);
+      });
+
+      beepSoundSW = false;
+      // for문을 사용해 각 센서를 세팅.
+      for(let i=0; i<13; i++) {
+        setSensor("sensor"+(i+1), value[i], thresholdMap[currentDevice + "_" + "value"+(i+1)], abXY[i], i);
+      }
+      // 각 센서 세팅이 끝난 후 경고음 만드는 메소드 실행.
+      beepSound();
+    };
+
+    // 센서 이상 이력 추가용 변수.
+    let str = "";
+    let normalStr = "";
+    let cnt = 0;
+
+    // 센서 div에 class값 주는(센서 상태로 센서 색 변경) 메소드.
+    function setSensor(id, value, threshold, abXY, i) {
+      // 센서의 클래스 초기화.
+      $("#"+id).get(0).className = "";
+
+      // threshold 테이블에 센서ID(value1, value2...)가 존재하면 if문 안으로.
+      if(threshold) {
+        // 센서 div에 class값 주는(센서 상태로 센서 색 변경) 메소드.
+        if(threshold.status == 0) {
+          $("#"+id).get(0).classList.add("Off");
+          setSensorPosition(id, abXY);
+          // 센서 상태에 따른 폰트 색 변경.
+          if(str.includes("Alarm")) str = '<div id='+cnt+'><a href="javascript:thresholdRemove('+cnt+')" style="text-decoration-line: none"><front color=red>'+$("#sensorThreshold"+i).html()+'</font></a></div>';
+          else str = '<div id='+cnt+'><a href="javascript:thresholdRemove('+cnt+')" style="text-decoration-line: none"><front color=yellow>'+$("#sensorThreshold"+i).html()+'</font></a></div>';
+
+          // 센서 이상 추가 + 지금까지의 이상 이력.
+          str = str+$("#sensorStat").html();
+          console.log("str: ",str);
+          // undefined 포함하지 않을 때만 출력.
+          if(!str.includes('undefined')) {
+            $("#sensorStat").html(str);
+            cnt++;
+          }
+          // 센서의 현재 이상 공백.
+          $("#sensorThreshold"+i).html("");
+
+          return;
+        }
+
+        if(value >= threshold.alarm) {
+          // 현재 음소거 상태가 아니면 경고음 스위치 true.
+          if(sAdminBeepSoundSW) beepSoundSW = true;
+          else beepSoundSW = false;
+
+          // 센서 상태 변경.
+          $("#"+id).get(0).classList.add("Alarm");
+
+          // 센서 이상 이력에 alarm 이력 표시.
+          let alarmTime = threshold.updateDateTime.toString().toString().substring(11,19);
+          if(!$("#sensorThreshold"+i).length > 0) {
+            console.log("1");
+            str = '<div id="sensorThreshold'+i+'"></div>';
+            $("#sensorThreshold").append(str);
+          }
+          str = '<font color=red>'+alarmTime+' '+sensorNames[i]+' Alarm</font>';
+          $("#sensorThreshold"+i).html(str);
+        }
+        else if(value >= threshold.warning) {
+          if(sAdminBeepSoundSW) beepSoundSW = true;
+          else beepSoundSW = false;
+
+          $("#"+id).get(0).classList.add("Warning");
+
+          let alarmTime = threshold.updateDateTime.toString().toString().substring(11,19);
+          if(!$("#sensorThreshold"+i).length > 0) {
+            str = '<div id="sensorThreshold'+i+'"></div>';
+            $("#sensorThreshold").append(str);
+          }
+          str = '<font color=yellow>'+alarmTime+' '+sensorNames[i]+' Warning</font>';
+          $("#sensorThreshold"+i).html(str);
+        }
+        else {
+          $("#"+id).get(0).classList.add("Normal");
+
+
+          // 센서 상태에 따른 폰트 색 변경.
+          if(str.includes("Alarm")) str = '<div id='+cnt+'><a href="javascript:thresholdRemove('+cnt+')" style="text-decoration-line: none"><front color=red>'+$("#sensorThreshold"+i).html()+'</font></a></div>';
+          else str = '<div id='+cnt+'><a href="javascript:thresholdRemove('+cnt+')" style="text-decoration-line: none"><front color=yellow>'+$("#sensorThreshold"+i).html()+'</font></a></div>';
+
+          // 센서 이상 추가 + 지금까지의 이상 이력.
+          str = str+$("#sensorStat").html();
+          console.log("str: ",str);
+          // undefined 포함하지 않을 때만 출력.
+          if(!str.includes('undefined')) {
+            $("#sensorStat").html(str);
+            cnt++;
+          }
+          // 센서의 현재 이상 공백.
+          $("#sensorThreshold"+i).html("");
+        }
+      }
+      else $("#"+id).get(0).classList.add("Normal");
+      // 센서 이동 메소드 실행.
+      setSensorPosition(id, abXY);
+    }
+    // 절대좌표 배열과 현재 이미지의 크기로 센서의 자리를 찾아 이동시키는 메소드.
+    function setSensorPosition(id, abXY) {
+      // 센서의 절대좌표 x, y값.
+      let ab = abXY.split(",");
+      // 현재 이미지의 정보.
+      // let i = [[${deviceCode}]] == "ENV_V2_1" ? 0 : [[${deviceCode}]] == "ENV_V2_2" ? 1 : [[${deviceCode}]] == "ENV_V2_3" ? 2 : 4;
+      let rect = $(".place").get(0).getBoundingClientRect();
+
+      // 절대좌표와 현재 이미지값으로 센서 좌표 산출.
+      let x = ab[0] * rect.width;
+      let y = ab[1] * rect.height;
+      // 센서 위치 이동.
+      $("#"+id).get(0).style.left = x+"px";
+      $("#"+id).get(0).style.top = y+"px";
+    }
+
+    // 마우스 클릭 시 이벤트 발생.
+    document.onclick = mouseClick;
+    function mouseClick(e) {
+      // web audio api 사용할 때 현재 페이지에 주소로 바로 왔을 때, 서버가 새로 동작된 후 새로고침 했을 때 등 한 번도 클릭하지 않은 상태일 때 audioContext활성화.
+      if(audioContext.state === "suspended") audioContext.resume();
+    }
+
+    /* 마우스 클릭한 브라우저의 좌표 표시.
+      console.log("마우스클릭 좌표 메소드");
+      let x = e.clientX;
+      let y = e.clientY;
+      console.log("브라우저X: ",x);
+      console.log("브라우저Y: ",y);
+
+      setSensorPosition("sensor4", 0.16818181818181818, 0.18045454545454545);
+    */
+
+    // web audio api 사용.
+    // window.webkitAudioContext은 개발 초기단계에서 사용하던 이름.
+    const audioContext = new window.AudioContext();
+    let oscillator = null;
+    let gainNode = null;
+    // 경고음 생성 메소드.
+    function beepSound() {
+      /*
+        브라우저가 AudioContext를 지원하지 않으면 알람을 띄우고 리턴(현재는 지원하지 않는 브라우저가 드물다).
+        브라우저 버전을 확인하고 window.webkitAudioContext도 지원하지 않으면 오디오 자동재생이 가능할 것이기 때문에
+        wav의 비프음을 자동재생기키는 방향으로 해결한다.
+      */
+      if(!audioContext) {
+        alert("AudioContext을 지원하지 않는 브라우저입니다.\n개발사에 문의해주세요.");
+        return false;
+      }
+
+      // 센서 세팅 끝난 후의 SW가 false 혹은 sAdminBeepSoundSW가 false(음소거 상태)라면 소리 끄기.
+      if(!beepSoundSW || !sAdminBeepSoundSW) {
+        if(oscillator) {
+          oscillator.stop();
+          oscillator.disconnect();
+          oscillator = null;
+          gainNode = null;
+        }
+        return false;
+      }
+      // 경고음 울리는 중이면 메소드 종료.
+      if(oscillator) {
+        return false;
+      }
+
+      oscillator = audioContext.createOscillator();
+      gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.start();
+    }
+
+    // 센서 상세정보(새창).
+    function newWindow(sensorId) {
+      let el = document.getElementById(sensorId);
+      let deviceCode = [[${deviceCode}]];
+      sensorId = sensorId.replace("sensor", "value");
+
+      let url = "/SpringGroupBB/sensor/sensorPopup?sensorKey=" + sensorId + "&deviceCode=" + deviceCode;
+
+      // 팝업 크기 고정
+      let windowWidth = 800;
+      let windowHeight = 700;
+
+      // 항상 화면 중앙에 위치
+      /*
+      let x = (window.screen.width - windowWidth) / 2;
+      let y = (window.screen.height - windowHeight) / 2;
+      */
+      let x = window.screenX + (window.outerWidth - windowWidth) / 2;
+      let y = window.screenY + (window.outerHeight - windowHeight) / 2;
+
+      // 크기 조절 불가(resizable=no)
+      let option =
+        "width=800,height=700,left=" + x + ",top=" + y
+        + ",resizable=no"
+        + ",scrollbars=no"
+        + ",menubar=no"
+        + ",toolbar=no"
+        + ",location=no"
+        + ",status=no";
+
+      window.open(url, "", option);
+    }
+
+    // 방 변경.
+    function roomChange() {
+      if(sAdminBeepSoundSW) location.href = "/SpringGroupBB/sensor/sensorLayout?deviceCode="+$("#deviceCode").val()+"&adminBeepSoundSW="+sessionStorage.getItem("sAdminBeepSoundSW");
+      else location.href = "/SpringGroupBB/sensor/sensorLayout?deviceCode="+$("#deviceCode").val()+"&adminBeepSoundSW="+sessionStorage.getItem("sAdminBeepSoundSW");
+    }
+
+    // 경고음 제어.
+    function adminBeepSoundChange(flag) {
+      if(flag == 0) {
+        $("#adminBeepSoundSW0").hide();
+        $("#adminBeepSoundSW1").show();
+        sessionStorage.setItem("sAdminBeepSoundSW", false);
+        $.ajax({
+          url : "/SpringGroupBB/sensor/sensorLayout",
+          type: "post",
+          data: {"adminBeepSoundSW" : sessionStorage.getItem("sAdminBeepSoundSW")},
+          beforeSend : (xhr) => xhr.setRequestHeader(header, token)
+        });
+
+        sAdminBeepSoundSW = false;
+        beepSound();
+      }
+      else {
+        $("#adminBeepSoundSW1").hide();
+        $("#adminBeepSoundSW0").show();
+        sessionStorage.setItem("sAdminBeepSoundSW", true);
+        $.ajax({
+          url : "/SpringGroupBB/sensor/sensorLayout",
+          type: "post",
+          data: {"adminBeepSoundSW" : sessionStorage.getItem("sAdminBeepSoundSW")},
+          beforeSend : (xhr) => xhr.setRequestHeader(header, token)
+        });
+
+        sAdminBeepSoundSW = true;
+        beepSound();
+      }
+    }
+
+    // 센서 이력 전체 삭제.
+    function thresholdAllRemove() {
+      let ans = confirm("센서의 이력을 전부 삭제하시겠습니까?");
+      if(ans) {
+        $("#sensorStat").html("");
+        cnt = 0;
+      }
+    }
+    // 선택 센서 이력 삭제.
+    function thresholdRemove(cnt) {
+      let ans = confirm("선택하신 센서의 이력을 삭제하시겠습니까?");
+      if(ans) $("#"+cnt).html("");
+    }
+  </script>
+  <style>
+    /*normal상태*/
+    .Normal {
+      position: absolute;
+      width: 9%;
+      height: 9%;
+      border-radius: 50%;
+      background-color: green;
+      opacity: 0.5;
+      transform: translate(-50%, -50%);
+    }
+    /*warning상태*/
+    .Warning {
+      position: absolute;
+      width: 9%;
+      height: 9%;
+      border-radius: 50%;
+      background: yellow;
+      opacity: 0.5;
+      transform: translate(-50%, -50%);
+    }
+    /*alarm상태*/
+    .Alarm {
+      position: absolute;
+      width: 9%;
+      height: 9%;
+      border-radius: 50%;
+      background: red;
+      opacity: 0.5;
+      transform: translate(-50%, -50%);
+    }
+    /*Off상태*/
+    .Off {
+      position: absolute;
+      width: 9%;
+      height: 9%;
+      border-radius: 50%;
+      background: gray;
+      opacity: 0.5;
+      transform: translate(-50%, -50%);
+    }
+    /*센서 이상 이력에 외곽선*/
+    #sensorThreshold {text-shadow: -1px 0px black, 0px 1px black, 1px 0px black, 0px -1px black;}
+    #sensorStat {text-shadow: -1px 0px black, 0px 1px black, 1px 0px black, 0px -1px black;}
+  </style>
+</head>
+<body>
+<div class="container text-center">
+  <h2>센서현황</h2>
+  <p></p>
+  <div class="row">
+    <div class="col border" style="max-width:20%; min-width:120px">
+      <br/>
+      <div><b>장소이동</b></div>
+      <br/>
+      <select id="deviceCode" size="5" onchange="roomChange()" class="form-control">
+        <option value="ENV_V2_1" th:selected="${deviceCode=='ENV_V2_1'}">1층</option>
+        <option value="ENV_V2_2" th:selected="${deviceCode=='ENV_V2_2'}">2층</option>
+        <option value="ENV_V2_3" th:selected="${deviceCode=='ENV_V2_3'}">자재실</option>
+        <option value="ENV_V2_4" th:selected="${deviceCode=='ENV_V2_4'}">연구실</option>
+      </select>
+      <br/>
+      <div><b>경고음 조작</b></div>
+      <br/>
+      <div>
+        <input type="button" id="adminBeepSoundSW0" value="음소거" onclick="adminBeepSoundChange(0)" class="btn btn-danger btn-sm" th:style="${session.sAdminBeepSoundSW?'':'display: none'}" />
+        <input type="button" id="adminBeepSoundSW1" value="활성화" onclick="adminBeepSoundChange(1)" class="btn btn-success btn-sm" th:style="${session.sAdminBeepSoundSW?'display: none':''}" />
+      </div>
+      <br/>
+      <div><b>센서 이상 이력</b></div>
+      <div>
+        <div><b>현재 이상 발생 중인 센서</b></div>
+        <div id="sensorThreshold" class="border"></div>
+        <br/>
+        <div><b>이전에 이상 발생한 센서</b></div>
+        <div id="sensorStat" class="border" style="max-height:300px"></div>
+        <br/>
+        <div><input type="button" value="이력 전체 삭제" onclick="thresholdAllRemove()" class="btn btn-danger btn-sm" /></div>
+      </div>
+    </div>
+
+    <div class="col border ms-2">
+      <div style="position: relative; display: inline-block;">
+        <th:block th:if="${deviceCode=='ENV_V2_1'}">
+          <img src="/SpringGroupBB/sensor/ENV_V2_1.png" class="place" style="max-width:100%; max-height:calc(100vh - 300px)"  alt="image"/>
+        </th:block>
+        <th:block th:if="${deviceCode=='ENV_V2_2'}">
+          <img src="/SpringGroupBB/sensor/ENV_V2_2.png" class="place" style="max-width:100%; max-height:calc(100vh - 300px)"  alt="image"/>
+        </th:block>
+        <th:block th:if="${deviceCode=='ENV_V2_3'}">
+          <img src="/SpringGroupBB/sensor/ENV_V2_3.png" class="place" style="max-width:100%; max-height:calc(100vh - 300px)"  alt="image"/>
+        </th:block>
+        <th:block th:if="${deviceCode=='ENV_V2_4'}">
+          <img src="/SpringGroupBB/sensor/ENV_V2_4.png" class="place" style="max-width:100%; max-height:calc(100vh - 300px)"  alt="image"/>
+        </th:block>
+
+        <a href="javascript:newWindow('sensor1')" id="sensor1" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor2')" id="sensor2" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor3')" id="sensor3" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor4')" id="sensor4" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor5')" id="sensor5" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor6')" id="sensor6" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor7')" id="sensor7" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor8')" id="sensor8" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor9')" id="sensor9" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor10')" id="sensor10" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor11')" id="sensor11" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor12')" id="sensor12" title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+        <a href="javascript:newWindow('sensor13')" id="sensor13" data-bs-title="title"
+           data-bs-content="오늘날짜: <br/> 위치: <br/> 센서: <br/> 현재상태: <br/> Alarm: <br/> Warning: <br/>"
+           data-bs-toggle="popover" data-bs-trigger="hover" data-bs-html="true">
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
