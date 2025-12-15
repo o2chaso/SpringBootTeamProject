@@ -375,13 +375,11 @@ public class BoardController {
     return res;
   }
 
-
-
   // 검색용 boardContent
   @GetMapping("/boardSearchContent/{id}")
   public String boardSearchContentGet(Model model, @PathVariable Long id) {
     model.addAttribute("board", boardService.selectSearchID(id));
-    model.addAttribute("replyList", boardReplyService.selectBoardReplyBoardID(id));
+    model.addAttribute("replyList", boardReplyRepository.findByBoardIdOrderById(id));
     return "search/boardSearchContent";
   }
 

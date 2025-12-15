@@ -138,17 +138,19 @@
       content += '<th>워닝</th>';
       content += '</tr>';
       for(let i=0; i<eventValues.length; i++) {
-        if(eventStats[i] == 'Alarm') content += '<tr class="alarm">';
-        if(eventStats[i] == 'Warning') content += '<tr class="warning">';
-        if(eventStats[i] == 'OFF') content += '<tr class="off">';
-        console.log(content);
-        content += '<td>'+(i+1)+'</td>';
-        content += '<td>'+eventValues[i]+'</td>';
-        content += '<td>'+eventStats[i]+'</td>';
-        content += '<td>'+eventDatetimes[i]+'</td>';
-        content += '<td>'+eventAlarm+'</td>';
-        content += '<td>'+eventWarning+'</td>';
-        content += '</tr>';
+        if(eventValues[i] != 'null') {
+          if(eventStats[i] == 'Alarm') content += '<tr class="alarm">';
+          if(eventStats[i] == 'Warning') content += '<tr class="warning">';
+          if(eventStats[i] == 'OFF') content += '<tr class="off">';
+          console.log(content);
+          content += '<td>'+(i+1)+'</td>';
+          content += '<td>'+eventValues[i]+'</td>';
+          content += '<td>'+eventStats[i]+'</td>';
+          content += '<td>'+eventDatetimes[i]+'</td>';
+          content += '<td>'+eventAlarm+'</td>';
+          content += '<td>'+eventWarning+'</td>';
+          content += '</tr>';
+        }
       }
       content += '</table>';
       $("#modalTitle").html(sensorKey);

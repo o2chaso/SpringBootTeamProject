@@ -75,49 +75,53 @@
   </style>
 </th:block>
 <div layout:fragment="content">
-  <h2 class="text-center mb-2">센서 리스트</h2>
-  <div class="card shadow-sm mb-2">
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle text-center">
-          <thead class="table-dark">
-          <tr>
-            <th>번호</th>
-            <th>모델</th>
-            <th>센서이름</th>
-            <th>센서타입</th>
-            <th>제조사</th>
-            <th>관리</th>
-          </tr>
-          </thead>
-          <tbody>
-          <th:block th:each="product, st : ${pageDTO.productList}">
+  <div  class="device-card">
+    <h2 class="text-center mb-2">센서 리스트</h2>
+  </div>
+  <div  class="device-card">
+    <div class="card shadow-sm mb-2">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle text-center">
+            <thead class="table-dark">
             <tr>
-              <td>[[${pageDTO.curScrStartNo - st.index}]]</td>
-              <td>[[${product.model}]]</td>
-              <td>[[${product.sensorName}]]</td>
-              <td>[[${product.sensorType}]]</td>
-              <td>[[${product.manufacturer}]]</td>
-              <td class="text-center">
-                <div class="d-flex justify-content-center gap-2">
-                  <button type="button" class="btn btn-sm btn-outline-primary"
-                          th:onclick="|openProductModal(${product.id})|">보기
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-dark"
-                          th:onclick="|location.href='/SpringGroupBB/admin/product/productUpdate/'+${product.id}|">수정
-                  </button>
-                  <button type="button"
-                          th:data-id="${product.id}"
-                          th:data-model="${product.model}"
-                          th:onclick="|productDelete(this.getAttribute('data-id'), this.getAttribute('data-model'))|"
-                          class="btn btn-sm btn-outline-danger">삭제
-                  </button>
-                </div>
-              </td>
+              <th>번호</th>
+              <th>모델</th>
+              <th>센서이름</th>
+              <th>센서타입</th>
+              <th>제조사</th>
+              <th>관리</th>
             </tr>
-          </th:block>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+            <th:block th:each="product, st : ${pageDTO.productList}">
+              <tr>
+                <td>[[${pageDTO.curScrStartNo - st.index}]]</td>
+                <td>[[${product.model}]]</td>
+                <td>[[${product.sensorName}]]</td>
+                <td>[[${product.sensorType}]]</td>
+                <td>[[${product.manufacturer}]]</td>
+                <td class="text-center">
+                  <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                            th:onclick="|openProductModal(${product.id})|">보기
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-dark"
+                            th:onclick="|location.href='/SpringGroupBB/admin/product/productUpdate/'+${product.id}|">수정
+                    </button>
+                    <button type="button"
+                            th:data-id="${product.id}"
+                            th:data-model="${product.model}"
+                            th:onclick="|productDelete(this.getAttribute('data-id'), this.getAttribute('data-model'))|"
+                            class="btn btn-sm btn-outline-danger">삭제
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </th:block>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
