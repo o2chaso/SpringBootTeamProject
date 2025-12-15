@@ -152,7 +152,7 @@
           content += '</tr>';
         }
       }
-      
+
       content += '</table>';
       $("#modalTitle").html(sensorKey);
       $("#modalContent").html(content);
@@ -247,7 +247,7 @@
             </th:block>
             <th:block th:if="${report['value'+i+'EventData'] != 0}">
               <td>
-                <a th:href="|javascript:eventView('${value[i-1]}','${eventValue[i]}','${eventStat[i]}','${eventDatetime[i]}','${eventAlarm[i]}','${eventWarning[i]}')|" style="text-decoration: none">
+                <a th:href="|javascript:eventView('${value[i-1]}','${eventValue[i-1]}','${eventStat[i-1]}','${eventDatetime[i-1]}','${eventAlarm[i-1]}','${eventWarning[i-1]}')|" style="text-decoration: none">
                   [[${report['value'+i+'EventData']}]]
                 </a>
                 <span th:text="${report['value'+i+'EventRate']==0?'변화없음':report['value'+i+'EventRate']+'건'}" th:class="${report['value'+i+'EventRate']>0?'badge text-bg-success':report['value'+i+'EventRate']<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
