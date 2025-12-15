@@ -27,7 +27,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -333,15 +335,16 @@ public class MemberController {
   }
 
   @PostMapping("/memberMidFind")
-  public String memberMidFindPost(RedirectAttributes rttr, Model model, String name, String tel) {
-    String email = memberService.searchMemberEmailFind(name, tel);
+  public String memberMidFindPost(RedirectAttributes rttr, Model model, String name, String tel, LocalDate birthday) {
 
-    if(email.isBlank()) {
+    List<String> emails= memberService.searchMemberEmailFind(name, tel, birthday);
+
+    if(emails.isEmpty()) {
       rttr.addFlashAttribute("message", "회원정보가 없습니다.");
       return "redirect:/member/memberMidFind";
     }
 
-    model.addAttribute("email", email);
+    model.addAttribute("emails", emails);
     return "member/memberMidFindResult";
   }
   @GetMapping("/memberPwdFind")

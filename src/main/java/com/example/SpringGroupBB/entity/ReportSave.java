@@ -116,6 +116,15 @@ public class ReportSave {
   private Double value10AvgRate;
   private Double value10MaxRate;
   private int value10EventRate;
+  // 이벤트.
+  @Lob
+  private String eventValue;
+  @Lob
+  private String event;
+  @Lob
+  private String eventMeasureDatetime;
+  private String alarm;
+  private String warning;
 
   public static ReportSave dtoToEntity(ReportSaveDTO dto) {
     return ReportSave.builder()
@@ -204,6 +213,11 @@ public class ReportSave {
             .value10AvgRate(dto.getValue10AvgRate())
             .value10MaxRate(dto.getValue10MaxRate())
             .value10EventRate(dto.getValue10EventRate())
+            .eventValue(dto.getEventValue())
+            .event(dto.getEvent())
+            .eventMeasureDatetime(dto.getEventMeasureDatetime())
+            .alarm(dto.getAlarm())
+            .warning(dto.getWarning())
             .build();
   }
 }

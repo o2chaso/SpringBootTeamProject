@@ -1,9 +1,7 @@
 package com.example.SpringGroupBB.dto;
 
 import com.example.SpringGroupBB.entity.SensorEntity;
-import jakarta.persistence.Column;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -51,11 +49,21 @@ public class SensorDTO {
   private Double maxRate;
   private int eventRate;
 
-  public SensorDTO(double minData, double avgData, double maxData, int eventData) {
+  // 이벤트.
+  private String eventValue;
+  private String event;
+  private String eventMeasureDatetime;
+  private int alarm;
+  private int warning;
+
+  public SensorDTO(double minData, double avgData, double maxData, int eventData,
+                   int alarm, int warning) {
     this.minData = minData;
     this.avgData = avgData;
     this.maxData = maxData;
     this.eventData = eventData;
+    this.alarm = alarm;
+    this.warning = warning;
   }
   // 일일 리포트 끝
 

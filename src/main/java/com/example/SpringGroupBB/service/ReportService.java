@@ -28,6 +28,20 @@ public class ReportService {
   }
 
   public void insertReportSave(List<SensorDTO> sensorList, LocalDateTime measureDatetime, LocalDateTime measureDatetimePast, String deviceCode, int flag) {
+    String values = "", events = "", measureDatetimes = "", alarms = "", warnings = "";
+    for(int i=0; i<sensorList.size(); i++) {
+      values += sensorList.get(i).getEventValue() + "/";
+      events += sensorList.get(i).getEvent() + "/";
+      measureDatetimes += sensorList.get(i).getEventMeasureDatetime() + "/";
+      alarms += sensorList.get(i).getAlarm() + ",";
+      warnings += sensorList.get(i).getWarning() + ",";
+    }
+    values = values.substring(0, values.length()-1);
+    events = events.substring(0, events.length()-1);
+    measureDatetimes = measureDatetimes.substring(0, measureDatetimes.length()-1);
+    alarms = alarms.substring(0, alarms.length()-1);
+    warnings = warnings.substring(0, warnings.length()-1);
+
     ReportSave entity = ReportSave.builder()
             .saveReportDate(measureDatetime)
             .saveReportRestDate(measureDatetimePast)
@@ -113,6 +127,11 @@ public class ReportService {
             .value10AvgRate(sensorList.get(9).getAvgRate())
             .value10MaxRate(sensorList.get(9).getMaxRate())
             .value10EventRate(sensorList.get(9).getEventRate())
+            .eventValue(values)
+            .event(events)
+            .eventMeasureDatetime(measureDatetimes)
+            .alarm(alarms)
+            .warning(warnings)
             .build();
     reportRepository.save(entity);
   }

@@ -18,9 +18,10 @@
 
     // 공지사항 토글 기능(jQuery)
     $(document).ready(function() {
+      $('.expired-notice').addClass('hidden');
       $('#toggleNoticeBtn').click(function() {
         var $expiredRows = $('.expired-notice');
-        $expiredRows.toggle();
+        $expiredRows.toggleClass('hidden');
 
         if($expiredRows.is(':visible')) {
           $(this).text('📢 공지사항 숨기기');
@@ -37,6 +38,17 @@
     a:hover {
       color: orange;
       text-decoration: underline;
+    }
+
+     /* 만료된 공지사항을 숨기는 클래스 */
+    .expired-notice.hidden {
+      display: none;
+    }
+
+    /* 만료된 공지사항 행의 스타일 */
+    .expired-notice td {
+      background-color: #e2e2e2;
+      color: #999;
     }
   </style>
 </th:block>
@@ -65,7 +77,6 @@
       border: 1px solid #e2e2e2;
       text-align: left;
     }
-
   </style>
    <div class="device-card2">
      <h2 class="font-weight-bold text-primary heading mb-1 text-start" style="font-size:2.2">자유게시판</h2>
@@ -73,7 +84,6 @@
      <button type="button" id="toggleNoticeBtn"
              class="btn btn-outline-info btn-sm">📢 공지사항 보기</button>
    </div>
-
   <div class="device-card">
     <div class="row mt-3 mb-1">
       <div class="col text-start">
@@ -106,7 +116,7 @@
           <td>
             <span th:if="${board.noticeSw == 'OK'}">📌
               <!-- 만료됨 표시 -->
-              <span th:if="${expiredMap[board.id]}" style="font-size:0.7em; color:#999;">(만료)</span>
+              <span th:if="${expiredMap[board.id]}" style="font-size:0.7em; color:#999;"></span>
             </span>
             <span th:unless="${board.noticeSw == 'OK'}" th:text="${pageVO.curScrStartNo - st.index}"></span>
           </td>

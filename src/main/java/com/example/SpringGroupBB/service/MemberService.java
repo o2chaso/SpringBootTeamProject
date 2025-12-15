@@ -248,27 +248,32 @@ public class MemberService implements UserDetailsService {
             .collect(Collectors.toList());
   }
 
-  public String searchMemberEmailFind(String name, String tel) {
+  public List<String> searchMemberEmailFind(String name, String tel, LocalDate birthday) {
 
-    Optional<Member> opMember = memberRepository.findByNameAndTel(name, tel);
-    if(opMember.isPresent()) {
-      String email = opMember.get().getEmail();
-      int atIndex = email.indexOf("@");
-      if(atIndex <= 2) return email;
+    List<Member> memberList = memberRepository.findByNameAndTelAndBirthday(name, tel, birthday);
+    List<String> maskedEmails = new ArrayList<>();
+    if(!memberList.isEmpty()) {
+      for (Member member : memberList) {
+        String email = member.getEmail();
+        int atIndex = email.indexOf("@");
 
-      StringBuilder masked = new StringBuilder();
-      for (int i = 0; i < atIndex; i++) {
-        if (i % 2 == 0) { // 짝수 인덱스는 그대로, 홀수는 *
-          masked.append(email.charAt(i));
-        } else {
-          masked.append("*");
+        if(atIndex <= 2) {
+          maskedEmails.add(email);
+          continue;
         }
+        StringBuilder masked = new StringBuilder();
+        for (int i = 0; i < atIndex; i++) {
+          if (i % 2 == 0) {
+            masked.append(email.charAt(i));
+          } else {
+            masked.append("*");
+          }
+        }
+        masked.append(email.substring(atIndex));
+        maskedEmails.add(masked.toString());
       }
-      masked.append(email.substring(atIndex)); // @ 뒤는 그대로
-      return masked.toString();
     }
-      else return "";
-
+    return maskedEmails;
   }
 
   public Optional<Long> getMemberPwdFind(String email, String name) {

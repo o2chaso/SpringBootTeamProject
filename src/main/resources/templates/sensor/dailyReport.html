@@ -122,7 +122,51 @@
       XLSX.writeFile(wb, "report.xlsx");
     }
 
+    // 이벤트 정보 modal로 표시.
+    function eventView(sensorKey, eventValue, eventStat, eventDatetime, eventAlarm, eventWarning) {
+      let eventValues = eventValue.split(',');
+      let eventStats = eventStat.split(',');
+      let eventDatetimes = eventDatetime.split(',');
+      let content = "";
+      content += '<table class=table table-hover>';
+      content += '<tr>';
+      content += '<th>번호</th>';
+      content += '<th>값</th>';
+      content += '<th>상태</th>';
+      content += '<th>시간</th>';
+      content += '<th>알람</th>';
+      content += '<th>워닝</th>';
+      content += '</tr>';
+      for(let i=0; i<eventValues.length; i++) {
+        if(eventStats[i] == 'Alarm') content += '<tr class="alarm">';
+        if(eventStats[i] == 'Warning') content += '<tr class="warning">';
+        if(eventStats[i] == 'OFF') content += '<tr class="off">';
+        console.log(content);
+        content += '<td>'+(i+1)+'</td>';
+        content += '<td>'+eventValues[i]+'</td>';
+        content += '<td>'+eventStats[i]+'</td>';
+        content += '<td>'+eventDatetimes[i]+'</td>';
+        content += '<td>'+eventAlarm+'</td>';
+        content += '<td>'+eventWarning+'</td>';
+        content += '</tr>';
+      }
+      content += '</table>';
+      $("#modalTitle").html(sensorKey);
+      $("#modalContent").html(content);
+
+      let modal = new bootstrap.Modal(document.getElementById('myModal'));
+      modal.show();
+    }
   </script>
+</th:block>
+
+<th:block layout:fragment="css">
+  <style>
+    th {background-color: rgb(203, 228, 252) !important;}
+    .alarm td {background-color: rgba(255, 75, 75, 0.35) !important;}
+    .warning td {background-color: rgba(255, 190, 80, 0.35) !important;}
+    .off td {background-color: gray !important; color: white !important;}
+  </style>
 </th:block>
 
 <div layout:fragment="content">
@@ -174,7 +218,13 @@
           <th>최댓값</th>
           <th>이벤트</th>
         </tr>
-        <th:block th:each="i : ${#numbers.sequence(1,10)}">
+
+        <th:block th:each="i : ${#numbers.sequence(1,10)}"
+                  th:with="eventValue = ${#strings.arraySplit(report['EventValue'], '/')},
+                         eventStat = ${#strings.arraySplit(report['Event'], '/')},
+                         eventDatetime = ${#strings.arraySplit(report['EventMeasureDatetime'], '/')},
+                         eventAlarm = ${#strings.arraySplit(report['Alarm'], ',')},
+                         eventWarning = ${#strings.arraySplit(report['Warning'], ',')}">
           <tr>
             <td>[[${i}]]</td>
             <td>[[${value[i-1]}]]</td>
@@ -187,9 +237,19 @@
             <td>[[${report['value'+i+'MaxData']}]]
               <span th:text="${report['value'+i+'MaxRate']==0?'변화없음':report['value'+i+'MaxRate']+'%'}" th:class="${report['value'+i+'MaxRate']>0?'badge text-bg-success':report['value'+i+'MaxRate']<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
             </td>
-            <td>[[${report['value'+i+'EventData']}]]
-              <span th:text="${report['value'+i+'EventRate']==0?'변화없음':report['value'+i+'EventRate']+'건'}" th:class="${report['value'+i+'EventRate']>0?'badge text-bg-success':report['value'+i+'EventRate']<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
-            </td>
+            <th:block th:if="${report['value'+i+'EventData'] == 0}">
+              <td>[[${report['value'+i+'EventData']}]]
+                <span th:text="${report['value'+i+'EventRate']==0?'변화없음':report['value'+i+'EventRate']+'건'}" th:class="${report['value'+i+'EventRate']>0?'badge text-bg-success':report['value'+i+'EventRate']<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+              </td>
+            </th:block>
+            <th:block th:if="${report['value'+i+'EventData'] != 0}">
+              <td>
+                <a th:href="|javascript:eventView('${value[i-1]}','${eventValue[i]}','${eventStat[i]}','${eventDatetime[i]}','${eventAlarm[i]}','${eventWarning[i]}')|" style="text-decoration: none">
+                  [[${report['value'+i+'EventData']}]]
+                </a>
+                <span th:text="${report['value'+i+'EventRate']==0?'변화없음':report['value'+i+'EventRate']+'건'}" th:class="${report['value'+i+'EventRate']>0?'badge text-bg-success':report['value'+i+'EventRate']<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+              </td>
+            </th:block>
           </tr>
         </th:block>
       </table>
@@ -221,15 +281,44 @@
               <td>[[${dto.maxData}]]
                 <span th:text="${dto.maxRate==0?'변화없음':dto.maxRate+'%'}" th:class="${dto.maxRate>0?'badge text-bg-success':dto.maxRate<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
               </td>
-              <td>[[${dto.eventData}]]
-                <span th:text="${dto.eventRate==0?'변화없음':dto.eventRate+'건'}" th:class="${dto.eventRate>0?'badge text-bg-success':dto.eventRate<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
-              </td>
+              <th:block th:if="${dto.eventData == 0}">
+                <td>[[${dto.eventData}]]
+                  <span th:text="${dto.eventData==0?'변화없음':dto.eventData+'건'}" th:class="${dto.eventData>0?'badge text-bg-success':dto.eventData<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+                </td>
+              </th:block>
+              <th:block th:if="${dto.eventData != 0}">
+                <td>
+                  <a th:href="|javascript:eventView('${value[st.index]}','${dto.eventValue}','${dto.event}','${dto.eventMeasureDatetime}','${dto.alarm}','${dto.warning}')|" style="text-decoration: none">
+                    [[${dto.eventData}]]
+                  </a>
+                  <span th:text="${dto.eventData==0?'변화없음':dto.eventData+'건'}" th:class="${dto.eventData>0?'badge text-bg-success':dto.eventData<0?'badge text-bg-danger':'badge text-bg-secondary'}"></span>
+                </td>
+              </th:block>
             </tr>
           </th:block>
         </table>
       </th:block>
     </th:block>
   </div>
+
+  <!--modal 시작-->
+  <div class="modal" id="myModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="width:600px">
+        <div class="modal-header" style="width:596px">
+          <h4 class="modal-title"><span id="modalTitle"></span></h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" style="width:596px;height:400px;overflow:auto;">
+          <span id="modalContent"></span>
+        </div>
+        <div class="modal-footer" style="width:596px">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--modal 끝-->
 </div>
 
 </html>

@@ -64,9 +64,9 @@ public class SecurityConfig {
             // 회원가입(memberLogin, memberLoginOk는 사용자 지정 로그인 폼에서 이미 허용처리 되어있음).
             .requestMatchers("/member/login/error", "/member/memberJoin", "/member/memberEmailCheck", "/member/memberEmailCheckOk", "/member/memberEmailCheckNo").permitAll()
             // 카카오로그인.
-            .requestMatchers("/member/kakaoJoin", "/member/kakaoLogout").permitAll()
+            .requestMatchers("/member/kakaoJoin", "/member/kakaoLogout", "/member/memberMidFind", "/member/memberPwdFind", "/member/memberPwdChange").permitAll()
             // 이미지 처리.
-            .requestMatchers("/images/**", "/admin/product/**").permitAll()
+            .requestMatchers("/images/**", "/admin/product/**", "/js/**").permitAll()
             // 관리자 처리.
             .requestMatchers("/qna/qnaDelete", "/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated());

@@ -22,6 +22,13 @@ public class EventLogDTO {
   @CreatedDate
   private LocalDateTime measureDatetime;
 
+  public EventLogDTO(String deviceCode, String sensorKey, double value, String event, LocalDateTime measureDatetime) {
+    this.deviceCode = deviceCode;
+    this.sensorKey = sensorKey;
+    this.value = value;
+    this.event = event;
+    this.measureDatetime = measureDatetime;
+  }
 
   // Entity To DTO
   public static EventLogDTO entityToDto(EventLog entity) {

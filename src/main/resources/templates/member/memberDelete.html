@@ -49,38 +49,28 @@
     padding: 10px;
     align-items: center;
   }
+
   .row label {
-    margin: 0px;
-    flex: 0 0 150px;
-    font-size: 14px;
-    font-weight: normal;
-    border-right: 1px solid #ddd;
-  }
-  .essential {
-    color:blue
-  }
-  .join__h2 {
-    font-size: 16px;
-    font-weight: bold;
+    width: 125px;
+    text-align: right;
+    margin-right: 10px;
   }
 </style>
 
 <div layout:fragment="content">
   <div  class="device-card">
-   <h2>회원탈퇴</h2>
-  </div>
-  <div  class="device-card">
+    <h2>회원탈퇴</h2>
     <div class="d-flex justify-content-center">
       <form name="form" method="post"  class="flex-grow-1">
-        <div class="row mb-2">
-          <label th:for="password" class="col-form-label col-2">비밀번호<span class="essential">*</span></label>
-          <div class="col-sm-6">
+        <div class="row align-items-center justify-content-center">
+          <label th:for="password" class="col-auto col-form-label">비밀번호</label>
+          <div class="col-md-4">
             <input type="password" name="password" id="password" class="form-control" placeholder="비밀번호를 입력해주세요"/>
           </div>
         </div>
-        <div class="row mb-2">
-          <label for="confirmPassword" class ="col-form-label col-2">비밀번호 확인<span class="essential">*</span></label>
-          <div class="col-sm-6">
+        <div class="row align-items-center justify-content-center">
+          <label for="confirmPassword" class ="col-auto col-form-label">비밀번호 확인</label>
+          <div class="col-md-4">
             <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" placeholder="비밀번호 확인" required />
           </div>
         </div>

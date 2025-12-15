@@ -231,7 +231,6 @@ public class SensorController {
     new Thread(() -> {
       try {
         while (alive[0]) {
-
           // 최신 전체 센서
           List<SensorEntity> sensor = sensorService.getSensorList();
           // Interlock 가져오기
@@ -419,9 +418,8 @@ public class SensorController {
     if(reportService.selectReportDate(measureDatetime, restDay, deviceCode) == null) {
       // sensor의 min, avg, max값 검색.
       List<SensorDTO> sensorList = sensorService.selectSensorValueAndDate(measureDatetime, deviceCode, flag);
-      List<SensorDTO> restSensorList = new ArrayList<>();
       // 수치 비교용 이전날 수치.
-      restSensorList = sensorService.selectSensorValueAndDate(restDay, deviceCode, flag);
+      List<SensorDTO> restSensorList = sensorService.selectSensorValueAndDate(restDay, deviceCode, flag);
       System.out.println("sensorList.size: " + sensorList.size());
       System.out.println("restSensorList.size: " + restSensorList.size());
       // 수치비교.
@@ -444,7 +442,7 @@ public class SensorController {
         reportService.insertReportSave(sensorList,
                 LocalDateTime.parse(measureDatetime+"T00:00:00"), LocalDateTime.parse(restDay+"T00:00:00"),
                 deviceCode, flag);
-      } catch (Exception e) {System.out.println("레포트 저장 실패");}
+      } catch (Exception e) {System.out.println("Report Save Failed");}
 
       // DB검색결과.
       model.addAttribute("sensorList", sensorList);
@@ -511,7 +509,7 @@ public class SensorController {
                                   @PathVariable int flag,
                                   @PathVariable String measureDatetime,
                                   @PathVariable String measureDatetimePast,
-                                  @PathVariable String deviceCode){
+                                  @PathVariable String deviceCode) {
     String[] value = {"실내온도", "상대습도", "이산화탄소", "유기화합물VOC", "미세먼지", "초미세먼지", "온도_1", "온도_2", "온도_3", "온도(비접촉)"};
 
     ReportSaveDTO report = reportService.selectReportSaveDateDeviceCodeFlag(measureDatetime, deviceCode, flag);

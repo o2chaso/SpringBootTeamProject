@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +27,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
   @Query("select new com.example.SpringGroupBB.dto.MemberDTO(m.id, m.email, m.name) from Member m")
   List<MemberDTO> searchMemberIdAndEmailAnaName();
 
-  Optional<Member> findByNameAndTel(String name, String tel);
-
   Optional<Member> findByEmailAndName(String email, String name);
+
+  List<Member> findByNameAndTelAndBirthday(String name, String tel, LocalDate birthday);
 }

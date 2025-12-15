@@ -14,32 +14,43 @@
     font-family: Arial, sans-serif;
   }
   .result-box {
-    border: 1px solid #ddd;
-    padding: 25px;
+    max-width: 500px;      /* 너무 길지 않게 */
+    margin: 20px auto;     /* 화면 중앙 */
+    padding: 30px;
     border-radius: 8px;
     background: #fafafa;
     text-align: center;
-    margin-top: 20px;
   }
-  h2 {
-    font-weight: bold;
+  .result-box p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 15px;
+    text-align: center;
+    line-height: 1.5;
   }
   .email-text {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-    margin: 20px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 10px 0;
+    word-break: break-all;
+    text-align: center;
+    letter-spacing: 1px;
   }
 </style>
 
 <div layout:fragment="content">
-  <h2>아이디 찾기 결과</h2>
-  <div class="result-box">
-    <p>고객님이 찾으신 이메일(ID)은 아래와 같습니다.</p>
-    <p class="email-text" th:text="${email}">maskedEmailHere</p>
-    <div class="d-flex justify-content-center gap-3 mt-4">
-      <button type="button" class="btn btn-dark px-4" onclick="location.href='/SpringGroupBB/member/memberLogin'">로그인</button>
-      <button type="button" class="btn btn-dark px-4" onclick="location.href='/SpringGroupBB/member/memberPwdFind'">비밀번호 찾기</button>
+  <div  class="device-card">
+    <h2>아이디 찾기 결과</h2>
+    <div class="result-box">
+      <p><strong>고객님이 찾으신 이메일(ID)</strong>은 아래와 같습니다.</p>
+      <th:block th:each="email : ${emails}" >
+        <div class="email-text" th:text="${email}"></div>
+      </th:block>
+      <div class="d-flex justify-content-center gap-3 mt-4">
+        <button type="button" class="btn btn-dark px-4" onclick="location.href='/SpringGroupBB/member/memberLogin'">로그인</button>
+        <button type="button" class="btn btn-dark px-4" onclick="location.href='/SpringGroupBB/member/memberPwdFind'">비밀번호 찾기</button>
+      </div>
     </div>
   </div>
 </div>
