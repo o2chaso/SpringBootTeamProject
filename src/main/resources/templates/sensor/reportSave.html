@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    'use strict';
+
+    // 날짜 변경 메소드.
+    function flagSWOn(flag) {
+      let measureDatetime = $("#measureDatetime").val();
+      let date = new Date(measureDatetime);
+
+      if(flag == 0) date.setDate(date.getDate() - 1);
+      else if(flag == 1) date.setDate(date.getDate() - 7);
+      else date.setMonth(date.getMonth() - 1);
+
+      $("#measureDatetimePast").val(date.toISOString().slice(0,10));
+    }
+    function dayChange() {
+      let measureDatetime = $("#measureDatetime").val();
+      let date = new Date(measureDatetime);
+      let flag = $("[name=flagSW]:checked").val();
+
+      if(flag == 0) date.setDate(date.getDate() - 1);
+      else if(flag == 1) date.setDate(date.getDate() - 7);
+      else date.setMonth(date.getMonth() - 1);
+
+      $("#measureDatetimePast").val(date.toISOString().slice(0,10));
+    }
+    // 날짜 입력시 최대날짜 제한 메소드.
+    $(() => {
+      let newDate = new Date($("#measureDatetime").val());
+      $("#measureDatetime").on("input", () => {
+        let rawDate = new Date([[${measureDatetime}]]);
+        let date = new Date($("#measureDatetime").val());
+
+        if(date == 'Invalid Date') date = newDate;
+        else newDate = date;
+
+        if(rawDate < date) $("#measureDatetime").val([[${measureDatetime}]]);
+        else $("#measureDatetime").val(date.toISOString().slice(0,10));
+      });
+    });
+
+    // 레포트 생성 메소드.
+    function reportCreate() {
+      let deviceCode = $("[name=deviceCode]:checked").val();
+      let measureDatetime = $("#measureDatetime").val();
+      let flag = $("[name=flagSW]:checked").val();
+      location.href = "/SpringGroupBB/sensor/dailyReport?deviceCode="+deviceCode+"&measureDatetime="+measureDatetime+"&flag="+flag;
+    }
+  </script>
+</th:block>
+
+<div layout:fragment="content">
+  <div  class="device-card">
+    <h2>리포트 생성</h2>
+    <p></p>
+    <div class="row">
+      <div class="col"></div>
+      <div class="col input-group" style="min-width:410px">
+        <input type="date" id="measureDatetimePast" th:value="${measureDatetimePast}" readonly />
+        <div class="input-group-text">~</div>
+        <input type="date" th:max="${measureDatetime}" id="measureDatetime" th:value="${measureDatetime}" onchange="dayChange()" />
+        <input type="button" value="데이터 출력" th:onclick="|reportCreate()|" class="btn btn-info btn-sm ms-1" />
+      </div>
+      <div class="col text-end">
+        <input type="button" value="돌아가기" onclick="location.href='/SpringGroupBB/sensor/reportList'" class="btn btn-warning btn-sm" />
+      </div>
+    </div>
+  </div>
+  <div class="device-card">
+    <div class="row">
+      <div class="col" style="min-width:390px">
+        <input type="radio" id="flag0" name="flagSW" value="0" onclick="flagSWOn(0)" checked /> 일일 레포트&nbsp;
+        <input type="radio" id="flag1" name="flagSW" value="1" onclick="flagSWOn(1)" /> 주간 레포트&nbsp;
+        <input type="radio" id="flag2" name="flagSW" value="2" onclick="flagSWOn(2)" /> 월간 레포트
+      </div>
+    </div>
+  </div>
+  <div  class="device-card">
+    <div class="row">
+      <div class="col" style="min-width:390px">
+        <input type="radio" id="deviceCode0" name="deviceCode" value="ENV_V2_1" checked /> 1층&nbsp;
+        <input type="radio" id="deviceCode1" name="deviceCode" value="ENV_V2_2" /> 2층&nbsp;
+        <input type="radio" id="deviceCode2" name="deviceCode" value="ENV_V2_3" /> 자재실&nbsp;
+        <input type="radio" id="deviceCode3" name="deviceCode" value="ENV_V2_4" /> 연구실
+      </div>
+    </div>
+  </div>
+</div>
+
+</html>

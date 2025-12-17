@@ -1,0 +1,94 @@
+# server port : 9099
+server:
+  port: 9099
+  address: 0.0.0.0
+  servlet:
+    context-path: /SpringGroupBB
+
+# Spring Setting
+spring:
+  application:
+    name: SpringGroupBB
+
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+    thymeleaf:
+      cache: false
+
+  # DataBase Setting(Datasource)
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/springgroupbb
+    username: root
+    password: 1234
+
+  # JPA Setting
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: update  # create, update, none, create-drop, validate...
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    show-sql: false # SQL Log Display Setting
+    properties:
+      hibernate:
+        format_sql: true # SQL Log Display Setting
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  # Security User Password Setting (Security Login Info Setting)
+  security:
+    user:
+      name: admin@green.com
+      password: 1234
+
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: a108bb7f193bda9633e8a027477d1939
+            scope: account_email, profile_nickname
+            redirect-uri: "http://49.142.157.252/SpringGroupBB/login/oauth2/code/kakao"
+            authorization-grant-type: authorization_code
+            client-name: Kakao
+            user-name-attribute: id
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+  # File Upload Setting
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+  # email
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: cccbbbsss1126@gmail.com
+    password: sehfqrgytwufqtoe
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
+
+# Log Information Setting
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace # SQL Log Display Setting

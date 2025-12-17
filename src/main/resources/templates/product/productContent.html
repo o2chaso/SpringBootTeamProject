@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<link rel="icon" th:href="@{/images/favi.png}" type="image/png">
+
+<head>
+  <meta charset="UTF-8">
+  <title>센서 정보</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <th:block th:insert="~{include/bs5}"></th:block>
+  <style>
+    .sensor-image {
+      width: 100%;
+      height: auto;
+      max-height: 300px;
+      object-fit: contain;
+    }
+
+    /* 전체 컨테이너 */
+    body {
+      background: #f8fbff;
+    }
+
+    h2.title {
+      font-weight: 800;
+      font-size: 28px;
+      color: #1d4f89;
+      text-align: center;
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    h2.title::after {
+      content: "";
+      display: block;
+      width: 60px;
+      height: 4px;
+      background: rgb(203, 228, 252);
+      margin: 10px auto 0;
+      border-radius: 6px;
+    }
+
+    /* 이미지 카드 */
+    .sensor-card
+    .info-card {
+      height: 100%;
+      border-radius: 14px;
+      padding: 20px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      transition: .25s;
+    }
+
+    .sensor-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    .sensor-image {
+      width: 100%;
+      height: auto;
+      max-height: 300px;
+      object-fit: contain;
+    }
+
+    /* 정보 카드 */
+    .info-card {
+      border-radius: 14px;
+      border: 1px solid #d9e6f9;
+      background: rgba(203, 228, 252, 0.25);
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .info-card h4 {
+      font-weight: 800;
+      color: #1a3d6b;
+      margin-bottom: 15px;
+    }
+
+    /* 리스트 항목 */
+    .sensor-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #dce6f5;
+      font-size: 15px;
+      color: #2d3748;
+    }
+
+    .sensor-item strong {
+      color: #1c3d7a;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    .sensor-item:last-child {
+      border-bottom: none;
+    }
+
+    #qrcode img {
+      width: 60px;
+      height: 60px;
+    }
+  </style>
+  <script>
+    function openDetail(flag) {
+      let url = "/SpringGroupBB/product/productDetail?flag=" + flag;
+      let windowName = "sensorDetail";
+      let width = 900;
+      let height = 1200;
+
+      // 화면 중앙 계산
+      let left = (window.screen.width - width) / 2;
+      let top = (window.screen.height - height) / 2;
+
+      // 새창 열기
+      window.open(url, windowName,
+        "width=" + width +
+        ",height=" + height +
+        ",left=" + left +
+        ",top=" + top +
+        ",resizable=yes,scrollbars=yes"
+      );
+
+      // 현재 창 닫기
+      window.close();
+    }
+
+    // QR 코드
+    window.onload = function () {
+      let base = "http://192.168.50.69:9099/SpringGroupBB/product/productDetail";
+      let flag = [[${productDTO.id}]];
+      let qrUrl = base + "?flag=" + flag;
+      new QRCode(document.getElementById("qrcode"), {
+        text: qrUrl,
+        width: 60,
+        height: 60
+      });
+    };
+  </script>
+</head>
+<body>
+<div class="container py-4">
+  <!-- 타이틀 -->
+  <h2 class="title">
+    <i class="bi bi-broadcast-pin"></i> 센서 설명
+  </h2>
+  <div class="row align-items-stretch justify-content-center mt-4">
+    <!-- 이미지 영역 -->
+    <div class="col-md-5 mb-2 d-flex justify-content-center">
+      <div class="info-card shadow-sm text-center">
+        <img th:src="@{'/admin/product/' + ${productDTO.sensorImage}}"
+             class="sensor-image mb-3" alt="센서 이미지" />
+        <!-- 버튼 + QR 묶음 -->
+        <div class="d-flex justify-content-center align-items-center gap-3 mt-2">
+          <!-- 자세히 보기 버튼 -->
+          <button class="btn btn-primary btn-sm" th:onclick="'openDetail(' + ${productDTO.id} + ')'">
+            자세히 보기
+          </button>
+          <!-- QR 코드 -->
+          <div id="qrcode"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 정보 영역 -->
+    <div class="col-md-7">
+      <div class="info-card">
+        <h4>[[${productDTO.model}]]</h4>
+        <div class="sensor-item">
+          <strong>센서명 :</strong> [[${productDTO.sensorName}]]
+        </div>
+        <div class="sensor-item">
+          <strong>설명 :</strong> [[${productDTO.shortDescription}]]
+        </div>
+        <div class="sensor-item">
+          <strong>특징 :</strong> [[${productDTO.features}]]
+        </div>
+        <div class="sensor-item">
+          <strong>종류 :</strong> [[${productDTO.sensorType}]]
+        </div>
+        <div class="sensor-item">
+          <strong>제조사 :</strong> [[${productDTO.manufacturer}]]
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

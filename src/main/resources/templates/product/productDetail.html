@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<link rel="icon" th:href="@{/images/favi.png}" type="image/png">
+<head>
+  <meta charset="UTF-8">
+  <title>센서 정보</title>
+  <th:block th:insert="~{include/bs5}"></th:block>
+  <script>
+    function openImage(url) {
+      let imgWindow = window.open("", "_blank",
+          "width=900,height=700,resizable=yes,scrollbars=yes");
+
+      imgWindow.document.write(`
+        <html>
+          <head>
+            <title>이미지 보기</title>
+            <style>
+              body {
+                margin: 0;
+                background: #000;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+              }
+              img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+              }
+            </style>
+          </head>
+          <body>
+            <img src="${url}" />
+          </body>
+        </html>
+      `);
+    }
+  </script>
+  <style>
+    .sensor-detail-card {
+      width: 80%;
+      margin: 20px auto;
+      padding: 30px 40px;
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid #e4e4e4;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    /* 타이틀 */
+    .sensor-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: rgb(42, 91, 161); /* 퍼스널컬러 톤 다운 */
+      background-color: rgb(203, 228, 252);
+      padding: 10px 20px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    /* 부제 */
+    .sensor-subtitle {
+      font-size: 16px;
+      color: #6c757d;
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    /* 이미지 */
+    .sensor-image {
+      width: 100%;
+      max-width: 380px;
+      margin: 20px auto;
+      display: block;
+      border-radius: 10px;
+    }
+
+    /* 소개글 */
+    .sensor-description {
+      margin-top: 20px;
+      font-size: 17px;
+      line-height: 1.7;
+      color: #333;
+      text-align: center;
+    }
+
+    .sensor-description strong {
+      font-weight: 700;
+      color: #1a3d6d;
+    }
+  </style>
+
+</head>
+<body>
+<div th:if="${flag == 1}" class="device-card sensor-detail-card">
+  <!-- 타이틀 -->
+  <h2 class="sensor-title">ST-IAQ-07</h2>
+  <!-- 부제 -->
+  <p class="sensor-subtitle">공기질 측정 센서</p>
+  <!-- 이미지 -->
+  <img th:src="@{/admin/product/t-taq-07/1.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <!-- 소개글 -->
+  <p class="sensor-description">
+    <strong style="font-size: 2rem;">ST-IAQ-07</strong>은<br/>
+    <strong>PM 1.0 (극초미세먼지)</strong>,
+    <strong>PM 2.5 (초미세먼지)</strong>,
+    <strong>PM 10 (미세먼지)</strong>,
+    <strong>온도, 습도, CO2, VOC</strong>를 측정하는 제품입니다.<br/><br/>
+    LCD에서 <strong>실시간 측정 값</strong>과
+    <strong>트렌드 · 경보 이력</strong>을 확인할 수 있으며,<br/>
+    RS-485 통신을 통해 <strong>원격 관리 시스템</strong>과 연동된
+    통합 감시가 가능합니다.
+  </p>
+  <img th:src="@{/admin/product/t-taq-07/2.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/t-taq-07/3.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/t-taq-07/4.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/t-taq-07/5.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+</div>
+
+<!-- 두번째 상품 -->
+<div th:if="${flag == 2}" class="device-card sensor-detail-card">
+  <!-- 타이틀 -->
+  <h2 class="sensor-title">PT100 RTD</h2>
+  <!-- 부제 -->
+  <p class="sensor-subtitle">프로브 온도 센서</p>
+  <!-- 이미지 -->
+  <img th:src="@{/admin/product/pt100/2.png}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <!-- 소개글 -->
+  <p class="sensor-description">
+    <strong style="font-size: 2rem;">PT100 RTD</strong>는<br/>
+    <strong>백금 저항(Platinum Resistance)</strong>을 이용해
+    <strong>정확한 온도 측정</strong>이 가능한 산업용 온도 센서입니다.<br/><br/>
+    <strong>3선식(Three-wire)</strong> 구조를 사용하여 리드선 저항에 의한
+    측정 오차를 최소화하며,<br/>
+    배관·보일러·설비 내부 등 다양한 환경에서 안정적인 온도 감지가 가능합니다.<br/><br/>
+    스테인리스(STS) 프로브와 <strong>내열 차폐 케이블</strong>로 구성되어
+    고온 환경에서도 우수한 내구성을 제공합니다.<br/><br/>
+    온도 제어 시스템, 산업용 장비, HVAC 등에서
+    <strong>정밀 온도 감시</strong>가 필요한 곳에 널리 사용됩니다.
+  </p>
+  <img th:src="@{/admin/product/pt100/1.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/pt100/3.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+</div>
+<!-- 세번째 상품 -->
+<div th:if="${flag == 3}" class="device-card sensor-detail-card">
+  <!-- 타이틀 -->
+  <h2 class="sensor-title">MAX9814</h2>
+  <!-- 부제 -->
+  <p class="sensor-subtitle">마이크 증폭 모듈</p>
+  <!-- 이미지 -->
+  <img th:src="@{/admin/product/max9814/1.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <!-- 소개글 -->
+  <p class="sensor-description">
+    <strong style="font-size: 2rem;">MAX9814</strong>는<br/>
+    <strong>오디오 신호(목소리·소음)</strong>를 감지하고 증폭하기 위한
+    <strong>마이크 증폭 모듈</strong>입니다.<br/><br/>
+    자동이득조절(<strong>AGC: Automatic Gain Control</strong>) 기능을 지원하여<br/>
+    작은 소리는 크게, 큰 소리는 왜곡 없이 조정해주는 특징이 있습니다.<br/><br/>
+    주변 환경의 소음 수준을 감지하거나,
+    음성 인식 장치에 활용되는 등 다양한 프로젝트에서 사용됩니다.<br/><br/>
+    <strong>일렉트릿 콘덴서 마이크(ECM)</strong>가 포함되어 있으며,<br/>
+    안정적인 출력과 낮은 잡음 특성을 제공하여
+    소리 기반 센서 시스템 구축에 적합합니다.
+  </p>
+  <img th:src="@{/admin/product/max9814/2.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/max9814/3.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+</div>
+
+<!-- 네번째 상품 -->
+<div th:if="${flag == 4}" class="device-card sensor-detail-card">
+  <!-- 타이틀 -->
+  <h2 class="sensor-title">SEN0256</h2>
+  <!-- 부제 -->
+  <p class="sensor-subtitle">비접촉식 온도 측정 센서</p>
+  <!-- 이미지 -->
+  <img th:src="@{/admin/product/sen0256/4.png}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <!-- 소개글 -->
+  <p class="sensor-description">
+    <strong style="font-size: 2rem;">SEN0256</strong>은<br/>
+    <strong>적외선(IR)을 이용한 비접촉식 온도 측정</strong>을 지원하는
+    <strong>정밀 온도 센서 모듈</strong>입니다.<br/><br/>
+    대상 물체와 접촉하지 않고도 온도를 빠르게 감지할 수 있으며,<br/>
+    표면 온도 변화가 큰 환경에서도 안정적인 데이터를 제공합니다.<br/><br/>
+    기계 장비 온도 감시, 실험 장비 모니터링, 산업용 표면 온도 측정 등<br/>
+    다양한 전문 분야에서 널리 활용됩니다.<br/><br/>
+    <strong>빠른 응답 속도</strong>와 <strong>높은 신뢰도</strong>를 갖추고 있어<br/>
+    온도 기반 자동화 시스템 구축에 매우 적합한 센서입니다.
+  </p>
+  <img th:src="@{/admin/product/sen0256/1.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/sen0256/2.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/sen0256/3.jpg}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+</div>
+
+<!-- 다섯번째 상품 -->
+<div th:if="${flag == 5}" class="device-card sensor-detail-card">
+  <!-- 타이틀 -->
+  <h2 class="sensor-title">P5144-9</h2>
+  <!-- 부제 -->
+  <p class="sensor-subtitle">고감도 조도 센서 모듈</p>
+  <!-- 이미지 -->
+  <img th:src="@{/admin/product/p5144/9.png}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <!-- 소개글 -->
+  <p class="sensor-description">
+    <strong style="font-size: 2rem;">P5144-9</strong>는<br/>
+    주변 광량을 측정하는 <strong>고감도 조도 센서 모듈</strong>로,<br/>
+    <strong>Lux(조도) 값을 정밀하게 감지</strong>할 수 있습니다.<br/><br/>
+    실내·실외 환경의 밝기 변화를 빠르게 반응하며,<br/>
+    자동 밝기 조절, 환경 모니터링, IoT 조명 제어 등<br/>
+    다양한 프로젝트에서 사용됩니다.<br/><br/>
+    <strong>노이즈에 강한 출력 특성</strong>을 제공하여<br/>
+    Arduino, ESP32 등 마이크로컨트롤러와의 연동성이 뛰어나며,<br/>
+    조도 기반 제어 시스템을 구현하기에 최적화되어 있습니다.
+  </p>
+  <img th:src="@{/admin/product/p5144/2.png}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/p5144/3.png}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/p5144/4.png}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/p5144/5.png}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/p5144/6.png}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/p5144/7.png}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+  <img th:src="@{/admin/product/p5144/8.png}"
+       class="sensor-image" alt="센서 이미지" onclick="openImage(this.src)" />
+
+</div>
+</body>
+</html>

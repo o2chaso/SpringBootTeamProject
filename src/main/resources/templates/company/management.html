@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+  <th:block layout:fragment="css">
+    <style>
+      .title {font-size:70px;}
+      .subTitle {font-size:50px;}
+
+      .circle {border-radius: 10%;}
+      .circle2 {border-radius: 50%;}
+    </style>
+  </th:block>
+
+  <div layout:fragment="content">
+    <div class="text-center">
+      <div class="title">경영방침</div>
+      <p><br/></p>
+      <div><img src="/SpringGroupBB/company/logo.png" width="600px" /></div>
+      <p><br/></p>
+      <div class="row">
+        <div class="col"></div>
+        <div class="circle col border border-dark" style="min-width:300px">
+          <br/>
+          <font size="5">With BizForce</font><br/>
+          <br/>
+          ㈜비즈포스는<br/>
+          머신비전, 인공지능(AI), 빅데이터,<br/>
+          실시간 모니터링 분야의 시스템과<br/>
+          응용SW를 개발하여 보급하고 있는<br/>
+          스마트 팩토리와 스마트 팜 분야의<br/>
+          전문기업입니다.<br/>
+          <br/>
+        </div>
+        <div class="col"></div>
+        <div class="circle col border border-dark" style="min-width:300px">
+          <br/>
+          <font size="5">비전</font><br/>
+          <br/>
+          VISION 2025,<br/>
+          소프트웨어 2.0 시대를 선도하는<br/>
+          THE WORD'S BEST ALL INNOVATOR<br/>
+          <br/>
+        </div>
+        <div class="col"></div>
+      </div>
+      <p><br/></p>
+      <div><img src="/SpringGroupBB/company/01.jpg" width="100%" class="circle2" /></div>
+      <p><br/></p>
+      <div class="subTitle">회사의 데이터 분석은 사람의 피검사와 같습니다.</div>
+      <p><br/></p>
+      <div class="d-flex justify-content-center">
+        <div class="circle border border-dark" style="min-width:400px">
+          <br/>
+          <font size="5">미션</font><br/>
+          <br/>
+          혁신적인 기술과 차별화된 제품을 통해,<br/>
+          사람이 존중되는 업무환경을 견인하고,<br/>
+          인간과 AI가 공존하고 서로 협력하는<br/>
+          조화로운 세상을 만든다.<br/>
+          <br/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</html>

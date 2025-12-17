@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    'use strict';
+
+    let message = [[${message}]];
+    if(message != null) alert(message);
+
+    function pageSizeCheck() {
+      let pageSize = document.getElementById("pageSize").value;
+      location.href = "/SpringGroupBB/board/boardList?pageSize="+pageSize;
+    }
+
+    // 공지사항 토글 기능(jQuery)
+    $(document).ready(function() {
+      $('.expired-notice').addClass('hidden');
+      $('#toggleNoticeBtn').click(function() {
+        var $expiredRows = $('.expired-notice');
+        $expiredRows.toggleClass('hidden');
+
+        if($expiredRows.is(':visible')) {
+          $(this).text('📢 공지사항 숨기기');
+          $(this).removeClass('btn-outline-info').addClass('btn-info');
+        } else {
+          $(this).text('📢 공지사항 보기');
+          $(this).removeClass('btn-info').addClass('btn-outline-info');
+        }
+      });
+    });
+  </script>
+  <style>
+    a {text-decoration: none}
+    a:hover {
+      color: orange;
+      text-decoration: underline;
+    }
+
+     /* 만료된 공지사항을 숨기는 클래스 */
+    .expired-notice.hidden {
+      display: none;
+    }
+
+    /* 만료된 공지사항 행의 스타일 */
+    .expired-notice td {
+      background-color: #e2e2e2;
+      color: #999;
+    }
+  </style>
+</th:block>
+
+<div layout:fragment="content">
+  <style>
+    @charset "UTF-8";
+    .search-bg {
+      background: #f2f2f2;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      padding: 18px 20px;
+      width: 100%;
+      margin: 0;
+    }
+    .btn btn-outline-info {
+      text-align: left !important;
+    }
+    .device-card2 {
+      width: 80%;
+      margin: 30px auto;
+      padding: 25px 30px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+      border: 1px solid #e2e2e2;
+      text-align: left;
+    }
+  </style>
+   <div class="device-card2">
+     <h2 class="font-weight-bold text-primary heading mb-1 text-start" style="font-size:2.2">자유게시판</h2>
+     <hr class="secondary">
+     <button type="button" id="toggleNoticeBtn"
+             class="btn btn-outline-info btn-sm">📢 공지사항 보기</button>
+   </div>
+  <div class="device-card">
+    <div class="row mt-3 mb-1">
+      <div class="col text-start">
+      </div>
+      <div class="col text-end">
+        <select name="pageSize" id="pageSize" onchange="pageSizeCheck()">
+          <option th:selected="${pageVO.pageSize==5}">5</option>
+          <option th:selected="${pageVO.pageSize==10}">10</option>
+          <option th:selected="${pageVO.pageSize==15}">15</option>
+          <option th:selected="${pageVO.pageSize==20}">20</option>
+          <option th:selected="${pageVO.pageSize==30}">30</option>
+          <option th:selected="${pageVO.pageSize==50}">50</option>
+        </select>
+      </div>
+    </div>
+
+    <table class="table">
+      <tr style="border-bottom: 3px solid #484848;">
+        <th>번호</th>
+        <th>제목</th>
+        <th>이름</th>
+        <th>작성일</th>
+        <th>조회수(♥)</th>
+      </tr>
+      <th:block th:each="board, st : ${pageVO.boardList}"
+                th:if="${board.openSw == 'OK'
+                        or #authorization.expression('hasAuthority(''ROLE_ADMIN'')')
+                        or (board.member != null and board.member.email == #authentication.name)}">
+        <tr th:classappend="${board.noticeSw == 'OK' && expiredMap[board.id]} ? 'expired-notice' : ''">
+          <td>
+            <span th:if="${board.noticeSw == 'OK'}">📌
+              <!-- 만료됨 표시 -->
+              <span th:if="${expiredMap[board.id]}" style="font-size:0.7em; color:#999;"></span>
+            </span>
+            <span th:unless="${board.noticeSw == 'OK'}" th:text="${pageVO.curScrStartNo - st.index}"></span>
+          </td>
+          <td class="text-start">
+            <a th:href="@{/board/boardContent(id=${board.id},pag=${pageVO.pag},pageSize=${pageVO.pageSize})}">[[${board.title}]]</a>
+            <th:block th:if="${board.openSw == 'NO'}">
+              <span class="badge bg-info">비공개</span>
+            </th:block>
+            <th:block th:if="${board.complaint == 'HI'}">
+              <span class="badge bg-danger">신고중</span>
+            </th:block>
+            <th:block th:if="${board.complaint == 'DE'}">
+              <span class="badge bg-dark">삭제예정</span>
+            </th:block>
+            <th:block th:if="${board.hourDiff <= 24}"><img th:src="@{/images/new.gif}"></th:block>
+            <th:block th:if="${board.replyCnt != 0}">([[${board.replyCnt}]])</th:block>
+          </td>
+          <td>[[${board.name}]]</td>
+          <td>
+            <th:block th:if="${board.hourDiff <= 24}">
+              <span th:text="${board.dateDiff == 0} ? ${#temporals.format(board.wDate, 'HH:mm:ss')} : ${#temporals.format(board.wDate, 'yyyy-MM-dd HH:mm')}"></span>
+            </th:block>
+            <th:block th:if="${board.hourDiff > 24}"><span th:text="${#strings.substring(board.wDate,0,10)}"></span></th:block>
+          </td>
+          <td>[[${board.readNum}]]([[${board.good}]])</td>
+        </tr>
+      </th:block>
+    </table>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <!-- 왼쪽: 글쓰기 버튼 -->
+      <div>
+        <a th:if="${!isSearch}"
+           th:href="@{/board/boardInput}"
+           class="btn btn-success btn-sm">
+          글쓰기
+        </a>
+        <a th:if="${isSearch}"
+           th:href="@{/board/boardList}"
+           class="btn btn-outline-secondary btn-sm">
+          돌아가기
+        </a>
+      </div>
+      <!-- 가운데: 검색폼 -->
+      <form name="searchForm" method="get"
+            class="d-flex align-items-center mx-auto"
+            style="gap: 8px;">
+        <select name="search" id="search"
+                style="height:35px; font-size:0.9em;">
+          <option value="title"   th:selected="${pageVO.searchStr=='글제목'}">글제목</option>
+          <option value="name"    th:selected="${pageVO.searchStr=='글쓴이'}">글쓴이</option>
+          <option value="content" th:selected="${pageVO.searchStr=='글내용'}">글내용</option>
+        </select>
+        <input type="text" name="searchString" id="searchString"
+               th:value="${pageVO.searchString}"
+               placeholder="검색어를 입력해주세요."
+               required
+               style="height:35px; width:300px; font-size:0.95em;">
+        <input type="submit" value="검색" class="btn btn-dark btn-sm px-3">
+      </form>
+      <!-- 오른쪽: (비워두거나 향후 버튼 추가 가능) -->
+      <div style="width:80px;"></div>
+    </div>
+  </div>
+
+  <!-- 블록페이지 시작 -->
+  <div class="text-center">
+    <ul class="pagination justify-content-center">
+      <th:block th:if="${pageVO.pag > 1}"><li class="page-item"><a class="page-link text-secondary" th:href="@{/board/boardList(pageSize=${pageVO.pageSize},pag=0)}">
+        첫페이지</a></li></th:block>
+      <th:block th:if="${pageVO.curBlock > 0}"><li class="page-item"><a class="page-link text-secondary" th:href="@{/board/boardList(pageSize=${pageVO.pageSize},pag=${(pageVO.curBlock-1)*pageVO.blockSize+1-1})}">
+        이전블록</a></li></th:block>
+      <th:block th:each="i: ${#numbers.sequence((pageVO.curBlock*pageVO.blockSize)+1,(pageVO.curBlock*pageVO.blockSize)+pageVO.blockSize)}">
+        <th:block th:if="${i <= pageVO.totPage && i == pageVO.pag}"><li class="page-item active"><a class="page-link bg-secondary border-secondary" th:href="@{/board/boardList(pageSize=${pageVO.pageSize},pag=${i-1})}" th:text="${i}"></a></li></th:block>
+        <th:block th:if="${i <= pageVO.totPage && i != pageVO.pag}"><li class="page-item"><a class="page-link text-secondary" th:href="@{/board/boardList(pageSize=${pageVO.pageSize},pag=${i-1})}" th:text="${i}"></a></li></th:block>
+      </th:block>
+      <th:block th:if="${pageVO.curBlock < pageVO.lastBlock}"><li class="page-item"><a class="page-link text-secondary" th:href="@{/board/boardList(pageSize=${pageVO.pageSize},pag=${(pageVO.curBlock+1)*pageVO.blockSize+1-1})}">다음블록</a></li></th:block>
+      <th:block th:if="${pageVO.pag < pageVO.totPage}"><li class="page-item"><a class="page-link text-secondary" th:href="@{/board/boardList(pageSize=${pageVO.pageSize},pag=${pageVO.totPage-1})}">마지막페이지</a></li></th:block>
+    </ul>
+  </div>
+  <!-- 블록페이지 끝 -->
+
+</div>
+
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+<link rel="icon" th:href="@{/images/favi.png}" type="image/png">
+
+<script layout:fragment="script" th:inline="javascript">
+  'use strict';
+
+  function newWindow(id) {
+    let url = "/SpringGroupBB/qna/qnaNewWindow/" + id;
+    let windowName = "";
+    let windowWidth = 420;
+    let windowHeight = 750;
+
+    let x = window.screenX + (window.outerWidth - windowWidth) / 2;
+    let y = window.screenY + (window.outerHeight - windowHeight) / 2;
+    let option = `width=${windowWidth}, height=${windowHeight}, left=${x}, top=${y}`;
+
+    let newWin = window.open(url, windowName, option);
+
+    $("#qnaList").load(location.href + ' #qnaList');
+    let timer = setInterval(() => {
+      if (newWin.closed) {
+        clearInterval(timer);
+        location.reload();
+      }
+    }, 500);
+  }
+
+  function progressChange(id) {
+    let ans = confirm(id+"번 문의의 현황을 변경하시겠습니까?");
+    if(ans) {
+      $.ajax({
+        url : "/SpringGroupBB/qna/qnaProgressChange",
+        type: "post",
+        data: {
+          "id" : id,
+          "setProgress" : $("#progress"+id).val()
+        },
+        success : (res) => {
+          if(res == 1) {
+            alert("문의현황이 변경되었습니다.");
+            location.reload();
+          }
+          else if(res == -1) {
+            alert("잘못된 접근입니다.");
+            location.href = "/SpringGroupBB";
+          }
+          else alert("문의현황 변경에 실패했습니다.");
+        },
+        error : () => alert("전송오류")
+      });
+    }
+  }
+
+  function progressViewChange() {
+    location.href = "/SpringGroupBB/qna/qnaAnswer?progress="+$("#progress").val();
+  }
+</script>
+
+<style layout:fragment="css">
+  #qnaList {margin-top: 20px;}
+
+  .qna-top-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 10px;
+  }
+
+  .qna-table thead th {
+    background-color: rgb(203, 228, 252) !important;
+    padding: 14px;
+  }
+
+  .qna-table tbody tr td {padding: 14px 10px;}
+
+  .qna-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  .title-left {text-align: left;}
+
+  .myColor {
+    color: gray;
+    background-color: rgb(203, 228, 252)
+  }
+
+  .mother {
+    list-style: none;
+    display: inline-flex;
+    gap: 6px;
+    padding: 0;
+    margin: 0;
+  }
+
+  .mother li a,
+  .mother li span {
+    display: inline-block;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    text-decoration: none;
+    color: #555;
+    border-radius: 4px;
+    user-select: none;   /* 드래그 파란 선택 방지 */
+  }
+</style>
+
+<div layout:fragment="content">
+  <div class="device-card">
+    <div class="qna-top-controls">
+      <select id="progress" th:onchange="|progressViewChange()|" class="form-select" style="width: 160px;">
+        <option value="" th:selected="${pageDTO.progress==''}">전체보기</option>
+        <option value="RESOLVING" th:selected="${pageDTO.progress=='RESOLVING'}">처리중</option>
+        <option value="RESOLVED" th:selected="${pageDTO.progress=='RESOLVED'}">처리완료</option>
+        <option value="UNRESOLVABLE" th:selected="${pageDTO.progress=='UNRESOLVABLE'}">처리불가</option>
+      </select>
+      <h2 style="text-align: center;">문의 처리</h2>
+      <div class="d-flex gap-2">
+        <a th:href="@{/qna/qnaAnswer}" class="btn btn-warning btn-sm">돌아가기</a>
+      </div>
+    </div>
+  </div>
+  <div class="device-card">
+    <div id="qnaList">
+      <!-- 비었을 때 -->
+      <th:block th:if="${#lists.isEmpty(pageDTO.getQnaList)}">
+        <div class="alert alert-secondary text-center">
+          삭제 대기중(처리완료, 처리불가)인 문의가 없습니다.
+        </div>
+      </th:block>
+      <!-- 리스트 있을 때 -->
+      <th:block th:if="${!#lists.isEmpty(pageDTO.getQnaList)}">
+        <table class="table table-hover align-middle text-center qna-table">
+          <thead>
+            <tr>
+              <th>문의번호</th>
+              <th>문의제목</th>
+              <th>문의자</th>
+              <th>상태</th>
+              <th>처리현황</th>
+              <th>문의날짜</th>
+              <th>갱신날짜</th>
+              <th>열기</th>
+              <th>문의현황변경</th>
+            </tr>
+          </thead>
+          <tbody>
+            <th:block th:each="dto : ${pageDTO.getQnaList}">
+              <tr>
+                <td>[[${dto.id}]]</td>
+                <td class="title-left">[[${dto.title}]]</td>
+                <td th:text="${#strings.substring(dto.dearEmail.email, 0, #strings.indexOf(dto.dearEmail.email, '@'))}"></td>
+                <td>
+                  <span th:if="${dto.openSW.name()=='NO'}" class="badge bg-danger">읽지않음</span>
+                  <span th:if="${dto.openSW.name()=='OK'}" class="badge bg-success">읽음</span>
+                </td>
+                <td>
+                  <span th:if="${dto.progress.name()=='RESOLVING'}" class="badge bg-warning text-dark">처리중</span>
+                  <span th:if="${dto.progress.name()=='RESOLVED'}" class="badge bg-primary">처리완료</span>
+                  <span th:if="${dto.progress.name()=='UNRESOLVABLE'}" class="badge bg-secondary">처리불가</span>
+                </td>
+                <td th:text="${#strings.substring(#strings.replace(dto.startDate,'T',' '), 0, 19)}"></td>
+                <td th:text="${#strings.substring(#strings.replace(dto.lastDate,'T',' '), 0, 19)}"></td>
+                <td>
+                  <button type="button" class="btn btn-outline-primary btn-sm" th:onclick="|newWindow(${dto.id})|">열기</button>
+                </td>
+                <td>
+                  <select th:id="progress+${dto.id}" th:onchange="|progressChange(${dto.id})|">
+                    <option value="RESOLVING" th:selected="${dto.progress.name()=='RESOLVING'}">처리중</option>
+                    <option value="RESOLVED" th:selected="${dto.progress.name()=='RESOLVED'}">처리완료</option>
+                    <option value="UNRESOLVABLE" th:selected="${dto.progress.name()=='UNRESOLVABLE'}">처리불가</option>
+                    <option value="DELETE">삭제</option>
+                  </select>
+                </td>
+              </tr>
+            </th:block>
+          </tbody>
+        </table>
+      </th:block>
+    </div>
+  </div>
+  <!--블록페이지 시작-->
+  <div style="text-align: center; margin-top: 20px;">
+    <ul class="mother" style="list-style: none; display: inline-flex; gap: 6px; padding: 0; margin: 0;">
+      <th:block th:if="${pageDTO.pag > 1}">
+        <li>
+          <a th:href="@{/qna/qnaAnswer(pag=0, pageSize=${pageDTO.pageSize})}">첫페이지</a>
+        </li>
+      </th:block>
+      <th:block th:if="${pageDTO.curBlock > 0}">
+        <li>
+          <a th:href="@{/qna/qnaAnswer(pag=${(pageDTO.curBlock-1)*pageDTO.blockSize}, pageSize=${pageDTO.pageSize})}">이전블록</a>
+        </li>
+      </th:block>
+      <th:block th:each="i : ${#numbers.sequence((pageDTO.curBlock*pageDTO.blockSize),(pageDTO.curBlock*pageDTO.blockSize)+pageDTO.blockSize-1)}">
+        <th:block th:if="${i < pageDTO.totPage && i+1 == pageDTO.pag}">
+          <li>
+            <span class="myColor">[[${i+1}]]</span>
+          </li>
+        </th:block>
+        <th:block th:if="${i < pageDTO.totPage && i+1 != pageDTO.pag}">
+          <li>
+            <a th:href="@{/qna/qnaAnswer(pag=${i}, pageSize=${pageDTO.pageSize})}">[[${i+1}]]</a>
+          </li>
+        </th:block>
+      </th:block>
+      <th:block th:if="${pageDTO.curBlock < pageDTO.lastBlock}">
+        <li>
+          <a th:href="@{/qna/qnaAnswer(pag=${(pageDTO.curBlock+1)*pageDTO.blockSize}, pageSize=${pageDTO.pageSize})}">다음블록</a>
+        </li>
+      </th:block>
+      <th:block th:if="${pageDTO.pag < pageDTO.totPage-1}">
+        <li>
+          <a th:href="@{/qna/qnaAnswer(pag=${pageDTO.totPage-1}, pageSize=${pageDTO.pageSize})}">마지막페이지</a>
+        </li>
+      </th:block>
+    </ul>
+  </div>
+  <!--블록페이지 끝-->
+</div>
+
+</html>

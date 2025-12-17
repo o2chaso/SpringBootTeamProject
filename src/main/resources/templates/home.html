@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<div layout:fragment="content">
+  <div  class="device-card" style="text-align: center;">
+    <h2>로그인 가능한 아이디</h2>
+    <div class="pretty-line"></div>
+
+    <div>
+      <table class="table table-bordered">
+        <tr class="table-header">
+          <th>번호</th>
+          <th>아이디</th>
+          <th>비밀번호</th>
+          <th>권한</th>
+          <th>비고</th>
+        </tr>
+        <tr>
+          <th>0</th>
+          <th>admin@green.com</th>
+          <th>1234</th>
+          <th>운영자 / ROLE_ADMIN</th>
+          <th>운영자</th>
+        </tr>
+        <tr>
+          <th>1</th>
+          <th>gangG@gmail.com</th>
+          <th>1234</th>
+          <th>관리자 / ROLE_ADMIN</th>
+          <th>정감자</th>
+        </tr>
+        <tr>
+          <th>2</th>
+          <th>yuni@gmail.com</th>
+          <th>1234</th>
+          <th>정회원 / ROLE_USER</th>
+          <th>정유니</th>
+        </tr>
+        <tr>
+          <th>3</th>
+          <th>test1@gmail.com</th>
+          <th>1234</th>
+          <th>정회원 / ROLE_USER</th>
+          <th>정복자</th>
+        </tr>
+        <tr>
+          <th>4</th>
+          <th>test2@gmail.com</th>
+          <th>1234</th>
+          <th>정회원 / ROLE_USER</th>
+          <th>정유자</th>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+</html>

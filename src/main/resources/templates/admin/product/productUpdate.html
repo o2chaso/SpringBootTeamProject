@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    let message = [[${message}]];
+    if(message != null) alert(message);
+
+    function fCheck() {
+      let fileInput = document.getElementById("sFile");
+      let file = fileInput.files[0];
+      let maxSize = 1024 * 1024 * 10;
+
+      if(file) {
+        let fName = file.name;
+        let ext = fName.substring(fName.lastIndexOf(".")+1).toLowerCase();
+        let fileSize = file.size;
+
+        if(fileSize > maxSize) {
+          alert("업로드할 파일의 최대용량은 10MByte 입니다.");
+          return false;
+        }
+        if(ext != 'jpg' && ext != 'gif' && ext != 'png') {
+          alert("업로드 가능한 파일은 'jpg, gif, png '만 가능합니다.");
+          return false;
+        }
+      }
+      productForm.submit();
+    }
+  </script>
+</th:block>
+
+<style layout:fragment="css" >
+  body {
+     font-family: Arial, sans-serif;
+   }
+   .row {
+     margin: 0px;
+     padding: 10px;
+     align-items: center;
+   }
+   .row label {
+     width: 120px;
+     text-align: right;
+     margin-right: 10px;
+   }
+
+   .essential {
+     color:blue
+   }
+   .join__h2 {
+     font-size: 16px;
+     font-weight: bold;
+   }
+</style>
+
+<div layout:fragment="content">
+  <div  class="device-card">
+    <h2>센서수정</h2>
+  </div>
+  <div  class="device-card">
+    <div class="d-flex justify-content-center">
+      <form name="productForm" method="post" th:object="${productDTO}" class="flex-grow-1" enctype="multipart/form-data">
+
+        <div class="row align-items-center justify-content-center">
+          <label th:for="model" class="col-auto col-form-label">
+            모델명
+          </label>
+          <div class="col-md-4">
+            <input type="text" th:field="*{model}" class="form-control">
+          </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-md-5 text-start">
+            <div th:if="${#fields.hasErrors('model')}" th:errors="*{model}"
+                 class="fieldError text-danger small mt-1">
+            </div>
+          </div>
+        </div>
+
+        <div class="row align-items-center justify-content-center">
+          <label th:for="sensorName" class="col-auto col-form-label">
+            센서 이름
+          </label>
+          <div class="col-md-4">
+            <input type="text" th:field="*{sensorName}" class="form-control">
+          </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-md-5 text-start">
+            <div th:if="${#fields.hasErrors('sensorName')}" th:errors="*{sensorName}"
+                 class="fieldError text-danger small mt-1" >
+            </div>
+          </div>
+        </div>
+
+        <div class="row align-items-center justify-content-center">
+          <label th:for="sensorType" class="col-auto col-form-label">
+            센서타입
+          </label>
+          <div class="col-md-4">
+            <input type="text" th:field="*{sensorType}" class="form-control">
+          </div>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="col-md-5 text-start">
+            <div th:if="${#fields.hasErrors('sensorType')}" th:errors="*{sensorType}"
+                 class="fieldError text-danger small mt-1">
+            </div>
+          </div>
+        </div>
+
+        <div class="row align-items-center justify-content-center">
+          <label th:for="shortDescription" class="col-form-label col-2">
+            한줄소개
+          </label>
+          <div class="col-md-4">
+            <input type="text" th:field="*{shortDescription}" class="form-control">
+          </div>
+        </div>
+
+        <div class="row align-items-center justify-content-center">
+          <label th:for="features" class="col-form-label col-2">특징</label>
+          <div class="col-md-4">
+            <textarea th:field="*{features}" style="height:100px; resize:none;" class="form-control"></textarea>
+          </div>
+        </div>
+
+        <div class="row align-items-center justify-content-center">
+          <label th:for="manufacturer" class="col-form-label col-2">제조사</label>
+          <div class="col-md-4">
+            <input type="text" th:field="*{manufacturer}" class="form-control">
+          </div>
+        </div>
+        <div class="row align-items-center justify-content-center">
+          <label th:for="sFile" class="col-form-label col-2">이미지</label>
+          <div class="col-6 d-flex">
+            <input type="file"  th:field="*{sFile}" class="form-control">
+          </div>
+        </div>
+        <div class="d-flex justify-content-center gap-3 mt-4">
+          <button type="button" class="btn btn-dark w-40 px-4" onclick="fCheck()">수정</button>
+          <button type="button" class="btn btn-dark w-40 px-4" onclick="location.href='/SpringGroupBB/admin/product/productList'">취소</button>
+        </div>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <input type="hidden" th:field="*{sensorImage}">
+
+      </form>
+    </div>
+  </div>
+</div>
+</html>

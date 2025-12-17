@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <th:block th:insert="~{include/bs5}"></th:block>
+  <style>
+    .device-card {
+      width: 80%;
+      margin: 30px auto;
+      padding: 25px 30px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+      border: 1px solid #e2e2e2;
+      text-align: center;
+    }
+
+    .device-card h2 {
+      margin: 0 0 15px 0;
+      font-size: 26px;
+      font-weight: 700;
+      color: #2c3e50;
+      letter-spacing: 1px;
+    }
+
+    /* 테이블 스타일 */
+    table {
+      width: 100%;
+      font-size: 12px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      background-color: rgb(203, 228, 252) !important;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .table-bordered th,
+    .table-bordered td {
+      vertical-align: middle;
+      text-align: center;
+      background-color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+<div  class="device-card">
+  <div class="container text-center">
+    <h2 class="text-center mb-4">글 내용 보기</h2>
+    <th:block th:if="${board.complaint == 'HI'}">
+      <hr class="border border-dark">
+      <h3 class="text-center text-danger">해당 게시글은 신고된 글입니다.</h3>
+      <hr class="border border-dark">
+    </th:block>
+    <th:block th:if="${board.complaint != 'HI'}">
+      <table class="table table-bordered">
+        <tr>
+          <th class="table-secondary">글쓴이</th>
+          <td>[[${board.name}]]</td>
+          <th class="table-secondary">글쓴날짜</th>
+          <td>[[${#strings.substring(board.wDate,0,19)}]]</td>
+        </tr>
+        <tr>
+          <th class="table-secondary">조회수</th>
+          <td>[[${board.readNum}]]</td>
+          <th class="table-secondary">접속IP</th>
+          <td>[[${board.hostIp}]]</td>
+        </tr>
+        <tr>
+          <th class="table-secondary">글제목</th>
+          <td colspan="3" class="text-start">[[${board.title}]]
+            (<a th:href="|javascript:goodCheck()|" title="좋아요">❤</a>([[${board.good}]]))
+            (<a th:href="|javascript:goodCheckPlus(1)|" title="좋아요">👍</a>
+            <a th:href="|javascript:goodCheckMinus(-1)|" title="싫어요">👎</a>([[${board.good}]]))
+          </td>
+        </tr>
+        <tr>
+          <th class="table-secondary">글내용</th>
+          <td colspan="3" style="height:250px" class="text-start" th:utext="${board.content}"></td>
+        </tr>
+      </table>
+    </th:block>
+
+    <!-- 댓글 리스트 -->
+    <th:block th:if="${!#lists.isEmpty(replyList)}">
+      <hr/>
+      <table class="table table-hover text-center">
+        <tr class="table-secondary">
+          <th>작성자</th>
+          <th>댓글내용</th>
+          <th>작성일</th>
+          <th>접속IP</th>
+        </tr>
+        <th:block th:each="reply : ${replyList}">
+          <tr>
+            <td>[[${reply.name}]]</td>
+            <td class="text-start" th:utext="${reply.content}" style="white-space: pre-line;"></td>
+            <td th:text="${#strings.substring(reply.wDate, 0, 10)}"></td>
+            <td th:text="${reply.hostIp}"></td>
+          </tr>
+        </th:block>
+      </table>
+    </th:block>
+  </div>
+</div>
+</body>
+</html>

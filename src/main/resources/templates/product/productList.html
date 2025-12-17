@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/basicLayout}">
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    let message = [[${message}]];
+    if(message != null) alert(message);
+
+    function newWindow(id) {
+      let url = "/SpringGroupBB/product/productContent/"+id;
+      let windowName = "";
+      let windowWidth = 800;
+      let windowHeight = 526;
+
+      let x = window.screenX + (window.outerWidth - windowWidth) / 2;
+      let y = window.screenY + (window.outerHeight - windowHeight) / 2;
+      let option = `width=${windowWidth}, height=${windowHeight}, left=${x}, top=${y}`;
+      window.open(url, windowName, option);
+    }
+  </script>
+</th:block>
+<div layout:fragment="content">
+  <div class="device-card title-box mb-4">
+    <h2 class="sensor-title">
+      <i class="bi bi-broadcast-pin"></i> 센서 목록
+    </h2>
+    <p class="sensor-subtitle">환경 모니터링 시스템에 사용되는 센서 장비들입니다</p>
+  </div>
+
+  <div class="device-card">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <th:block th:each="product : ${productList}">
+        <div class="col">
+          <div class="card h-100 shadow-sm sensor-card">
+            <button th:onclick="|newWindow(${product.id})|" class="sensor-btn">
+              <img th:src="@{'/admin/product/' + ${product.sensorImage}}"
+                   th:alt="${product.sensorName}"
+                   class="card-img-top sensor-img" />
+              <div class="card-body text-center">
+                <h6 class="sensor-title text-truncate">
+                  [[${product.model}]]
+                </h6>
+                <p class="sensor-sub text-truncate">
+                  [[${product.sensorName}]]
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </th:block>
+    </div>
+  </div>
+</div>
+</html>
